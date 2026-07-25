@@ -281,6 +281,12 @@ pub enum OptionalReadOnly {
 } derive(@debug.Debug)
 pub fn OptionalReadOnly::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
+pub enum OptionalType {
+  Some(TypeWithExtendedAttributes)
+  None
+}
+pub fn OptionalType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
+
 pub enum Other {
   Integer(StringView)
   Decimal(StringView)

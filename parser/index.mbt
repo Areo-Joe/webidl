@@ -536,3 +536,19 @@ pub fn StaticMember::parse(input : Tokens) -> (StaticMember, Tokens)? {
 
   None
 }
+
+///|
+pub enum OptionalType {
+  Some(TypeWithExtendedAttributes)
+  None
+}
+
+///|
+pub fn OptionalType::parse(input : Tokens) -> (OptionalType, Tokens) {
+  if input is [(@lexer.TokenType::Punctuation, ","), .. after_comma] &&
+    TypeWithExtendedAttributes::parse(after_comma)
+    is Some((type_with_extended_attributes, rest)) {
+    return (OptionalType::Some(type_with_extended_attributes), rest)
+  }
+  return (OptionalType::None, input)
+}
