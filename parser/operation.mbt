@@ -97,3 +97,24 @@ pub fn RegularOperation::parse(input : Tokens) -> (RegularOperation, Tokens)? {
 
   return None
 }
+
+///|
+pub enum Special {
+  Getter
+  Setter
+  Deleter
+}
+
+///|
+pub fn Special::parse(input : Tokens) -> (Special, Tokens)? {
+  match input {
+    [first, .. rest] =>
+      match first {
+        (@lexer.TokenType::Keyword, "getter") => Some((Special::Getter, rest))
+        (@lexer.TokenType::Keyword, "setter") => Some((Special::Setter, rest))
+        (@lexer.TokenType::Keyword, "deleter") => Some((Special::Deleter, rest))
+        _ => None
+      }
+    _ => None
+  }
+}

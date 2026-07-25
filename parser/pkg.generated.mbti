@@ -330,6 +330,13 @@ pub enum SingleType {
 }
 pub fn SingleType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub enum Special {
+  Getter
+  Setter
+  Deleter
+}
+pub fn Special::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum StringType {
   ByteString
   DOMString
