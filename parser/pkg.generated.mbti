@@ -11,6 +11,12 @@ import {
 // Errors
 
 // Types and methods
+pub enum ArgumentName {
+  ArgumentNameKeyword(ArgumentNameKeyword)
+  Identifier(StringView)
+}
+pub fn ArgumentName::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum ArgumentNameKeyword {
   Attribute
   Callback

@@ -151,3 +151,24 @@ pub fn ArgumentNameKeyword::parse(
     _ => None
   }
 }
+
+///|
+pub enum ArgumentName {
+  ArgumentNameKeyword(ArgumentNameKeyword)
+  Identifier(StringView)
+}
+
+///|
+pub fn ArgumentName::parse(input : Tokens) -> (ArgumentName, Tokens)? {
+  if ArgumentNameKeyword::parse(input) is Some((argument_name_keyword, rest)) {
+    return Some(
+      (ArgumentName::ArgumentNameKeyword(argument_name_keyword), rest),
+    )
+  }
+
+  if input is [(@lexer.TokenType::Identifier, identifier), .. rest] {
+    return Some((ArgumentName::Identifier(identifier), rest))
+  }
+
+  return None
+}
