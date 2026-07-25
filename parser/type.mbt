@@ -30,6 +30,55 @@ pub fn TypeWithExtendedAttributes::parse(
 }
 
 ///|
+pub struct RecordType {
+  string_type : StringType
+  type_with_extended_attributes : TypeWithExtendedAttributes
+}
+
+///|
+pub fn RecordType::parse(
+  input : ArrayView[(@lexer.TokenType, StringView)],
+) -> (RecordType, ArrayView[(@lexer.TokenType, StringView)])? {
+  guard input
+    is [
+      (@lexer.TokenType::Keyword, "record"),
+      (@lexer.TokenType::Punctuation, "<"),
+      .. after_record_start,
+    ] else {
+    None
+  }
+
+  guard StringType::parse(after_record_start)
+    is Some((string_type, after_string_type)) else {
+    return None
+  }
+
+  guard after_string_type
+    is [(@lexer.TokenType::Punctuation, ","), .. after_comma] else {
+    return None
+  }
+
+  guard TypeWithExtendedAttributes::parse(after_comma)
+    is Some(
+      (type_with_extended_attributes, after_type_with_extended_attributes)
+    ) else {
+    return None
+  }
+
+  guard after_type_with_extended_attributes
+    is [(@lexer.TokenType::Punctuation, ">"), .. after_record_end] else {
+    return None
+  }
+
+  return Some(
+    (
+      RecordType::{ string_type, type_with_extended_attributes },
+      after_record_end,
+    ),
+  )
+}
+
+///|
 pub enum Null {
   Some
   None

@@ -93,6 +93,12 @@ pub enum ExtendedAttributes {
 } derive(@debug.Debug)
 pub fn ExtendedAttributes::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
+pub enum FloatType {
+  Float
+  Double
+}
+pub fn FloatType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum IntegerType {
   Short
   Long(OptionalLong)
@@ -167,12 +173,44 @@ pub enum OtherOrComma {
 } derive(@debug.Debug)
 pub fn OtherOrComma::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub enum PrimitiveType {
+  UnsignedIntegerType(UnsignedIntegerType)
+  UnrestrictedFloatType(UnrestrictedFloatType)
+  Boolean
+  Byte
+  Octet
+  Bigint
+}
+pub fn PrimitiveType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub struct RecordType {
+  string_type : StringType
+  type_with_extended_attributes : TypeWithExtendedAttributes
+}
+pub fn RecordType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum StringType {
   ByteString
   DOMString
   USVString
 } derive(@debug.Debug)
 pub fn StringType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum Type {
+}
+pub fn Type::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub struct TypeWithExtendedAttributes {
+  extended_attribute_list : ExtendedAttributeList
+  type_ : Type
+}
+pub fn TypeWithExtendedAttributes::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum UnrestrictedFloatType {
+  UnrestrictedFloatType(FloatType)
+  FloatType(FloatType)
+}
+pub fn UnrestrictedFloatType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
 pub enum UnsignedIntegerType {
   UnsignedIntegerType(IntegerType)
