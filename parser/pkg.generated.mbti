@@ -190,6 +190,23 @@ pub enum DefaultValue {
 }
 pub fn DefaultValue::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub enum Definition {
+  CallbackOrInterfaceOrMixin(CallbackOrInterfaceOrMixin)
+  Namespace(Namespace)
+  Partial(Partial)
+  Dictionary(Dictionary)
+  Enum(Enum)
+  Typedef(Typedef)
+  IncludesStatement(IncludesStatement)
+}
+pub fn Definition::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum Definitions {
+  Some(ExtendedAttributeList, Definition, Definitions)
+  None
+}
+pub fn Definitions::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
+
 pub struct Dictionary {
   identifier : StringView
   inheritance : Inheritance

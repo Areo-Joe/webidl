@@ -1478,3 +1478,75 @@ pub fn IncludesStatement::parse(input : Tokens) -> (IncludesStatement, Tokens)? 
 
   None
 }
+
+///|
+pub enum Definition {
+  CallbackOrInterfaceOrMixin(CallbackOrInterfaceOrMixin)
+  Namespace(Namespace)
+  Partial(Partial)
+  Dictionary(Dictionary)
+  Enum(Enum)
+  Typedef(Typedef)
+  IncludesStatement(IncludesStatement)
+}
+
+///|
+pub fn Definition::parse(input : Tokens) -> (Definition, Tokens)? {
+  if CallbackOrInterfaceOrMixin::parse(input)
+    is Some((callback_or_interface_or_mixin, rest)) {
+    return Some(
+      (
+        Definition::CallbackOrInterfaceOrMixin(callback_or_interface_or_mixin),
+        rest,
+      ),
+    )
+  }
+
+  if Namespace::parse(input) is Some((namespace_, rest)) {
+    return Some((Definition::Namespace(namespace_), rest))
+  }
+
+  if Partial::parse(input) is Some((partial, rest)) {
+    return Some((Definition::Partial(partial), rest))
+  }
+
+  if Dictionary::parse(input) is Some((dictionary, rest)) {
+    return Some((Definition::Dictionary(dictionary), rest))
+  }
+
+  if Enum::parse(input) is Some((enum_, rest)) {
+    return Some((Definition::Enum(enum_), rest))
+  }
+
+  if Typedef::parse(input) is Some((typedef, rest)) {
+    return Some((Definition::Typedef(typedef), rest))
+  }
+
+  if IncludesStatement::parse(input) is Some((includes_statement, rest)) {
+    return Some((Definition::IncludesStatement(includes_statement), rest))
+  }
+
+  None
+}
+
+///|
+pub enum Definitions {
+  Some(ExtendedAttributeList, Definition, Definitions)
+  None
+}
+
+///|
+pub fn Definitions::parse(input : Tokens) -> (Definitions, Tokens) {
+  if ExtendedAttributeList::parse(input)
+    is (extended_attribute_list, after_extended_attribute_list) &&
+    Definition::parse(after_extended_attribute_list)
+    is Some((definition, after_definition)) &&
+    Definitions::parse(after_definition) is (definitions, rest) {
+    return (
+      Definitions::Some(extended_attribute_list, definition, definitions),
+      rest,
+    )
+  }
+
+  (Definitions::None, input)
+}
