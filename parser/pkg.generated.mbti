@@ -64,6 +64,16 @@ pub enum ConstType {
 }
 pub fn ConstType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub enum DefaultValue {
+  ConstValue(ConstType)
+  String(StringView)
+  Brackets
+  Braces
+  Null
+  Undefined
+}
+pub fn DefaultValue::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum DistinguishableType {
   PrimitiveType(PrimitiveType, Null)
   StringType(StringType, Null)
