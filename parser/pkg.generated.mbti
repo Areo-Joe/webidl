@@ -211,6 +211,17 @@ pub enum Null {
 } derive(@debug.Debug)
 pub fn Null::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
+pub enum OperationName {
+  OperationNameKeyword(OperationNameKeyword)
+  Identifier(StringView)
+}
+pub fn OperationName::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum OperationNameKeyword {
+  Includes
+}
+pub fn OperationNameKeyword::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum OptionalLong {
   Long
   None
