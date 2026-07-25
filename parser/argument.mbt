@@ -1,6 +1,6 @@
 ///|
 pub enum DefaultValue {
-  ConstValue(ConstType)
+  ConstValue(ConstValue)
   String(StringView)
   Brackets
   Braces
@@ -10,8 +10,8 @@ pub enum DefaultValue {
 
 ///|
 pub fn DefaultValue::parse(input : Tokens) -> (DefaultValue, Tokens)? {
-  if ConstType::parse(input) is Some((const_type, rest)) {
-    return Some((DefaultValue::ConstValue(const_type), rest))
+  if ConstValue::parse(input) is Some((const_value, rest)) {
+    return Some((DefaultValue::ConstValue(const_value), rest))
   }
 
   if input is [(@lexer.TokenType::String, string), .. rest] {

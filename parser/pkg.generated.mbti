@@ -119,7 +119,7 @@ pub enum Default {
 pub fn Default::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
 pub enum DefaultValue {
-  ConstValue(ConstType)
+  ConstValue(ConstValue)
   String(StringView)
   Brackets
   Braces
