@@ -438,6 +438,18 @@ pub enum OtherOrComma {
 } derive(@debug.Debug)
 pub fn OtherOrComma::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub struct Partial {
+  partial_definition : PartialDefinition
+}
+pub fn Partial::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum PartialDefinition {
+  Interface(PartialInterfaceOrPartialMixin)
+  Dictionary(PartialDictionary)
+  Namespace(Namespace)
+}
+pub fn PartialDefinition::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub struct PartialDictionary {
   identifier : StringView
   dictionary_members : DictionaryMembers

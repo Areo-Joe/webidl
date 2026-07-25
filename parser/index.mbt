@@ -1286,3 +1286,46 @@ pub fn Namespace::parse(input : Tokens) -> (Namespace, Tokens)? {
 
   None
 }
+
+///|
+pub enum PartialDefinition {
+  Interface(PartialInterfaceOrPartialMixin)
+  Dictionary(PartialDictionary)
+  Namespace(Namespace)
+}
+
+///|
+pub fn PartialDefinition::parse(input : Tokens) -> (PartialDefinition, Tokens)? {
+  if input is [(@lexer.TokenType::Keyword, "interface"), .. after_interface] &&
+    PartialInterfaceOrPartialMixin::parse(after_interface)
+    is Some((partial_interface_or_partial_mixin, rest)) {
+    return Some(
+      (PartialDefinition::Interface(partial_interface_or_partial_mixin), rest),
+    )
+  }
+
+  if PartialDictionary::parse(input) is Some((partial_dictionary, rest)) {
+    return Some((PartialDefinition::Dictionary(partial_dictionary), rest))
+  }
+
+  if Namespace::parse(input) is Some((namespace_, rest)) {
+    return Some((PartialDefinition::Namespace(namespace_), rest))
+  }
+
+  None
+}
+
+///|
+pub struct Partial {
+  partial_definition : PartialDefinition
+}
+
+///|
+pub fn Partial::parse(input : Tokens) -> (Partial, Tokens)? {
+  if input is [(@lexer.TokenType::Keyword, "partial"), .. after_partial] &&
+    PartialDefinition::parse(after_partial) is Some((partial_definition, rest)) {
+    return Some((Partial::{ partial_definition, }, rest))
+  }
+
+  None
+}
