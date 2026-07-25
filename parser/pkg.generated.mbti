@@ -130,6 +130,12 @@ pub enum CallbackInterfaceMembers {
 }
 pub fn CallbackInterfaceMembers::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
+pub enum CallbackOrInterfaceOrMixin {
+  Callback(CallbackRestOrInterface)
+  Interface(InterfaceOrMixin)
+}
+pub fn CallbackOrInterfaceOrMixin::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub struct CallbackRest {
   identifier : StringView
   type_ : Type
@@ -320,6 +326,31 @@ pub enum IntegerType {
   Long(OptionalLong)
 }
 pub fn IntegerType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum InterfaceMember {
+  PartialInterfaceMember(PartialInterfaceMember)
+  Constructor(Constructor)
+}
+pub fn InterfaceMember::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum InterfaceMembers {
+  Some(ExtendedAttributeList, InterfaceMember, InterfaceMembers)
+  None
+}
+pub fn InterfaceMembers::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
+
+pub enum InterfaceOrMixin {
+  InterfaceRest(InterfaceRest)
+  MixinRest(MixinRest)
+}
+pub fn InterfaceOrMixin::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub struct InterfaceRest {
+  identifier : StringView
+  inheritance : Inheritance
+  interface_members : InterfaceMembers
+}
+pub fn InterfaceRest::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
 pub struct Iterable {
   type_with_extended_attributes : TypeWithExtendedAttributes

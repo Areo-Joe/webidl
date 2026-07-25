@@ -1329,3 +1329,128 @@ pub fn Partial::parse(input : Tokens) -> (Partial, Tokens)? {
 
   None
 }
+
+///|
+pub enum InterfaceMember {
+  PartialInterfaceMember(PartialInterfaceMember)
+  Constructor(Constructor)
+}
+
+///|
+pub fn InterfaceMember::parse(input : Tokens) -> (InterfaceMember, Tokens)? {
+  if PartialInterfaceMember::parse(input)
+    is Some((partial_interface_member, rest)) {
+    return Some(
+      (InterfaceMember::PartialInterfaceMember(partial_interface_member), rest),
+    )
+  }
+
+  if Constructor::parse(input) is Some((constructor_, rest)) {
+    return Some((InterfaceMember::Constructor(constructor_), rest))
+  }
+
+  None
+}
+
+///|
+pub enum InterfaceMembers {
+  Some(ExtendedAttributeList, InterfaceMember, InterfaceMembers)
+  None
+}
+
+///|
+pub fn InterfaceMembers::parse(input : Tokens) -> (InterfaceMembers, Tokens) {
+  if ExtendedAttributeList::parse(input)
+    is (extended_attribute_list, after_extended_attribute_list) &&
+    InterfaceMember::parse(after_extended_attribute_list)
+    is Some((interface_member, after_interface_member)) &&
+    InterfaceMembers::parse(after_interface_member) is (interface_members, rest) {
+    return (
+      InterfaceMembers::Some(
+        extended_attribute_list, interface_member, interface_members,
+      ),
+      rest,
+    )
+  }
+
+  (InterfaceMembers::None, input)
+}
+
+///|
+pub struct InterfaceRest {
+  identifier : StringView
+  inheritance : Inheritance
+  interface_members : InterfaceMembers
+}
+
+///|
+pub fn InterfaceRest::parse(input : Tokens) -> (InterfaceRest, Tokens)? {
+  if input is [(@lexer.TokenType::Identifier, identifier), .. after_identifier] &&
+    Inheritance::parse(after_identifier)
+    is (
+      inheritance,
+      [(@lexer.TokenType::Punctuation, "{"), .. after_interface_start],
+    ) &&
+    InterfaceMembers::parse(after_interface_start)
+    is (
+      interface_members,
+      [
+        (@lexer.TokenType::Punctuation, "}"),
+        (@lexer.TokenType::Punctuation, ";"),
+        .. rest,
+      ],
+    ) {
+    return Some(
+      (InterfaceRest::{ identifier, inheritance, interface_members }, rest),
+    )
+  }
+
+  None
+}
+
+///|
+pub enum InterfaceOrMixin {
+  InterfaceRest(InterfaceRest)
+  MixinRest(MixinRest)
+}
+
+///|
+pub fn InterfaceOrMixin::parse(input : Tokens) -> (InterfaceOrMixin, Tokens)? {
+  if InterfaceRest::parse(input) is Some((interface_rest, rest)) {
+    return Some((InterfaceOrMixin::InterfaceRest(interface_rest), rest))
+  }
+
+  if MixinRest::parse(input) is Some((mixin_rest, rest)) {
+    return Some((InterfaceOrMixin::MixinRest(mixin_rest), rest))
+  }
+
+  None
+}
+
+///|
+pub enum CallbackOrInterfaceOrMixin {
+  Callback(CallbackRestOrInterface)
+  Interface(InterfaceOrMixin)
+}
+
+///|
+pub fn CallbackOrInterfaceOrMixin::parse(
+  input : Tokens,
+) -> (CallbackOrInterfaceOrMixin, Tokens)? {
+  if input is [(@lexer.TokenType::Keyword, "callback"), .. after_callback] &&
+    CallbackRestOrInterface::parse(after_callback)
+    is Some((callback_rest_or_interface, rest)) {
+    return Some(
+      (CallbackOrInterfaceOrMixin::Callback(callback_rest_or_interface), rest),
+    )
+  }
+
+  if input is [(@lexer.TokenType::Keyword, "interface"), .. after_interface] &&
+    InterfaceOrMixin::parse(after_interface) is Some((interface_or_mixin, rest)) {
+    return Some(
+      (CallbackOrInterfaceOrMixin::Interface(interface_or_mixin), rest),
+    )
+  }
+
+  None
+}
