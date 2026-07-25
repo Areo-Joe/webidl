@@ -1177,3 +1177,33 @@ pub fn Dictionary::parse(input : Tokens) -> (Dictionary, Tokens)? {
 
   None
 }
+
+///|
+pub struct PartialDictionary {
+  identifier : StringView
+  dictionary_members : DictionaryMembers
+}
+
+///|
+pub fn PartialDictionary::parse(input : Tokens) -> (PartialDictionary, Tokens)? {
+  if input
+    is [
+      (@lexer.TokenType::Keyword, "dictionary"),
+      (@lexer.TokenType::Identifier, identifier),
+      (@lexer.TokenType::Punctuation, "{"),
+      .. after_dictionary_start,
+    ] &&
+    DictionaryMembers::parse(after_dictionary_start)
+    is (
+      dictionary_members,
+      [
+        (@lexer.TokenType::Punctuation, "}"),
+        (@lexer.TokenType::Punctuation, ";"),
+        .. rest,
+      ],
+    ) {
+    return Some((PartialDictionary::{ identifier, dictionary_members }, rest))
+  }
+
+  None
+}

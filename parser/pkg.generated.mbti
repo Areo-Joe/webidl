@@ -419,6 +419,12 @@ pub enum OtherOrComma {
 } derive(@debug.Debug)
 pub fn OtherOrComma::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub struct PartialDictionary {
+  identifier : StringView
+  dictionary_members : DictionaryMembers
+}
+pub fn PartialDictionary::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum PartialInterfaceMember {
   Const(Const)
   Operation(Operation)
