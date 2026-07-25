@@ -521,3 +521,18 @@ pub fn StaticMemberRest::parse(input : Tokens) -> (StaticMemberRest, Tokens)? {
 
   None
 }
+
+///|
+pub struct StaticMember {
+  static_member_rest : StaticMemberRest
+}
+
+///|
+pub fn StaticMember::parse(input : Tokens) -> (StaticMember, Tokens)? {
+  if input is [(@lexer.TokenType::Keyword, "static"), .. after_static] &&
+    StaticMemberRest::parse(after_static) is Some((static_member_rest, rest)) {
+    return Some((StaticMember::{ static_member_rest, }, rest))
+  }
+
+  None
+}

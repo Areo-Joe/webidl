@@ -389,6 +389,11 @@ pub struct SpecialOperation {
 }
 pub fn SpecialOperation::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub struct StaticMember {
+  static_member_rest : StaticMemberRest
+}
+pub fn StaticMember::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum StaticMemberRest {
   Attribute(OptionalReadOnly, AttributeRest)
   RegularOperation(RegularOperation)
