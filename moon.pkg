@@ -1,1 +1,4 @@
-
+import {
+  "Areo-Joe/webidl/lexer",
+  "Areo-Joe/webidl/parser",
+}

@@ -1,7 +1,12 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "Areo-Joe/webidl"
 
+import {
+  "Areo-Joe/webidl/parser",
+}
+
 // Values
+pub fn parse(StringView) -> @parser.Definitions raise
 
 // Errors
 

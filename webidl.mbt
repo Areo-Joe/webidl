@@ -1,3 +1,8 @@
-// Main package file for your library code.
-// Put public APIs and shared helpers here.
-// Keep blocks small and focused for easy refactors.
+///|
+pub fn parse(source : StringView) -> @parser.Definitions raise {
+  let tokens = @lexer.tokenize(source)
+  match @parser.parse(tokens.view()) {
+    (definitions, []) => definitions
+    _ => fail("invalid Web IDL")
+  }
+}
