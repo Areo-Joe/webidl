@@ -59,6 +59,22 @@ pub fn AttributeRest::parse(input : Tokens) -> (AttributeRest, Tokens)? {
 }
 
 ///|
+pub struct ReadWriteAttribute {
+  attribute_rest : AttributeRest
+}
+
+///|
+pub fn ReadWriteAttribute::parse(
+  input : Tokens,
+) -> (ReadWriteAttribute, Tokens)? {
+  if AttributeRest::parse(input) is Some((attribute_rest, rest)) {
+    return Some((ReadWriteAttribute::{ attribute_rest, }, rest))
+  }
+
+  return None
+}
+
+///|
 pub struct InheritAttribute {
   attribute_rest : AttributeRest
 }

@@ -346,6 +346,11 @@ pub struct PromiseType {
 }
 pub fn PromiseType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub struct ReadWriteAttribute {
+  attribute_rest : AttributeRest
+}
+pub fn ReadWriteAttribute::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub struct RecordType {
   string_type : StringType
   type_with_extended_attributes : TypeWithExtendedAttributes
