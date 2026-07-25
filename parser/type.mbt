@@ -120,3 +120,29 @@ pub fn FloatType::parse(
     _ => None
   }
 }
+
+///|
+pub enum UnrestrictedFloatType {
+  UnrestrictedFloatType(FloatType)
+  FloatType(FloatType)
+}
+
+///|
+pub fn UnrestrictedFloatType::parse(
+  input : ArrayView[(@lexer.TokenType, StringView)],
+) -> (UnrestrictedFloatType, ArrayView[(@lexer.TokenType, StringView)])? {
+  match input {
+    [(@lexer.TokenType::Keyword, "unrestricted"), .. after_unrestricted] => {
+      guard FloatType::parse(after_unrestricted) is Some((float_type, rest)) else {
+        None
+      }
+
+      Some((UnrestrictedFloatType::UnrestrictedFloatType(float_type), rest))
+    }
+    _ => {
+      guard FloatType::parse(input) is Some((float_type, rest)) else { None }
+
+      Some((UnrestrictedFloatType::FloatType(float_type), rest))
+    }
+  }
+}
