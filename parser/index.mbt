@@ -497,3 +497,27 @@ pub fn OptionalReadOnly::parse(input : Tokens) -> (OptionalReadOnly, Tokens) {
   }
   return (OptionalReadOnly::None, input)
 }
+
+///|
+pub enum StaticMemberRest {
+  Attribute(OptionalReadOnly, AttributeRest)
+  RegularOperation(RegularOperation)
+}
+
+///|
+pub fn StaticMemberRest::parse(input : Tokens) -> (StaticMemberRest, Tokens)? {
+  if OptionalReadOnly::parse(input)
+    is (optional_read_only, after_optional_read_only) &&
+    AttributeRest::parse(after_optional_read_only)
+    is Some((attribute_rest, rest)) {
+    return Some(
+      (StaticMemberRest::Attribute(optional_read_only, attribute_rest), rest),
+    )
+  }
+
+  if RegularOperation::parse(input) is Some((regular_operation, rest)) {
+    return Some((StaticMemberRest::RegularOperation(regular_operation), rest))
+  }
+
+  None
+}
