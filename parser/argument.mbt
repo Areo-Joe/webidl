@@ -62,3 +62,92 @@ pub fn Default::parse(input : Tokens) -> (Default, Tokens) {
 
   (Default::None, input)
 }
+
+///|
+pub enum ArgumentNameKeyword {
+  Attribute
+  Callback
+  Const
+  Constructor
+  Deleter
+  Dictionary
+  Enum
+  Getter
+  Includes
+  Inherit
+  Interface
+  Iterable
+  Maplike
+  Mixin
+  Namespace
+  Partial
+  Readonly
+  Required
+  Setlike
+  Setter
+  Static
+  Stringifier
+  Typedef
+  Unrestricted
+} derive(Debug)
+
+///|
+pub fn ArgumentNameKeyword::parse(
+  input : Tokens,
+) -> (ArgumentNameKeyword, Tokens)? {
+  match input {
+    [first, .. rest] =>
+      match first {
+        (@lexer.TokenType::Keyword, "attribute") =>
+          Some((ArgumentNameKeyword::Attribute, rest))
+        (@lexer.TokenType::Keyword, "callback") =>
+          Some((ArgumentNameKeyword::Callback, rest))
+        (@lexer.TokenType::Keyword, "const") =>
+          Some((ArgumentNameKeyword::Const, rest))
+        (@lexer.TokenType::Keyword, "constructor") =>
+          Some((ArgumentNameKeyword::Constructor, rest))
+        (@lexer.TokenType::Keyword, "deleter") =>
+          Some((ArgumentNameKeyword::Deleter, rest))
+        (@lexer.TokenType::Keyword, "dictionary") =>
+          Some((ArgumentNameKeyword::Dictionary, rest))
+        (@lexer.TokenType::Keyword, "enum") =>
+          Some((ArgumentNameKeyword::Enum, rest))
+        (@lexer.TokenType::Keyword, "getter") =>
+          Some((ArgumentNameKeyword::Getter, rest))
+        (@lexer.TokenType::Keyword, "includes") =>
+          Some((ArgumentNameKeyword::Includes, rest))
+        (@lexer.TokenType::Keyword, "inherit") =>
+          Some((ArgumentNameKeyword::Inherit, rest))
+        (@lexer.TokenType::Keyword, "interface") =>
+          Some((ArgumentNameKeyword::Interface, rest))
+        (@lexer.TokenType::Keyword, "iterable") =>
+          Some((ArgumentNameKeyword::Iterable, rest))
+        (@lexer.TokenType::Keyword, "maplike") =>
+          Some((ArgumentNameKeyword::Maplike, rest))
+        (@lexer.TokenType::Keyword, "mixin") =>
+          Some((ArgumentNameKeyword::Mixin, rest))
+        (@lexer.TokenType::Keyword, "namespace") =>
+          Some((ArgumentNameKeyword::Namespace, rest))
+        (@lexer.TokenType::Keyword, "partial") =>
+          Some((ArgumentNameKeyword::Partial, rest))
+        (@lexer.TokenType::Keyword, "readonly") =>
+          Some((ArgumentNameKeyword::Readonly, rest))
+        (@lexer.TokenType::Keyword, "required") =>
+          Some((ArgumentNameKeyword::Required, rest))
+        (@lexer.TokenType::Keyword, "setlike") =>
+          Some((ArgumentNameKeyword::Setlike, rest))
+        (@lexer.TokenType::Keyword, "setter") =>
+          Some((ArgumentNameKeyword::Setter, rest))
+        (@lexer.TokenType::Keyword, "static") =>
+          Some((ArgumentNameKeyword::Static, rest))
+        (@lexer.TokenType::Keyword, "stringifier") =>
+          Some((ArgumentNameKeyword::Stringifier, rest))
+        (@lexer.TokenType::Keyword, "typedef") =>
+          Some((ArgumentNameKeyword::Typedef, rest))
+        (@lexer.TokenType::Keyword, "unrestricted") =>
+          Some((ArgumentNameKeyword::Unrestricted, rest))
+        _ => None
+      }
+    _ => None
+  }
+}
