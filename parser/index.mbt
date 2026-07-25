@@ -780,3 +780,79 @@ pub fn ReadWriteSetlike::parse(input : Tokens) -> (ReadWriteSetlike, Tokens)? {
 
   None
 }
+
+///|
+pub enum PartialInterfaceMember {
+  Const(Const)
+  Operation(Operation)
+  Stringifier(Stringifier)
+  StaticMember(StaticMember)
+  Iterable(Iterable)
+  AsyncIterable(AsyncIterable)
+  ReadOnlyMember(ReadOnlyMember)
+  ReadWriteAttribute(ReadWriteAttribute)
+  ReadWriteMaplike(ReadWriteMaplike)
+  ReadWriteSetlike(ReadWriteSetlike)
+  InheritAttribute(InheritAttribute)
+}
+
+///|
+pub fn PartialInterfaceMember::parse(
+  input : Tokens,
+) -> (PartialInterfaceMember, Tokens)? {
+  if Const::parse(input) is Some((const_, rest)) {
+    return Some((PartialInterfaceMember::Const(const_), rest))
+  }
+
+  if Operation::parse(input) is Some((operation, rest)) {
+    return Some((PartialInterfaceMember::Operation(operation), rest))
+  }
+
+  if Stringifier::parse(input) is Some((stringifier, rest)) {
+    return Some((PartialInterfaceMember::Stringifier(stringifier), rest))
+  }
+
+  if StaticMember::parse(input) is Some((static_member, rest)) {
+    return Some((PartialInterfaceMember::StaticMember(static_member), rest))
+  }
+
+  if Iterable::parse(input) is Some((iterable, rest)) {
+    return Some((PartialInterfaceMember::Iterable(iterable), rest))
+  }
+
+  if AsyncIterable::parse(input) is Some((async_iterable, rest)) {
+    return Some((PartialInterfaceMember::AsyncIterable(async_iterable), rest))
+  }
+
+  if ReadOnlyMember::parse(input) is Some((read_only_member, rest)) {
+    return Some(
+      (PartialInterfaceMember::ReadOnlyMember(read_only_member), rest),
+    )
+  }
+
+  if ReadWriteAttribute::parse(input) is Some((read_write_attribute, rest)) {
+    return Some(
+      (PartialInterfaceMember::ReadWriteAttribute(read_write_attribute), rest),
+    )
+  }
+
+  if ReadWriteMaplike::parse(input) is Some((read_write_maplike, rest)) {
+    return Some(
+      (PartialInterfaceMember::ReadWriteMaplike(read_write_maplike), rest),
+    )
+  }
+
+  if ReadWriteSetlike::parse(input) is Some((read_write_setlike, rest)) {
+    return Some(
+      (PartialInterfaceMember::ReadWriteSetlike(read_write_setlike), rest),
+    )
+  }
+
+  if InheritAttribute::parse(input) is Some((inherit_attribute, rest)) {
+    return Some(
+      (PartialInterfaceMember::InheritAttribute(inherit_attribute), rest),
+    )
+  }
+
+  None
+}

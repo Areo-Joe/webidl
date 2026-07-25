@@ -368,6 +368,21 @@ pub enum OtherOrComma {
 } derive(@debug.Debug)
 pub fn OtherOrComma::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub enum PartialInterfaceMember {
+  Const(Const)
+  Operation(Operation)
+  Stringifier(Stringifier)
+  StaticMember(StaticMember)
+  Iterable(Iterable)
+  AsyncIterable(AsyncIterable)
+  ReadOnlyMember(ReadOnlyMember)
+  ReadWriteAttribute(ReadWriteAttribute)
+  ReadWriteMaplike(ReadWriteMaplike)
+  ReadWriteSetlike(ReadWriteSetlike)
+  InheritAttribute(InheritAttribute)
+}
+pub fn PartialInterfaceMember::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum PrimitiveType {
   UnsignedIntegerType(UnsignedIntegerType)
   UnrestrictedFloatType(UnrestrictedFloatType)
