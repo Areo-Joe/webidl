@@ -275,3 +275,24 @@ pub fn ArgumentList::parse(input : Tokens) -> (ArgumentList, Tokens) {
 
   return (ArgumentList::None, input)
 }
+
+///|
+pub enum BooleanLiteral {
+  True
+  False
+}
+
+///|
+pub fn BooleanLiteral::parse(input : Tokens) -> (BooleanLiteral, Tokens)? {
+  match input {
+    [first, .. rest] =>
+      match first {
+        (@lexer.TokenType::Keyword, "true") =>
+          Some((BooleanLiteral::True, rest))
+        (@lexer.TokenType::Keyword, "false") =>
+          Some((BooleanLiteral::False, rest))
+        _ => None
+      }
+    _ => None
+  }
+}
