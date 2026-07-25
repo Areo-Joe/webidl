@@ -222,6 +222,25 @@ pub struct TypeWithExtendedAttributes {
 }
 pub fn TypeWithExtendedAttributes::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub enum UnionMemberType {
+  UnionType(UnionType, Null)
+  DistinguishableTypeWithExtendedAttributeList(DistinguishableType, ExtendedAttributeList)
+}
+pub fn UnionMemberType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum UnionMemberTypes {
+  Some(UnionMemberType, UnionMemberTypes)
+  None
+}
+pub fn UnionMemberTypes::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
+
+pub struct UnionType {
+  first_union_member_type : UnionMemberType
+  second_union_member_type : UnionMemberType
+  union_member_types : UnionMemberTypes
+}
+pub fn UnionType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum UnrestrictedFloatType {
   UnrestrictedFloatType(FloatType)
   FloatType(FloatType)

@@ -481,3 +481,103 @@ pub fn BufferRelatedType::parse(
     _ => None
   }
 }
+
+///|
+pub struct UnionType {
+  first_union_member_type : UnionMemberType
+  second_union_member_type : UnionMemberType
+  union_member_types : UnionMemberTypes
+}
+
+///|
+pub enum UnionMemberType {
+  UnionType(UnionType, Null)
+  DistinguishableTypeWithExtendedAttributeList(
+    DistinguishableType,
+    ExtendedAttributeList
+  )
+}
+
+///|
+pub enum UnionMemberTypes {
+  Some(UnionMemberType, UnionMemberTypes)
+  None
+}
+
+///|
+pub fn UnionMemberTypes::parse(
+  input : ArrayView[(@lexer.TokenType, StringView)],
+) -> (UnionMemberTypes, ArrayView[(@lexer.TokenType, StringView)]) {
+  if input is [(@lexer.TokenType::Keyword, "or"), .. after_or] &&
+    UnionMemberType::parse(after_or)
+    is Some((union_member_type, after_union_member_type)) &&
+    UnionMemberTypes::parse(after_union_member_type)
+    is (union_member_types, rest) {
+    (UnionMemberTypes::Some(union_member_type, union_member_types), rest)
+  } else {
+    (UnionMemberTypes::None, input)
+  }
+}
+
+///|
+pub fn UnionMemberType::parse(
+  input : ArrayView[(@lexer.TokenType, StringView)],
+) -> (UnionMemberType, ArrayView[(@lexer.TokenType, StringView)])? {
+  if ExtendedAttributeList::parse(input)
+    is (extended_attribute_list, after_extended_attribute_list) &&
+    DistinguishableType::parse(after_extended_attribute_list)
+    is Some((distinguishable_type, rest)) {
+    return Some(
+      (
+        UnionMemberType::DistinguishableTypeWithExtendedAttributeList(
+          distinguishable_type, extended_attribute_list,
+        ),
+        rest,
+      ),
+    )
+  }
+
+  if UnionType::parse(input) is Some((union_type, after_union_type)) &&
+    Null::parse(after_union_type) is (null, rest) {
+    return Some((UnionMemberType::UnionType(union_type, null), rest))
+  }
+
+  return None
+}
+
+///|
+pub fn UnionType::parse(
+  input : ArrayView[(@lexer.TokenType, StringView)],
+) -> (UnionType, ArrayView[(@lexer.TokenType, StringView)])? {
+  if input is [(@lexer.TokenType::Punctuation, "("), .. after_parentheses_start] &&
+    UnionMemberType::parse(after_parentheses_start)
+    is Some(
+      (first_union_member_type, [(@lexer.TokenType::Keyword, "or"), .. after_or]
+      )
+    ) &&
+    UnionMemberType::parse(after_or)
+    is Some(
+      (
+        second_union_member_type,
+        [
+          (@lexer.TokenType::Punctuation, ")"),
+          .. after_second_union_member_type,
+        ],
+      )
+    ) &&
+    UnionMemberTypes::parse(after_second_union_member_type)
+    is (union_member_types, [(@lexer.TokenType::Punctuation, ")"), .. rest]) {
+    return Some(
+      (
+        UnionType::{
+          first_union_member_type,
+          second_union_member_type,
+          union_member_types,
+        },
+        rest,
+      ),
+    )
+  }
+
+  None
+}
