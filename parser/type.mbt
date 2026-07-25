@@ -101,3 +101,22 @@ pub fn UnsignedIntegerType::parse(
     }
   }
 }
+
+///|
+pub enum FloatType {
+  Float
+  Double
+}
+
+///|
+pub fn FloatType::parse(
+  input : ArrayView[(@lexer.TokenType, StringView)],
+) -> (FloatType, ArrayView[(@lexer.TokenType, StringView)])? {
+  match input {
+    [(@lexer.TokenType::Keyword, "float"), .. rest] =>
+      Some((FloatType::Float, rest))
+    [(@lexer.TokenType::Keyword, "double"), .. rest] =>
+      Some((FloatType::Double, rest))
+    _ => None
+  }
+}
