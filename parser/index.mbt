@@ -752,3 +752,17 @@ pub fn ReadOnlyMember::parse(input : Tokens) -> (ReadOnlyMember, Tokens)? {
 
   None
 }
+
+///|
+pub struct ReadWriteMaplike {
+  maplike_rest : MaplikeRest
+}
+
+///|
+pub fn ReadWriteMaplike::parse(input : Tokens) -> (ReadWriteMaplike, Tokens)? {
+  if MaplikeRest::parse(input) is Some((maplike_rest, rest)) {
+    return Some((ReadWriteMaplike::{ maplike_rest, }, rest))
+  }
+
+  None
+}
