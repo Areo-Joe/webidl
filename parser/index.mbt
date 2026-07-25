@@ -483,3 +483,17 @@ pub fn Const::parse(input : Tokens) -> (Const, Tokens)? {
 
   return None
 }
+
+///|
+pub enum OptionalReadOnly {
+  ReadOnly
+  None
+} derive(Debug)
+
+///|
+pub fn OptionalReadOnly::parse(input : Tokens) -> (OptionalReadOnly, Tokens) {
+  if input is [(@lexer.TokenType::Keyword, "readonly"), .. rest] {
+    return (OptionalReadOnly::ReadOnly, rest)
+  }
+  return (OptionalReadOnly::None, input)
+}
