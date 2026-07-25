@@ -13,6 +13,11 @@ struct WptFile {
 }
 
 ///|
+fn exclude_wpt_idl(name : StringView) -> Bool {
+  name is "webrtc-ice.idl" || name is "mediacapture-surface-control.idl"
+}
+
+///|
 async fn fetch_text(url : String) -> String {
   let (response, body) = @http.get(url)
   if response.code != 200 {
@@ -34,7 +39,9 @@ async fn fetch_wpt_idl_files() -> Array[WptFile] {
       remaining = link.after()
       continue
     }
-    files.push(WptFile::{ name: name.to_owned() })
+    if !exclude_wpt_idl(name) {
+      files.push(WptFile::{ name: name.to_owned() })
+    }
     remaining = link.after()
   }
   files.sort_by((a, b) => a.name.compare(b.name))
@@ -85,6 +92,8 @@ fn generate_readme(count : Int) -> String {
     $|
     $|- Source: https://wpt.live/interfaces/
     $|- Files: \{count}, including *.tentative.idl
+    $|- Excluded: webrtc-ice.idl and mediacapture-surface-control.idl because
+    $|  they contain constructors in partial interfaces, which Web IDL forbids.
     $|
     $|Run moon run cmd/build_idl_tests to replace the fixtures from WPT Live
     $|and regenerate parser/wpt_generated_test.mbt.

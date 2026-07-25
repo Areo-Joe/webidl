@@ -394,11 +394,6 @@ async test "WPT: video-rvfc.idl" {
 }
 
 ///|
-async test "WPT: webrtc-ice.idl" {
-  parse_wpt_idl_fixture("webrtc-ice.idl")
-}
-
-///|
 async test "WPT: webrtc-svc.idl" {
   parse_wpt_idl_fixture("webrtc-svc.idl")
 }
@@ -1571,11 +1566,6 @@ async test "WPT: WEBGL_compressed_texture_etc.idl" {
 ///|
 async test "WPT: html-menu-elements.tentative.idl" {
   parse_wpt_idl_fixture("html-menu-elements.tentative.idl")
-}
-
-///|
-async test "WPT: mediacapture-surface-control.idl" {
-  parse_wpt_idl_fixture("mediacapture-surface-control.idl")
 }
 
 ///|
