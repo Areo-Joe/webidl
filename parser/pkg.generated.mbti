@@ -383,6 +383,18 @@ pub struct PromiseType {
 }
 pub fn PromiseType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub struct ReadOnlyMember {
+  read_only_member_rest : ReadOnlyMemberRest
+}
+pub fn ReadOnlyMember::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum ReadOnlyMemberRest {
+  Attribute(AttributeRest)
+  Maplike(MaplikeRest)
+  Setlike(SetlikeRest)
+}
+pub fn ReadOnlyMemberRest::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub struct ReadWriteAttribute {
   attribute_rest : AttributeRest
 }

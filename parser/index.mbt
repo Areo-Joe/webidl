@@ -710,3 +710,45 @@ pub fn SetlikeRest::parse(input : Tokens) -> (SetlikeRest, Tokens)? {
 
   None
 }
+
+///|
+pub enum ReadOnlyMemberRest {
+  Attribute(AttributeRest)
+  Maplike(MaplikeRest)
+  Setlike(SetlikeRest)
+}
+
+///|
+pub fn ReadOnlyMemberRest::parse(
+  input : Tokens,
+) -> (ReadOnlyMemberRest, Tokens)? {
+  if AttributeRest::parse(input) is Some((attribute_rest, rest)) {
+    return Some((ReadOnlyMemberRest::Attribute(attribute_rest), rest))
+  }
+
+  if MaplikeRest::parse(input) is Some((maplike_rest, rest)) {
+    return Some((ReadOnlyMemberRest::Maplike(maplike_rest), rest))
+  }
+
+  if SetlikeRest::parse(input) is Some((setlike_rest, rest)) {
+    return Some((ReadOnlyMemberRest::Setlike(setlike_rest), rest))
+  }
+
+  None
+}
+
+///|
+pub struct ReadOnlyMember {
+  read_only_member_rest : ReadOnlyMemberRest
+}
+
+///|
+pub fn ReadOnlyMember::parse(input : Tokens) -> (ReadOnlyMember, Tokens)? {
+  if input is [(@lexer.TokenType::Keyword, "readonly"), .. after_readonly] &&
+    ReadOnlyMemberRest::parse(after_readonly)
+    is Some((read_only_member_rest, rest)) {
+    return Some((ReadOnlyMember::{ read_only_member_rest, }, rest))
+  }
+
+  None
+}
