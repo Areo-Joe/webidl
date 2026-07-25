@@ -337,6 +337,12 @@ pub enum Special {
 }
 pub fn Special::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub struct SpecialOperation {
+  special : Special
+  regular_operation : RegularOperation
+}
+pub fn SpecialOperation::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum StringType {
   ByteString
   DOMString
