@@ -304,6 +304,25 @@ pub struct MixinRest {
 }
 pub fn MixinRest::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub struct Namespace {
+  identifier : StringView
+  namespace_members : NamespaceMembers
+}
+pub fn Namespace::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum NamespaceMember {
+  RegularOperation(RegularOperation)
+  ReadOnlyAttribute(AttributeRest)
+  Const(Const)
+}
+pub fn NamespaceMember::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum NamespaceMembers {
+  Some(ExtendedAttributeList, NamespaceMember, NamespaceMembers)
+  None
+}
+pub fn NamespaceMembers::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
+
 pub enum Null {
   Some
   None

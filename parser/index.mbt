@@ -1207,3 +1207,82 @@ pub fn PartialDictionary::parse(input : Tokens) -> (PartialDictionary, Tokens)? 
 
   None
 }
+
+///|
+pub enum NamespaceMember {
+  RegularOperation(RegularOperation)
+  ReadOnlyAttribute(AttributeRest)
+  Const(Const)
+}
+
+///|
+pub fn NamespaceMember::parse(input : Tokens) -> (NamespaceMember, Tokens)? {
+  if RegularOperation::parse(input) is Some((regular_operation, rest)) {
+    return Some((NamespaceMember::RegularOperation(regular_operation), rest))
+  }
+
+  if input is [(@lexer.TokenType::Keyword, "readonly"), .. after_readonly] &&
+    AttributeRest::parse(after_readonly) is Some((attribute_rest, rest)) {
+    return Some((NamespaceMember::ReadOnlyAttribute(attribute_rest), rest))
+  }
+
+  if Const::parse(input) is Some((const_, rest)) {
+    return Some((NamespaceMember::Const(const_), rest))
+  }
+
+  None
+}
+
+///|
+pub enum NamespaceMembers {
+  Some(ExtendedAttributeList, NamespaceMember, NamespaceMembers)
+  None
+}
+
+///|
+pub fn NamespaceMembers::parse(input : Tokens) -> (NamespaceMembers, Tokens) {
+  if ExtendedAttributeList::parse(input)
+    is (extended_attribute_list, after_extended_attribute_list) &&
+    NamespaceMember::parse(after_extended_attribute_list)
+    is Some((namespace_member, after_namespace_member)) &&
+    NamespaceMembers::parse(after_namespace_member) is (namespace_members, rest) {
+    return (
+      NamespaceMembers::Some(
+        extended_attribute_list, namespace_member, namespace_members,
+      ),
+      rest,
+    )
+  }
+
+  (NamespaceMembers::None, input)
+}
+
+///|
+pub struct Namespace {
+  identifier : StringView
+  namespace_members : NamespaceMembers
+}
+
+///|
+pub fn Namespace::parse(input : Tokens) -> (Namespace, Tokens)? {
+  if input
+    is [
+      (@lexer.TokenType::Keyword, "namespace"),
+      (@lexer.TokenType::Identifier, identifier),
+      (@lexer.TokenType::Punctuation, "{"),
+      .. after_namespace_start,
+    ] &&
+    NamespaceMembers::parse(after_namespace_start)
+    is (
+      namespace_members,
+      [
+        (@lexer.TokenType::Punctuation, "}"),
+        (@lexer.TokenType::Punctuation, ";"),
+        .. rest,
+      ],
+    ) {
+    return Some((Namespace::{ identifier, namespace_members }, rest))
+  }
+
+  None
+}
