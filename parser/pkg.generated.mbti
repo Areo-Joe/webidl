@@ -69,6 +69,11 @@ pub enum Arguments {
 }
 pub fn Arguments::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
+pub enum AttributeNameKeyword {
+  Required
+}
+pub fn AttributeNameKeyword::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum BooleanLiteral {
   True
   False
