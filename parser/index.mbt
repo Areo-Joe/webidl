@@ -1,4 +1,132 @@
 ///|
+pub enum Other {
+  Integer(StringView)
+  Decimal(StringView)
+  Identifier(StringView)
+  String(StringView)
+  Other(StringView)
+  Minus
+  NegativeInfinity
+  Dot
+  Ellipsis
+  Colon
+  Semicolon
+  LessThan
+  Equal
+  GreaterThan
+  QuestionMark
+  Asterisk
+  ByteString
+  DOMString
+  FrozenArray
+  Infinity
+  NaN
+  ObservableArray
+  Promise
+  USVString
+  Any
+  Bigint
+  Boolean
+  Byte
+  Double
+  False
+  Float
+  Long
+  Null
+  Object
+  Octet
+  Or
+  Optional
+  Record
+  Sequence
+  Short
+  Symbol
+  True
+  Unsigned
+  Undefined
+  ArgumentNameKeyword(ArgumentNameKeyword)
+  BufferRelatedType(BufferRelatedType)
+}
+
+///|
+pub fn Other::parse(
+  input : ArrayView[(@lexer.TokenType, StringView)],
+) -> (Other, ArrayView[(@lexer.TokenType, StringView)])? {
+  match input {
+    [first, .. rest] =>
+      match first {
+        (@lexer.TokenType::Integer, inner) =>
+          Some((Other::Integer(inner), rest))
+        (@lexer.TokenType::Decimal, inner) =>
+          Some((Other::Decimal(inner), rest))
+        (@lexer.TokenType::Identifier, inner) =>
+          Some((Other::Identifier(inner), rest))
+        (@lexer.TokenType::Other, inner) => Some((Other::Other(inner), rest))
+        (@lexer.TokenType::String, inner) => Some((Other::String(inner), rest))
+        (@lexer.TokenType::Punctuation, "-") => Some((Other::Minus, rest))
+        (@lexer.TokenType::Keyword, "-Infinity") =>
+          Some((Other::NegativeInfinity, rest))
+        (@lexer.TokenType::Punctuation, ".") => Some((Other::Dot, rest))
+        (@lexer.TokenType::Punctuation, "...") => Some((Other::Ellipsis, rest))
+        (@lexer.TokenType::Punctuation, ":") => Some((Other::Colon, rest))
+        (@lexer.TokenType::Punctuation, ";") => Some((Other::Semicolon, rest))
+        (@lexer.TokenType::Punctuation, "<") => Some((Other::LessThan, rest))
+        (@lexer.TokenType::Punctuation, "=") => Some((Other::Equal, rest))
+        (@lexer.TokenType::Punctuation, ">") => Some((Other::GreaterThan, rest))
+        (@lexer.TokenType::Punctuation, "?") =>
+          Some((Other::QuestionMark, rest))
+        (@lexer.TokenType::Punctuation, "*") => Some((Other::Asterisk, rest))
+        (@lexer.TokenType::Keyword, "ByteString") =>
+          Some((Other::ByteString, rest))
+        (@lexer.TokenType::Keyword, "DOMString") =>
+          Some((Other::DOMString, rest))
+        (@lexer.TokenType::Keyword, "FrozenArray") =>
+          Some((Other::FrozenArray, rest))
+        (@lexer.TokenType::Keyword, "Infinity") => Some((Other::Infinity, rest))
+        (@lexer.TokenType::Keyword, "NaN") => Some((Other::NaN, rest))
+        (@lexer.TokenType::Keyword, "ObservableArray") =>
+          Some((Other::ObservableArray, rest))
+        (@lexer.TokenType::Keyword, "Promise") => Some((Other::Promise, rest))
+        (@lexer.TokenType::Keyword, "USVString") =>
+          Some((Other::USVString, rest))
+        (@lexer.TokenType::Keyword, "any") => Some((Other::Any, rest))
+        (@lexer.TokenType::Keyword, "bigint") => Some((Other::Bigint, rest))
+        (@lexer.TokenType::Keyword, "boolean") => Some((Other::Boolean, rest))
+        (@lexer.TokenType::Keyword, "byte") => Some((Other::Byte, rest))
+        (@lexer.TokenType::Keyword, "double") => Some((Other::Double, rest))
+        (@lexer.TokenType::Keyword, "false") => Some((Other::False, rest))
+        (@lexer.TokenType::Keyword, "float") => Some((Other::Float, rest))
+        (@lexer.TokenType::Keyword, "long") => Some((Other::Long, rest))
+        (@lexer.TokenType::Keyword, "null") => Some((Other::Null, rest))
+        (@lexer.TokenType::Keyword, "object") => Some((Other::Object, rest))
+        (@lexer.TokenType::Keyword, "octet") => Some((Other::Octet, rest))
+        (@lexer.TokenType::Keyword, "or") => Some((Other::Or, rest))
+        (@lexer.TokenType::Keyword, "optional") => Some((Other::Optional, rest))
+        (@lexer.TokenType::Keyword, "record") => Some((Other::Record, rest))
+        (@lexer.TokenType::Keyword, "sequence") => Some((Other::Sequence, rest))
+        (@lexer.TokenType::Keyword, "short") => Some((Other::Short, rest))
+        (@lexer.TokenType::Keyword, "symbol") => Some((Other::Symbol, rest))
+        (@lexer.TokenType::Keyword, "true") => Some((Other::True, rest))
+        (@lexer.TokenType::Keyword, "unsigned") => Some((Other::Unsigned, rest))
+        (@lexer.TokenType::Keyword, "undefined") =>
+          Some((Other::Undefined, rest))
+        _ => {
+          guard ArgumentNameKeyword::parse(input)
+            is Some((argument_name_keyword, rest)) else {
+            guard BufferRelatedType::parse(input)
+              is Some((buffer_related_type, rest)) else {
+              return None
+            }
+            return Some((Other::BufferRelatedType(buffer_related_type), rest))
+          }
+          return Some((Other::ArgumentNameKeyword(argument_name_keyword), rest))
+        }
+      }
+    _ => None
+  }
+}
+
+///|
 pub enum ArgumentNameKeyword {
   Attribute
   Callback

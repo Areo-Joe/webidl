@@ -57,6 +57,56 @@ pub enum BufferRelatedType {
 }
 pub fn BufferRelatedType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub enum Other {
+  Integer(StringView)
+  Decimal(StringView)
+  Identifier(StringView)
+  String(StringView)
+  Other(StringView)
+  Minus
+  NegativeInfinity
+  Dot
+  Ellipsis
+  Colon
+  Semicolon
+  LessThan
+  Equal
+  GreaterThan
+  QuestionMark
+  Asterisk
+  ByteString
+  DOMString
+  FrozenArray
+  Infinity
+  NaN
+  ObservableArray
+  Promise
+  USVString
+  Any
+  Bigint
+  Boolean
+  Byte
+  Double
+  False
+  Float
+  Long
+  Null
+  Object
+  Octet
+  Or
+  Optional
+  Record
+  Sequence
+  Short
+  Symbol
+  True
+  Unsigned
+  Undefined
+  ArgumentNameKeyword(ArgumentNameKeyword)
+  BufferRelatedType(BufferRelatedType)
+}
+pub fn Other::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 // Type aliases
 
 // Traits
