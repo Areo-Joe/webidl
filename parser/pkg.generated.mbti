@@ -100,6 +100,13 @@ pub enum ConstType {
 }
 pub fn ConstType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub enum ConstValue {
+  BooleanLiteral(BooleanLiteral)
+  FloatLiteral(FloatLiteral)
+  Integer(StringView)
+}
+pub fn ConstValue::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub struct Constructor {
   argument_list : ArgumentList
 }

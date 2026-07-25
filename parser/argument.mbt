@@ -325,3 +325,27 @@ pub fn FloatLiteral::parse(input : Tokens) -> (FloatLiteral, Tokens)? {
 
   None
 }
+
+///|
+pub enum ConstValue {
+  BooleanLiteral(BooleanLiteral)
+  FloatLiteral(FloatLiteral)
+  Integer(StringView)
+}
+
+///|
+pub fn ConstValue::parse(input : Tokens) -> (ConstValue, Tokens)? {
+  if BooleanLiteral::parse(input) is Some((boolean_literal, rest)) {
+    return Some((ConstValue::BooleanLiteral(boolean_literal), rest))
+  }
+
+  if FloatLiteral::parse(input) is Some((float_literal, rest)) {
+    return Some((ConstValue::FloatLiteral(float_literal), rest))
+  }
+
+  if input is [(@lexer.TokenType::Integer, integer), .. rest] {
+    return Some((ConstValue::Integer(integer), rest))
+  }
+
+  None
+}
