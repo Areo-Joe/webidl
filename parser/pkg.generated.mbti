@@ -261,6 +261,18 @@ pub enum MixinMember {
 }
 pub fn MixinMember::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub enum MixinMembers {
+  Some(ExtendedAttributeList, MixinMember, MixinMembers)
+  None
+}
+pub fn MixinMembers::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
+
+pub struct MixinRest {
+  identifier : StringView
+  mixin_members : MixinMembers
+}
+pub fn MixinRest::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum Null {
   Some
   None

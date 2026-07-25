@@ -950,3 +950,55 @@ pub fn MixinMember::parse(input : Tokens) -> (MixinMember, Tokens)? {
 
   None
 }
+
+///|
+pub enum MixinMembers {
+  Some(ExtendedAttributeList, MixinMember, MixinMembers)
+  None
+}
+
+///|
+pub fn MixinMembers::parse(input : Tokens) -> (MixinMembers, Tokens) {
+  if ExtendedAttributeList::parse(input)
+    is (extended_attribute_list, after_extended_attribute_list) &&
+    MixinMember::parse(after_extended_attribute_list)
+    is Some((mixin_member, after_mixin_member)) &&
+    MixinMembers::parse(after_mixin_member) is (mixin_members, rest) {
+    return (
+      MixinMembers::Some(extended_attribute_list, mixin_member, mixin_members),
+      rest,
+    )
+  }
+
+  (MixinMembers::None, input)
+}
+
+///|
+pub struct MixinRest {
+  identifier : StringView
+  mixin_members : MixinMembers
+}
+
+///|
+pub fn MixinRest::parse(input : Tokens) -> (MixinRest, Tokens)? {
+  if input
+    is [
+      (@lexer.TokenType::Keyword, "mixin"),
+      (@lexer.TokenType::Identifier, identifier),
+      (@lexer.TokenType::Punctuation, "{"),
+      .. after_mixin_start,
+    ] &&
+    MixinMembers::parse(after_mixin_start)
+    is (
+      mixin_members,
+      [
+        (@lexer.TokenType::Punctuation, "}"),
+        (@lexer.TokenType::Punctuation, ";"),
+        .. rest,
+      ],
+    ) {
+    return Some((MixinRest::{ identifier, mixin_members }, rest))
+  }
+
+  None
+}
