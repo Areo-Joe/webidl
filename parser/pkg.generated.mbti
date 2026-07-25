@@ -11,6 +11,12 @@ import {
 // Errors
 
 // Types and methods
+pub struct Argument {
+  extended_attribute_list : ExtendedAttributeList
+  argument_rest : ArgumentRest
+}
+pub fn Argument::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum ArgumentName {
   ArgumentNameKeyword(ArgumentNameKeyword)
   Identifier(StringView)

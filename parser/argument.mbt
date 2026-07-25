@@ -224,3 +224,21 @@ pub fn ArgumentRest::parse(input : Tokens) -> (ArgumentRest, Tokens)? {
 
   None
 }
+
+///|
+pub struct Argument {
+  extended_attribute_list : ExtendedAttributeList
+  argument_rest : ArgumentRest
+}
+
+///|
+pub fn Argument::parse(input : Tokens) -> (Argument, Tokens)? {
+  if ExtendedAttributeList::parse(input)
+    is (extended_attribute_list, after_extended_attribute_list) &&
+    ArgumentRest::parse(after_extended_attribute_list)
+    is Some((argument_rest, rest)) {
+    return Some((Argument::{ extended_attribute_list, argument_rest }, rest))
+  }
+
+  None
+}
