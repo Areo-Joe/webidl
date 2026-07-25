@@ -1454,3 +1454,27 @@ pub fn CallbackOrInterfaceOrMixin::parse(
 
   None
 }
+
+///|
+pub struct IncludesStatement {
+  interface_identifier : StringView
+  mixin_identifier : StringView
+}
+
+///|
+pub fn IncludesStatement::parse(input : Tokens) -> (IncludesStatement, Tokens)? {
+  if input
+    is [
+      (@lexer.TokenType::Identifier, interface_identifier),
+      (@lexer.TokenType::Keyword, "includes"),
+      (@lexer.TokenType::Identifier, mixin_identifier),
+      (@lexer.TokenType::Punctuation, ";"),
+      .. rest,
+    ] {
+    return Some(
+      (IncludesStatement::{ interface_identifier, mixin_identifier }, rest),
+    )
+  }
+
+  None
+}

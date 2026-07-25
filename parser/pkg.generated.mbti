@@ -310,6 +310,12 @@ pub enum FloatType {
 }
 pub fn FloatType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub struct IncludesStatement {
+  interface_identifier : StringView
+  mixin_identifier : StringView
+}
+pub fn IncludesStatement::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub struct InheritAttribute {
   attribute_rest : AttributeRest
 }
