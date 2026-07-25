@@ -94,6 +94,11 @@ pub enum ConstType {
 }
 pub fn ConstType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub struct Constructor {
+  argument_list : ArgumentList
+}
+pub fn Constructor::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum Default {
   Some(DefaultValue)
   None

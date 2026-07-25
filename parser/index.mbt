@@ -426,3 +426,31 @@ pub fn Other::parse(input : Tokens) -> (Other, Tokens)? {
     _ => None
   }
 }
+
+///|
+pub struct Constructor {
+  argument_list : ArgumentList
+}
+
+///|
+pub fn Constructor::parse(input : Tokens) -> (Constructor, Tokens)? {
+  if input
+    is [
+      (@lexer.TokenType::Keyword, "constructor"),
+      (@lexer.TokenType::Punctuation, "("),
+      .. after_constructor_start,
+    ] &&
+    ArgumentList::parse(after_constructor_start)
+    is (
+      argument_list,
+      [
+        (@lexer.TokenType::Punctuation, ")"),
+        (@lexer.TokenType::Punctuation, ";"),
+        .. rest,
+      ],
+    ) {
+    return Some((Constructor::{ argument_list, }, rest))
+  }
+
+  return None
+}
