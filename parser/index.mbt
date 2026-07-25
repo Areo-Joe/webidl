@@ -1,4 +1,107 @@
 ///|
+pub enum ExtendedAttributeInner {
+  Parentheses(ExtendedAttributeInner, ExtendedAttributeInner)
+  Brackets(ExtendedAttributeInner, ExtendedAttributeInner)
+  Braces(ExtendedAttributeInner, ExtendedAttributeInner)
+  OtherOrComma(OtherOrComma, ExtendedAttributeInner)
+  None
+}
+
+///|
+pub fn ExtendedAttributeInner::parse(
+  input : ArrayView[(@lexer.TokenType, StringView)],
+) -> (ExtendedAttributeInner, ArrayView[(@lexer.TokenType, StringView)]) {
+  fn pase_other_or_comma(
+    input : ArrayView[(@lexer.TokenType, StringView)],
+  ) -> (ExtendedAttributeInner, ArrayView[(@lexer.TokenType, StringView)]) {
+    guard OtherOrComma::parse(input)
+      is Some((other_or_comma, after_other_or_comma)) else {
+      (ExtendedAttributeInner::None, input)
+    }
+    let (extended_attribute_inner, rest) = ExtendedAttributeInner::parse(
+      after_other_or_comma,
+    )
+    (
+      ExtendedAttributeInner::OtherOrComma(
+        other_or_comma, extended_attribute_inner,
+      ),
+      rest,
+    )
+  }
+
+  match input {
+    [first, .. rest] =>
+      match first {
+        (@lexer.TokenType::Punctuation, "(") => {
+          let (inner_extended_attribute_inner, after_inner) = ExtendedAttributeInner::parse(
+            rest,
+          )
+
+          guard after_inner
+            is [(@lexer.TokenType::Punctuation, ")"), .. after_parentheses] else {
+            (ExtendedAttributeInner::None, input)
+          }
+
+          let (outer_extended_attribute_inner, after_outer) = ExtendedAttributeInner::parse(
+            after_parentheses,
+          )
+
+          (
+            ExtendedAttributeInner::Parentheses(
+              inner_extended_attribute_inner, outer_extended_attribute_inner,
+            ),
+            after_outer,
+          )
+        }
+        (@lexer.TokenType::Punctuation, "{") => {
+          let (inner_extended_attribute_inner, after_inner) = ExtendedAttributeInner::parse(
+            rest,
+          )
+
+          guard after_inner
+            is [(@lexer.TokenType::Punctuation, "}"), .. after_braces] else {
+            (ExtendedAttributeInner::None, input)
+          }
+
+          let (outer_extended_attribute_inner, after_outer) = ExtendedAttributeInner::parse(
+            after_braces,
+          )
+
+          (
+            ExtendedAttributeInner::Braces(
+              inner_extended_attribute_inner, outer_extended_attribute_inner,
+            ),
+            after_outer,
+          )
+        }
+        (@lexer.TokenType::Punctuation, "[") => {
+          let (inner_extended_attribute_inner, after_inner) = ExtendedAttributeInner::parse(
+            rest,
+          )
+
+          guard after_inner
+            is [(@lexer.TokenType::Punctuation, "]"), .. after_brackets] else {
+            (ExtendedAttributeInner::None, input)
+          }
+
+          let (outer_extended_attribute_inner, after_outer) = ExtendedAttributeInner::parse(
+            after_brackets,
+          )
+
+          (
+            ExtendedAttributeInner::Brackets(
+              inner_extended_attribute_inner, outer_extended_attribute_inner,
+            ),
+            after_outer,
+          )
+        }
+        _ => pase_other_or_comma(input)
+      }
+    _ => pase_other_or_comma(input)
+  }
+}
+
+///|
 pub enum OtherOrComma {
   Other(Other)
   Comma
