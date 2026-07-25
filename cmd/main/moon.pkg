@@ -1,6 +1,0 @@
-import {
-  "Areo-Joe/webidl/lexer",
-  "moonbitlang/core/debug",
-}
-
-pkgtype(kind: "executable")
