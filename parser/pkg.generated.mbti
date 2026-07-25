@@ -3,6 +3,7 @@ package "Areo-Joe/webidl/parser"
 
 import {
   "Areo-Joe/webidl/lexer",
+  "moonbitlang/core/debug",
 }
 
 // Values
@@ -35,7 +36,7 @@ pub enum ArgumentNameKeyword {
   Stringifier
   Typedef
   Unrestricted
-}
+} derive(@debug.Debug)
 pub fn ArgumentNameKeyword::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
 pub enum BufferRelatedType {
@@ -54,7 +55,7 @@ pub enum BufferRelatedType {
   Float16Array
   Float32Array
   Float64Array
-}
+} derive(@debug.Debug)
 pub fn BufferRelatedType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
 pub enum ExtendedAttribute {
@@ -62,7 +63,7 @@ pub enum ExtendedAttribute {
   Brackets(ExtendedAttributeInner, ExtendedAttributeRest)
   Braces(ExtendedAttributeInner, ExtendedAttributeRest)
   Other(Other, ExtendedAttributeRest)
-}
+} derive(@debug.Debug)
 pub fn ExtendedAttribute::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
 pub enum ExtendedAttributeInner {
@@ -71,14 +72,26 @@ pub enum ExtendedAttributeInner {
   Braces(ExtendedAttributeInner, ExtendedAttributeInner)
   OtherOrComma(OtherOrComma, ExtendedAttributeInner)
   None
-}
+} derive(@debug.Debug)
 pub fn ExtendedAttributeInner::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
+
+pub enum ExtendedAttributeList {
+  Some(ExtendedAttribute, ExtendedAttributes)
+  None
+} derive(@debug.Debug)
+pub fn ExtendedAttributeList::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
 pub enum ExtendedAttributeRest {
   ExtendedAttribute(ExtendedAttribute)
   None
-}
+} derive(@debug.Debug)
 pub fn ExtendedAttributeRest::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
+
+pub enum ExtendedAttributes {
+  Some(ExtendedAttribute, ExtendedAttributes)
+  None
+} derive(@debug.Debug)
+pub fn ExtendedAttributes::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
 pub enum Other {
   Integer(StringView)
@@ -127,13 +140,13 @@ pub enum Other {
   Undefined
   ArgumentNameKeyword(ArgumentNameKeyword)
   BufferRelatedType(BufferRelatedType)
-}
+} derive(@debug.Debug)
 pub fn Other::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
 pub enum OtherOrComma {
   Other(Other)
   Comma
-}
+} derive(@debug.Debug)
 pub fn OtherOrComma::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
 // Type aliases

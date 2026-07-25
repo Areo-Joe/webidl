@@ -1,10 +1,72 @@
 ///|
+pub enum ExtendedAttributeList {
+  Some(ExtendedAttribute, ExtendedAttributes)
+  None
+} derive(Debug)
+
+///|
+pub fn ExtendedAttributeList::parse(
+  input : ArrayView[(@lexer.TokenType, StringView)],
+) -> (ExtendedAttributeList, ArrayView[(@lexer.TokenType, StringView)]) {
+  match input {
+    [(@lexer.TokenType::Punctuation, "["), .. after_open_bracket] => {
+      guard ExtendedAttribute::parse(after_open_bracket)
+        is Some((extended_attribute, after_extended_attribute)) else {
+        (ExtendedAttributeList::None, input)
+      }
+
+      let (extended_attributes, after_extended_attributes) = ExtendedAttributes::parse(
+        after_extended_attribute,
+      )
+
+      guard after_extended_attributes
+        is [(@lexer.TokenType::Punctuation, "]"), .. after_close_bracket] else {
+        (ExtendedAttributeList::None, input)
+      }
+
+      (
+        ExtendedAttributeList::Some(extended_attribute, extended_attributes),
+        after_close_bracket,
+      )
+    }
+    _ => (ExtendedAttributeList::None, input)
+  }
+}
+
+///|
+pub enum ExtendedAttributes {
+  Some(ExtendedAttribute, ExtendedAttributes)
+  None
+} derive(Debug)
+
+///|
+pub fn ExtendedAttributes::parse(
+  input : ArrayView[(@lexer.TokenType, StringView)],
+) -> (ExtendedAttributes, ArrayView[(@lexer.TokenType, StringView)]) {
+  match input {
+    [(@lexer.TokenType::Punctuation, ","), .. after_comma] => {
+      guard ExtendedAttribute::parse(after_comma)
+        is Some((extended_attribute, after_extended_attribute)) else {
+        (ExtendedAttributes::None, input)
+      }
+
+      let (extended_attributes, rest) = ExtendedAttributes::parse(
+        after_extended_attribute,
+      )
+
+      (ExtendedAttributes::Some(extended_attribute, extended_attributes), rest)
+    }
+    _ => (ExtendedAttributes::None, input)
+  }
+}
+
+///|
 pub enum ExtendedAttribute {
   Parentheses(ExtendedAttributeInner, ExtendedAttributeRest)
   Brackets(ExtendedAttributeInner, ExtendedAttributeRest)
   Braces(ExtendedAttributeInner, ExtendedAttributeRest)
   Other(Other, ExtendedAttributeRest)
-}
+} derive(Debug)
 
 ///|
 pub fn ExtendedAttribute::parse(
@@ -104,7 +166,7 @@ pub fn ExtendedAttribute::parse(
 pub enum ExtendedAttributeRest {
   ExtendedAttribute(ExtendedAttribute)
   None
-}
+} derive(Debug)
 
 ///|
 pub fn ExtendedAttributeRest::parse(
@@ -124,7 +186,7 @@ pub enum ExtendedAttributeInner {
   Braces(ExtendedAttributeInner, ExtendedAttributeInner)
   OtherOrComma(OtherOrComma, ExtendedAttributeInner)
   None
-}
+} derive(Debug)
 
 ///|
 pub fn ExtendedAttributeInner::parse(
@@ -224,7 +286,7 @@ pub fn ExtendedAttributeInner::parse(
 pub enum OtherOrComma {
   Other(Other)
   Comma
-}
+} derive(Debug)
 
 ///|
 pub fn OtherOrComma::parse(
@@ -292,7 +354,7 @@ pub enum Other {
   Undefined
   ArgumentNameKeyword(ArgumentNameKeyword)
   BufferRelatedType(BufferRelatedType)
-}
+} derive(Debug)
 
 ///|
 pub fn Other::parse(
@@ -398,7 +460,7 @@ pub enum ArgumentNameKeyword {
   Stringifier
   Typedef
   Unrestricted
-}
+} derive(Debug)
 
 ///|
 pub fn ArgumentNameKeyword::parse(
@@ -478,7 +540,7 @@ pub enum BufferRelatedType {
   Float16Array
   Float32Array
   Float64Array
-}
+} derive(Debug)
 
 ///|
 pub fn BufferRelatedType::parse(
