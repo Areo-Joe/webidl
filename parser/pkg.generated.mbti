@@ -69,6 +69,13 @@ pub enum Arguments {
 }
 pub fn Arguments::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
+pub struct AsyncIterable {
+  type_with_extended_attributes : TypeWithExtendedAttributes
+  optional_type : OptionalType
+  optional_argument_list : OptionalArgumentList
+}
+pub fn AsyncIterable::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum AttributeName {
   AttributeNameKeyword(AttributeNameKeyword)
   Identifier(StringView)
@@ -268,6 +275,12 @@ pub struct OperationRest {
   argument_list : ArgumentList
 }
 pub fn OperationRest::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum OptionalArgumentList {
+  Some(ArgumentList)
+  None
+}
+pub fn OptionalArgumentList::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
 pub enum OptionalLong {
   Long

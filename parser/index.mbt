@@ -587,3 +587,63 @@ pub fn Iterable::parse(input : Tokens) -> (Iterable, Tokens)? {
 
   None
 }
+
+///|
+pub enum OptionalArgumentList {
+  Some(ArgumentList)
+  None
+}
+
+///|
+pub fn OptionalArgumentList::parse(
+  input : Tokens,
+) -> (OptionalArgumentList, Tokens) {
+  if input is [(@lexer.TokenType::Punctuation, "("), .. after_open_paren] &&
+    ArgumentList::parse(after_open_paren)
+    is (argument_list, [(@lexer.TokenType::Punctuation, ")"), .. rest]) {
+    return (OptionalArgumentList::Some(argument_list), rest)
+  }
+
+  return (OptionalArgumentList::None, input)
+}
+
+///|
+pub struct AsyncIterable {
+  type_with_extended_attributes : TypeWithExtendedAttributes
+  optional_type : OptionalType
+  optional_argument_list : OptionalArgumentList
+}
+
+///|
+pub fn AsyncIterable::parse(input : Tokens) -> (AsyncIterable, Tokens)? {
+  if input
+    is [
+      (@lexer.TokenType::Keyword, "async_iterable"),
+      (@lexer.TokenType::Punctuation, "<"),
+      .. after_async_iterable_start,
+    ] &&
+    TypeWithExtendedAttributes::parse(after_async_iterable_start)
+    is Some(
+      (type_with_extended_attributes, after_type_with_extended_attributes)
+    ) &&
+    OptionalType::parse(after_type_with_extended_attributes)
+    is (
+      optional_type,
+      [(@lexer.TokenType::Punctuation, ">"), .. after_async_iterable_end],
+    ) &&
+    OptionalArgumentList::parse(after_async_iterable_end)
+    is (optional_argument_list, [(@lexer.TokenType::Punctuation, ";"), .. rest]) {
+    return Some(
+      (
+        AsyncIterable::{
+          type_with_extended_attributes,
+          optional_type,
+          optional_argument_list,
+        },
+        rest,
+      ),
+    )
+  }
+
+  None
+}
