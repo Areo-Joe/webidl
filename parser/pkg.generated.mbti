@@ -633,6 +633,12 @@ pub struct TypeWithExtendedAttributes {
 }
 pub fn TypeWithExtendedAttributes::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub struct Typedef {
+  type_with_extended_attributes : TypeWithExtendedAttributes
+  identifier : StringView
+}
+pub fn Typedef::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum UnionMemberType {
   UnionType(UnionType, Null)
   DistinguishableTypeWithExtendedAttributeList(DistinguishableType, ExtendedAttributeList)

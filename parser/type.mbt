@@ -633,3 +633,29 @@ pub fn ConstType::parse(input : Tokens) -> (ConstType, Tokens)? {
 
   return None
 }
+
+///|
+pub struct Typedef {
+  type_with_extended_attributes : TypeWithExtendedAttributes
+  identifier : StringView
+}
+
+///|
+pub fn Typedef::parse(input : Tokens) -> (Typedef, Tokens)? {
+  if input is [(@lexer.TokenType::Keyword, "typedef"), .. after_typedef] &&
+    TypeWithExtendedAttributes::parse(after_typedef)
+    is Some(
+      (
+        type_with_extended_attributes,
+        [
+          (@lexer.TokenType::Identifier, identifier),
+          (@lexer.TokenType::Punctuation, ";"),
+          .. rest,
+        ],
+      )
+    ) {
+    return Some((Typedef::{ type_with_extended_attributes, identifier }, rest))
+  }
+
+  None
+}
