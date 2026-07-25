@@ -58,6 +58,12 @@ pub enum BufferRelatedType {
 } derive(@debug.Debug)
 pub fn BufferRelatedType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub enum ConstType {
+  PrimitiveType(PrimitiveType)
+  Identifier(StringView)
+}
+pub fn ConstType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum DistinguishableType {
   PrimitiveType(PrimitiveType, Null)
   StringType(StringType, Null)
@@ -199,11 +205,23 @@ pub enum PrimitiveType {
 }
 pub fn PrimitiveType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub struct PromiseType {
+  type_ : Type
+}
+pub fn PromiseType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub struct RecordType {
   string_type : StringType
   type_with_extended_attributes : TypeWithExtendedAttributes
 }
 pub fn RecordType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum SingleType {
+  DistinguishableType(DistinguishableType)
+  Any
+  PromiseType(PromiseType)
+}
+pub fn SingleType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
 pub enum StringType {
   ByteString
@@ -213,6 +231,8 @@ pub enum StringType {
 pub fn StringType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
 pub enum Type {
+  SingleType(SingleType)
+  UnionType(UnionType, Null)
 }
 pub fn Type::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 

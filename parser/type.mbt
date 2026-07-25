@@ -642,3 +642,24 @@ pub fn SingleType::parse(
 
   return None
 }
+
+///|
+pub enum ConstType {
+  PrimitiveType(PrimitiveType)
+  Identifier(StringView)
+}
+
+///|
+pub fn ConstType::parse(
+  input : ArrayView[(@lexer.TokenType, StringView)],
+) -> (ConstType, ArrayView[(@lexer.TokenType, StringView)])? {
+  if PrimitiveType::parse(input) is Some((primitive_type, rest)) {
+    return Some((ConstType::PrimitiveType(primitive_type), rest))
+  }
+
+  if input is [(@lexer.TokenType::Identifier, identifier), .. rest] {
+    return Some((ConstType::Identifier(identifier), rest))
+  }
+
+  return None
+}
