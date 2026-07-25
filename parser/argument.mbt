@@ -251,7 +251,8 @@ pub enum Arguments {
 
 ///|
 pub fn Arguments::parse(input : Tokens) -> (Arguments, Tokens) {
-  if Argument::parse(input) is Some((argument, after_argument)) &&
+  if input is [(@lexer.TokenType::Punctuation, ","), .. after_comma] &&
+    Argument::parse(after_comma) is Some((argument, after_argument)) &&
     Arguments::parse(after_argument) is (arguments, rest) {
     return (Arguments::Some(argument, arguments), rest)
   }
