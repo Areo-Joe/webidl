@@ -160,6 +160,21 @@ pub fn StringifierRest::parse(input : Tokens) -> (StringifierRest, Tokens)? {
 }
 
 ///|
+pub struct Stringifier {
+  stringifier_rest : StringifierRest
+}
+
+///|
+pub fn Stringifier::parse(input : Tokens) -> (Stringifier, Tokens)? {
+  if input is [(@lexer.TokenType::Keyword, "stringifier"), .. after_stringifier] &&
+    StringifierRest::parse(after_stringifier) is Some((stringifier_rest, rest)) {
+    return Some((Stringifier::{ stringifier_rest, }, rest))
+  }
+
+  None
+}
+
+///|
 pub enum Operation {
   RegularOperation(RegularOperation)
   SpecialOperation(SpecialOperation)
