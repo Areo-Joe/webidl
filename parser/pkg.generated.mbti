@@ -17,6 +17,12 @@ pub struct Argument {
 }
 pub fn Argument::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub enum ArgumentList {
+  Some(Argument, Arguments)
+  None
+}
+pub fn ArgumentList::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
+
 pub enum ArgumentName {
   ArgumentNameKeyword(ArgumentNameKeyword)
   Identifier(StringView)
