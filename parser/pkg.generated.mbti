@@ -58,6 +58,22 @@ pub enum BufferRelatedType {
 } derive(@debug.Debug)
 pub fn BufferRelatedType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub enum DistinguishableType {
+  PrimitiveType(PrimitiveType, Null)
+  StringType(StringType, Null)
+  Identifier(StringView, Null)
+  Sequence(TypeWithExtendedAttributes, Null)
+  AsyncSequence(TypeWithExtendedAttributes, Null)
+  Object(Null)
+  Symbol(Null)
+  BufferRelatedType(BufferRelatedType, Null)
+  FrozenArray(TypeWithExtendedAttributes, Null)
+  ObservableArray(TypeWithExtendedAttributes, Null)
+  RecordType(RecordType, Null)
+  Undefined(Null)
+}
+pub fn DistinguishableType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum ExtendedAttribute {
   Parentheses(ExtendedAttributeInner, ExtendedAttributeRest)
   Brackets(ExtendedAttributeInner, ExtendedAttributeRest)

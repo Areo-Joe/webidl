@@ -79,6 +79,159 @@ pub fn RecordType::parse(
 }
 
 ///|
+pub enum DistinguishableType {
+  PrimitiveType(PrimitiveType, Null)
+  StringType(StringType, Null)
+  Identifier(StringView, Null)
+  Sequence(TypeWithExtendedAttributes, Null)
+  AsyncSequence(TypeWithExtendedAttributes, Null)
+  Object(Null)
+  Symbol(Null)
+  BufferRelatedType(BufferRelatedType, Null)
+  FrozenArray(TypeWithExtendedAttributes, Null)
+  ObservableArray(TypeWithExtendedAttributes, Null)
+  RecordType(RecordType, Null)
+  Undefined(Null)
+}
+
+///|
+pub fn DistinguishableType::parse(
+  input : ArrayView[(@lexer.TokenType, StringView)],
+) -> (DistinguishableType, ArrayView[(@lexer.TokenType, StringView)])? {
+  if PrimitiveType::parse(input) is Some((primitive_type, after_primitive_type)) {
+    let (null, rest) = Null::parse(after_primitive_type)
+
+    return Some(
+      (DistinguishableType::PrimitiveType(primitive_type, null), rest),
+    )
+  }
+
+  if StringType::parse(input) is Some((string_type, after_string_type)) {
+    let (null, rest) = Null::parse(after_string_type)
+
+    return Some((DistinguishableType::StringType(string_type, null), rest))
+  }
+
+  if input is [(@lexer.TokenType::Identifier, identifier), .. after_identifier] {
+    let (null, rest) = Null::parse(after_identifier)
+    return Some((DistinguishableType::Identifier(identifier, null), rest))
+  }
+
+  if input
+    is [
+      (@lexer.TokenType::Keyword, "sequence"),
+      (@lexer.TokenType::Punctuation, "<"),
+      .. after_sequence_start,
+    ] &&
+    TypeWithExtendedAttributes::parse(after_sequence_start)
+    is Some(
+      (type_with_extended_attributes, after_type_with_extended_attributes)
+    ) &&
+    after_type_with_extended_attributes
+    is [(@lexer.TokenType::Punctuation, ">"), .. after_sequence_end] &&
+    Null::parse(after_sequence_end) is (null, rest) {
+    return Some(
+      (DistinguishableType::Sequence(type_with_extended_attributes, null), rest),
+    )
+  }
+
+  if input
+    is [
+      (@lexer.TokenType::Keyword, "async_sequence"),
+      (@lexer.TokenType::Punctuation, "<"),
+      .. after_async_sequence_start,
+    ] &&
+    TypeWithExtendedAttributes::parse(after_async_sequence_start)
+    is Some(
+      (type_with_extended_attributes, after_type_with_extended_attributes)
+    ) &&
+    after_type_with_extended_attributes
+    is [(@lexer.TokenType::Punctuation, ">"), .. after_async_sequence_end] &&
+    Null::parse(after_async_sequence_end) is (null, rest) {
+    return Some(
+      (
+        DistinguishableType::AsyncSequence(type_with_extended_attributes, null),
+        rest,
+      ),
+    )
+  }
+
+  if input is [(@lexer.TokenType::Keyword, "object"), .. after_object] &&
+    Null::parse(after_object) is (null, rest) {
+    return Some((DistinguishableType::Object(null), rest))
+  }
+
+  if input is [(@lexer.TokenType::Keyword, "symbol"), .. after_symbol] &&
+    Null::parse(after_symbol) is (null, rest) {
+    return Some((DistinguishableType::Symbol(null), rest))
+  }
+
+  if BufferRelatedType::parse(input)
+    is Some((buffer_related_type, after_buffer_related_type)) &&
+    Null::parse(after_buffer_related_type) is (null, rest) {
+    return Some(
+      (DistinguishableType::BufferRelatedType(buffer_related_type, null), rest),
+    )
+  }
+
+  if input
+    is [
+      (@lexer.TokenType::Keyword, "FrozenArray"),
+      (@lexer.TokenType::Punctuation, "<"),
+      .. after_frozen_array_start,
+    ] &&
+    TypeWithExtendedAttributes::parse(after_frozen_array_start)
+    is Some(
+      (type_with_extended_attributes, after_type_with_extended_attributes)
+    ) &&
+    after_type_with_extended_attributes
+    is [(@lexer.TokenType::Punctuation, ">"), .. after_frozen_array_end] &&
+    Null::parse(after_frozen_array_end) is (null, rest) {
+    return Some(
+      (
+        DistinguishableType::FrozenArray(type_with_extended_attributes, null),
+        rest,
+      ),
+    )
+  }
+
+  if input
+    is [
+      (@lexer.TokenType::Keyword, "ObservableArray"),
+      (@lexer.TokenType::Punctuation, "<"),
+      .. after_observable_array_start,
+    ] &&
+    TypeWithExtendedAttributes::parse(after_observable_array_start)
+    is Some(
+      (type_with_extended_attributes, after_type_with_extended_attributes)
+    ) &&
+    after_type_with_extended_attributes
+    is [(@lexer.TokenType::Punctuation, ">"), .. after_observable_array_end] &&
+    Null::parse(after_observable_array_end) is (null, rest) {
+    return Some(
+      (
+        DistinguishableType::ObservableArray(
+          type_with_extended_attributes, null,
+        ),
+        rest,
+      ),
+    )
+  }
+
+  if RecordType::parse(input) is Some((record_type, after_record_type)) &&
+    Null::parse(after_record_type) is (null, rest) {
+    return Some((DistinguishableType::RecordType(record_type, null), rest))
+  }
+
+  if input is [(@lexer.TokenType::Keyword, "undefined"), .. after_undefined] &&
+    Null::parse(after_undefined) is (null, rest) {
+    return Some((DistinguishableType::Undefined(null), rest))
+  }
+
+  return None
+}
+
+///|
 pub enum Null {
   Some
   None
