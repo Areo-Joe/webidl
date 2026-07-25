@@ -146,3 +146,43 @@ pub fn UnrestrictedFloatType::parse(
     }
   }
 }
+
+///|
+pub enum PrimitiveType {
+  UnsignedIntegerType(UnsignedIntegerType)
+  UnrestrictedFloatType(UnrestrictedFloatType)
+  Boolean
+  Byte
+  Octet
+  Bigint
+}
+
+///|
+pub fn PrimitiveType::parse(
+  input : ArrayView[(@lexer.TokenType, StringView)],
+) -> (PrimitiveType, ArrayView[(@lexer.TokenType, StringView)])? {
+  if UnsignedIntegerType::parse(input) is Some((unsigned_integer_type, rest)) {
+    return Some(
+      (PrimitiveType::UnsignedIntegerType(unsigned_integer_type), rest),
+    )
+  }
+
+  if UnrestrictedFloatType::parse(input)
+    is Some((unrestricted_float_type, rest)) {
+    return Some(
+      (PrimitiveType::UnrestrictedFloatType(unrestricted_float_type), rest),
+    )
+  }
+
+  match input {
+    [(@lexer.TokenType::Keyword, "boolean"), .. rest] =>
+      Some((PrimitiveType::Boolean, rest))
+    [(@lexer.TokenType::Keyword, "byte"), .. rest] =>
+      Some((PrimitiveType::Byte, rest))
+    [(@lexer.TokenType::Keyword, "octet"), .. rest] =>
+      Some((PrimitiveType::Octet, rest))
+    [(@lexer.TokenType::Keyword, "bigint"), .. rest] =>
+      Some((PrimitiveType::Bigint, rest))
+    _ => None
+  }
+}
