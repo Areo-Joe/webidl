@@ -7,7 +7,7 @@ pub enum OperationNameKeyword {
 pub fn OperationNameKeyword::parse(
   input : Tokens,
 ) -> (OperationNameKeyword, Tokens)? {
-  if input is [(@lexer.TokenType::Keyword, "Includes"), .. rest] {
+  if input is [(@lexer.TokenType::Keyword, "includes"), .. rest] {
     return Some((OperationNameKeyword::Includes, rest))
   }
 

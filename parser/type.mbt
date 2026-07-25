@@ -544,15 +544,7 @@ pub fn UnionType::parse(input : Tokens) -> (UnionType, Tokens)? {
       )
     ) &&
     UnionMemberType::parse(after_or)
-    is Some(
-      (
-        second_union_member_type,
-        [
-          (@lexer.TokenType::Punctuation, ")"),
-          .. after_second_union_member_type,
-        ],
-      )
-    ) &&
+    is Some((second_union_member_type, after_second_union_member_type)) &&
     UnionMemberTypes::parse(after_second_union_member_type)
     is (union_member_types, [(@lexer.TokenType::Punctuation, ")"), .. rest]) {
     return Some(
