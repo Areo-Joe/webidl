@@ -222,6 +222,12 @@ pub enum OperationNameKeyword {
 }
 pub fn OperationNameKeyword::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub struct OperationRest {
+  optional_operation_name : OptionalOperationName
+  argument_list : ArgumentList
+}
+pub fn OperationRest::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum OptionalLong {
   Long
   None

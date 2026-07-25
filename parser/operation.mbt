@@ -51,3 +51,33 @@ pub fn OptionalOperationName::parse(
 
   return (OptionalOperationName::None, input)
 }
+
+///|
+pub struct OperationRest {
+  optional_operation_name : OptionalOperationName
+  argument_list : ArgumentList
+}
+
+///|
+pub fn OperationRest::parse(input : Tokens) -> (OperationRest, Tokens)? {
+  if OptionalOperationName::parse(input)
+    is (
+      optional_operation_name,
+      [(@lexer.TokenType::Punctuation, "("), .. after_operation_rest_start],
+    ) &&
+    ArgumentList::parse(after_operation_rest_start)
+    is (
+      argument_list,
+      [
+        (@lexer.TokenType::Punctuation, ")"),
+        (@lexer.TokenType::Punctuation, ";"),
+        .. rest,
+      ],
+    ) {
+    return Some(
+      (OperationRest::{ optional_operation_name, argument_list }, rest),
+    )
+  }
+
+  return None
+}
