@@ -1,4 +1,28 @@
 ///|
+pub enum OtherOrComma {
+  Other(Other)
+  Comma
+}
+
+///|
+pub fn OtherOrComma::parse(
+  input : ArrayView[(@lexer.TokenType, StringView)],
+) -> (OtherOrComma, ArrayView[(@lexer.TokenType, StringView)])? {
+  match input {
+    [first, .. rest] =>
+      match first {
+        (@lexer.TokenType::Punctuation, ",") =>
+          Some((OtherOrComma::Comma, rest))
+        _ => {
+          guard Other::parse(input) is Some((other, rest)) else { None }
+          Some((OtherOrComma::Other(other), rest))
+        }
+      }
+    _ => None
+  }
+}
+
+///|
 pub enum Other {
   Integer(StringView)
   Decimal(StringView)
@@ -115,11 +139,11 @@ pub fn Other::parse(
             is Some((argument_name_keyword, rest)) else {
             guard BufferRelatedType::parse(input)
               is Some((buffer_related_type, rest)) else {
-              return None
+              None
             }
-            return Some((Other::BufferRelatedType(buffer_related_type), rest))
+            Some((Other::BufferRelatedType(buffer_related_type), rest))
           }
-          return Some((Other::ArgumentNameKeyword(argument_name_keyword), rest))
+          Some((Other::ArgumentNameKeyword(argument_name_keyword), rest))
         }
       }
     _ => None
