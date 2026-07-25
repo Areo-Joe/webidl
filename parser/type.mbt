@@ -5,9 +5,7 @@ pub enum Type {
 }
 
 ///|
-pub fn Type::parse(
-  input : Tokens,
-) -> (Type, Tokens)? {
+pub fn Type::parse(input : Tokens) -> (Type, Tokens)? {
   if SingleType::parse(input) is Some((single_type, rest)) {
     return Some((Type::SingleType(single_type), rest))
   }
@@ -48,9 +46,7 @@ pub struct RecordType {
 }
 
 ///|
-pub fn RecordType::parse(
-  input : Tokens,
-) -> (RecordType, Tokens)? {
+pub fn RecordType::parse(input : Tokens) -> (RecordType, Tokens)? {
   guard input
     is [
       (@lexer.TokenType::Keyword, "record"),
@@ -250,9 +246,7 @@ pub enum Null {
 } derive(Debug)
 
 ///|
-pub fn Null::parse(
-  input : Tokens,
-) -> (Null, Tokens) {
+pub fn Null::parse(input : Tokens) -> (Null, Tokens) {
   match input {
     [(@lexer.TokenType::Punctuation, "?"), .. rest] => (Null::Some, rest)
     _ => (Null::None, input)
@@ -267,9 +261,7 @@ pub enum StringType {
 } derive(Debug)
 
 ///|
-pub fn StringType::parse(
-  input : Tokens,
-) -> (StringType, Tokens)? {
+pub fn StringType::parse(input : Tokens) -> (StringType, Tokens)? {
   match input {
     [(@lexer.TokenType::Keyword, "ByteString"), .. rest] =>
       Some((StringType::ByteString, rest))
@@ -288,9 +280,7 @@ pub enum OptionalLong {
 }
 
 ///|
-pub fn OptionalLong::parse(
-  input : Tokens,
-) -> (OptionalLong, Tokens) {
+pub fn OptionalLong::parse(input : Tokens) -> (OptionalLong, Tokens) {
   match input {
     [(@lexer.TokenType::Keyword, "long"), .. rest] => (OptionalLong::Long, rest)
     _ => (OptionalLong::None, input)
@@ -304,9 +294,7 @@ pub enum IntegerType {
 }
 
 ///|
-pub fn IntegerType::parse(
-  input : Tokens,
-) -> (IntegerType, Tokens)? {
+pub fn IntegerType::parse(input : Tokens) -> (IntegerType, Tokens)? {
   match input {
     [(@lexer.TokenType::Keyword, "short"), .. rest] =>
       Some((IntegerType::Short, rest))
@@ -354,9 +342,7 @@ pub enum FloatType {
 }
 
 ///|
-pub fn FloatType::parse(
-  input : Tokens,
-) -> (FloatType, Tokens)? {
+pub fn FloatType::parse(input : Tokens) -> (FloatType, Tokens)? {
   match input {
     [(@lexer.TokenType::Keyword, "float"), .. rest] =>
       Some((FloatType::Float, rest))
@@ -403,9 +389,7 @@ pub enum PrimitiveType {
 }
 
 ///|
-pub fn PrimitiveType::parse(
-  input : Tokens,
-) -> (PrimitiveType, Tokens)? {
+pub fn PrimitiveType::parse(input : Tokens) -> (PrimitiveType, Tokens)? {
   if UnsignedIntegerType::parse(input) is Some((unsigned_integer_type, rest)) {
     return Some(
       (PrimitiveType::UnsignedIntegerType(unsigned_integer_type), rest),
@@ -452,9 +436,7 @@ pub enum BufferRelatedType {
 } derive(Debug)
 
 ///|
-pub fn BufferRelatedType::parse(
-  input : Tokens,
-) -> (BufferRelatedType, Tokens)? {
+pub fn BufferRelatedType::parse(input : Tokens) -> (BufferRelatedType, Tokens)? {
   match input {
     [first, .. rest] =>
       match first {
@@ -517,9 +499,7 @@ pub enum UnionMemberTypes {
 }
 
 ///|
-pub fn UnionMemberTypes::parse(
-  input : Tokens,
-) -> (UnionMemberTypes, Tokens) {
+pub fn UnionMemberTypes::parse(input : Tokens) -> (UnionMemberTypes, Tokens) {
   if input is [(@lexer.TokenType::Keyword, "or"), .. after_or] &&
     UnionMemberType::parse(after_or)
     is Some((union_member_type, after_union_member_type)) &&
@@ -532,9 +512,7 @@ pub fn UnionMemberTypes::parse(
 }
 
 ///|
-pub fn UnionMemberType::parse(
-  input : Tokens,
-) -> (UnionMemberType, Tokens)? {
+pub fn UnionMemberType::parse(input : Tokens) -> (UnionMemberType, Tokens)? {
   if ExtendedAttributeList::parse(input)
     is (extended_attribute_list, after_extended_attribute_list) &&
     DistinguishableType::parse(after_extended_attribute_list)
@@ -558,9 +536,7 @@ pub fn UnionMemberType::parse(
 }
 
 ///|
-pub fn UnionType::parse(
-  input : Tokens,
-) -> (UnionType, Tokens)? {
+pub fn UnionType::parse(input : Tokens) -> (UnionType, Tokens)? {
   if input is [(@lexer.TokenType::Punctuation, "("), .. after_parentheses_start] &&
     UnionMemberType::parse(after_parentheses_start)
     is Some(
@@ -600,9 +576,7 @@ pub struct PromiseType {
 }
 
 ///|
-pub fn PromiseType::parse(
-  input : Tokens,
-) -> (PromiseType, Tokens)? {
+pub fn PromiseType::parse(input : Tokens) -> (PromiseType, Tokens)? {
   if input
     is [
       (@lexer.TokenType::Keyword, "Promise"),
@@ -625,9 +599,7 @@ pub enum SingleType {
 }
 
 ///|
-pub fn SingleType::parse(
-  input : Tokens,
-) -> (SingleType, Tokens)? {
+pub fn SingleType::parse(input : Tokens) -> (SingleType, Tokens)? {
   if DistinguishableType::parse(input) is Some((distinguishable_type, rest)) {
     return Some((SingleType::DistinguishableType(distinguishable_type), rest))
   }
@@ -650,9 +622,7 @@ pub enum ConstType {
 }
 
 ///|
-pub fn ConstType::parse(
-  input : Tokens,
-) -> (ConstType, Tokens)? {
+pub fn ConstType::parse(input : Tokens) -> (ConstType, Tokens)? {
   if PrimitiveType::parse(input) is Some((primitive_type, rest)) {
     return Some((ConstType::PrimitiveType(primitive_type), rest))
   }
