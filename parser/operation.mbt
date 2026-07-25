@@ -34,3 +34,20 @@ pub fn OperationName::parse(input : Tokens) -> (OperationName, Tokens)? {
 
   None
 }
+
+///|
+pub enum OptionalOperationName {
+  Some(OperationName)
+  None
+}
+
+///|
+pub fn OptionalOperationName::parse(
+  input : Tokens,
+) -> (OptionalOperationName, Tokens) {
+  if OperationName::parse(input) is Some((operation_name, rest)) {
+    return (OptionalOperationName::Some(operation_name), rest)
+  }
+
+  return (OptionalOperationName::None, input)
+}

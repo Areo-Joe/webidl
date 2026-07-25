@@ -228,6 +228,12 @@ pub enum OptionalLong {
 }
 pub fn OptionalLong::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
+pub enum OptionalOperationName {
+  Some(OperationName)
+  None
+}
+pub fn OptionalOperationName::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
+
 pub enum Other {
   Integer(StringView)
   Decimal(StringView)
