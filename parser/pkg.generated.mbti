@@ -118,6 +118,31 @@ pub enum BufferRelatedType {
 } derive(@debug.Debug)
 pub fn BufferRelatedType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub enum CallbackInterfaceMember {
+  Const(Const)
+  RegularOperation(RegularOperation)
+}
+pub fn CallbackInterfaceMember::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum CallbackInterfaceMembers {
+  Some(ExtendedAttributeList, CallbackInterfaceMember, CallbackInterfaceMembers)
+  None
+}
+pub fn CallbackInterfaceMembers::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
+
+pub struct CallbackRest {
+  identifier : StringView
+  type_ : Type
+  argument_list : ArgumentList
+}
+pub fn CallbackRest::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum CallbackRestOrInterface {
+  CallbackRest(CallbackRest)
+  Interface(StringView, CallbackInterfaceMembers)
+}
+pub fn CallbackRestOrInterface::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub struct Const {
   const_type : ConstType
   identifier : StringView
