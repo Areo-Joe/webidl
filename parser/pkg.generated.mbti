@@ -94,6 +94,13 @@ pub enum BufferRelatedType {
 } derive(@debug.Debug)
 pub fn BufferRelatedType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub struct Const {
+  const_type : ConstType
+  identifier : StringView
+  const_value : ConstValue
+}
+pub fn Const::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum ConstType {
   PrimitiveType(PrimitiveType)
   Identifier(StringView)

@@ -454,3 +454,32 @@ pub fn Constructor::parse(input : Tokens) -> (Constructor, Tokens)? {
 
   return None
 }
+
+///|
+pub struct Const {
+  const_type : ConstType
+  identifier : StringView
+  const_value : ConstValue
+}
+
+///|
+pub fn Const::parse(input : Tokens) -> (Const, Tokens)? {
+  if input is [(@lexer.TokenType::Keyword, "const"), .. after_const] &&
+    ConstType::parse(after_const)
+    is Some(
+      (
+        const_type,
+        [
+          (@lexer.TokenType::Identifier, identifier),
+          (@lexer.TokenType::Punctuation, "="),
+          .. after_equal,
+        ],
+      )
+    ) &&
+    ConstValue::parse(after_equal)
+    is Some((const_value, [(@lexer.TokenType::Punctuation, ";"), .. rest])) {
+    return Some((Const::{ const_type, identifier, const_value }, rest))
+  }
+
+  return None
+}
