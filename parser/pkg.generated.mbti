@@ -286,6 +286,30 @@ pub enum ExtendedAttribute {
 } derive(@debug.Debug)
 pub fn ExtendedAttribute::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub struct ExtendedAttributeArgList {
+  identifier : StringView
+  argument_list : ArgumentList
+}
+pub fn ExtendedAttributeArgList::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub struct ExtendedAttributeDecimal {
+  identifier : StringView
+  value : StringView
+}
+pub fn ExtendedAttributeDecimal::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub struct ExtendedAttributeIdent {
+  identifier : StringView
+  value : StringView
+}
+pub fn ExtendedAttributeIdent::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub struct ExtendedAttributeIdentList {
+  identifier : StringView
+  identifier_list : IdentifierList
+}
+pub fn ExtendedAttributeIdentList::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum ExtendedAttributeInner {
   Parentheses(ExtendedAttributeInner, ExtendedAttributeInner)
   Brackets(ExtendedAttributeInner, ExtendedAttributeInner)
@@ -295,17 +319,52 @@ pub enum ExtendedAttributeInner {
 } derive(@debug.Debug)
 pub fn ExtendedAttributeInner::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
+pub struct ExtendedAttributeInteger {
+  identifier : StringView
+  value : StringView
+}
+pub fn ExtendedAttributeInteger::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub struct ExtendedAttributeIntegerList {
+  identifier : StringView
+  integer_list : IntegerList
+}
+pub fn ExtendedAttributeIntegerList::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum ExtendedAttributeList {
   Some(ExtendedAttribute, ExtendedAttributes)
   None
 } derive(@debug.Debug)
 pub fn ExtendedAttributeList::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
+pub struct ExtendedAttributeNamedArgList {
+  identifier : StringView
+  value : StringView
+  argument_list : ArgumentList
+}
+pub fn ExtendedAttributeNamedArgList::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub struct ExtendedAttributeNoArgs {
+  identifier : StringView
+}
+pub fn ExtendedAttributeNoArgs::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum ExtendedAttributeRest {
   ExtendedAttribute(ExtendedAttribute)
   None
 } derive(@debug.Debug)
 pub fn ExtendedAttributeRest::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
+
+pub struct ExtendedAttributeString {
+  identifier : StringView
+  value : StringView
+}
+pub fn ExtendedAttributeString::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub struct ExtendedAttributeWildcard {
+  identifier : StringView
+}
+pub fn ExtendedAttributeWildcard::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
 pub enum ExtendedAttributes {
   Some(ExtendedAttribute, ExtendedAttributes)
@@ -327,6 +386,18 @@ pub enum FloatType {
 }
 pub fn FloatType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub struct IdentifierList {
+  identifier : StringView
+  identifiers : Identifiers
+}
+pub fn IdentifierList::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum Identifiers {
+  Some(StringView, Identifiers)
+  None
+}
+pub fn Identifiers::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
+
 pub struct IncludesStatement {
   interface_identifier : StringView
   mixin_identifier : StringView
@@ -344,11 +415,23 @@ pub enum Inheritance {
 }
 pub fn Inheritance::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
+pub struct IntegerList {
+  integer : StringView
+  integers : Integers
+}
+pub fn IntegerList::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum IntegerType {
   Short
   Long(OptionalLong)
 }
 pub fn IntegerType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum Integers {
+  Some(StringView, Integers)
+  None
+}
+pub fn Integers::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
 pub enum InterfaceMember {
   PartialInterfaceMember(PartialInterfaceMember)
