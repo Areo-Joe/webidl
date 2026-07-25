@@ -552,3 +552,38 @@ pub fn OptionalType::parse(input : Tokens) -> (OptionalType, Tokens) {
   }
   return (OptionalType::None, input)
 }
+
+///|
+pub struct Iterable {
+  type_with_extended_attributes : TypeWithExtendedAttributes
+  optional_type : OptionalType
+}
+
+///|
+pub fn Iterable::parse(input : Tokens) -> (Iterable, Tokens)? {
+  if input
+    is [
+      (@lexer.TokenType::Keyword, "iterable"),
+      (@lexer.TokenType::Punctuation, "<"),
+      .. after_iterable_start,
+    ] &&
+    TypeWithExtendedAttributes::parse(after_iterable_start)
+    is Some(
+      (type_with_extended_attributes, after_type_with_extended_attributes)
+    ) &&
+    OptionalType::parse(after_type_with_extended_attributes)
+    is (
+      optional_type,
+      [
+        (@lexer.TokenType::Punctuation, ">"),
+        (@lexer.TokenType::Punctuation, ";"),
+        .. rest,
+      ],
+    ) {
+    return Some(
+      (Iterable::{ type_with_extended_attributes, optional_type }, rest),
+    )
+  }
+
+  None
+}

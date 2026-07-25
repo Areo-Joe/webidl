@@ -234,6 +234,12 @@ pub enum IntegerType {
 }
 pub fn IntegerType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub struct Iterable {
+  type_with_extended_attributes : TypeWithExtendedAttributes
+  optional_type : OptionalType
+}
+pub fn Iterable::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum Null {
   Some
   None
