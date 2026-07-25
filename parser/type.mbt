@@ -1,4 +1,35 @@
 ///|
+pub enum Type {}
+
+///|
+pub fn Type::parse(
+  input : ArrayView[(@lexer.TokenType, StringView)],
+) -> (Type, ArrayView[(@lexer.TokenType, StringView)])? {
+  ...
+}
+
+///|
+pub struct TypeWithExtendedAttributes {
+  extended_attribute_list : ExtendedAttributeList
+  type_ : Type
+}
+
+///|
+pub fn TypeWithExtendedAttributes::parse(
+  input : ArrayView[(@lexer.TokenType, StringView)],
+) -> (TypeWithExtendedAttributes, ArrayView[(@lexer.TokenType, StringView)])? {
+  let (extended_attribute_list, after_extended_attribute_list) = ExtendedAttributeList::parse(
+    input,
+  )
+
+  guard Type::parse(after_extended_attribute_list) is Some((type_, rest)) else {
+    return None
+  }
+
+  Some((TypeWithExtendedAttributes::{ extended_attribute_list, type_ }, rest))
+}
+
+///|
 pub enum Null {
   Some
   None
