@@ -647,3 +647,36 @@ pub fn AsyncIterable::parse(input : Tokens) -> (AsyncIterable, Tokens)? {
 
   None
 }
+
+///|
+pub struct MaplikeRest {
+  key_type : TypeWithExtendedAttributes
+  value_type : TypeWithExtendedAttributes
+}
+
+///|
+pub fn MaplikeRest::parse(input : Tokens) -> (MaplikeRest, Tokens)? {
+  if input
+    is [
+      (@lexer.TokenType::Keyword, "maplike"),
+      (@lexer.TokenType::Punctuation, "<"),
+      .. after_maplike_start,
+    ] &&
+    TypeWithExtendedAttributes::parse(after_maplike_start)
+    is Some((key_type, [(@lexer.TokenType::Punctuation, ","), .. after_comma])) &&
+    TypeWithExtendedAttributes::parse(after_comma)
+    is Some(
+      (
+        value_type,
+        [
+          (@lexer.TokenType::Punctuation, ">"),
+          (@lexer.TokenType::Punctuation, ";"),
+          .. rest,
+        ],
+      )
+    ) {
+    return Some((MaplikeRest::{ key_type, value_type }, rest))
+  }
+
+  None
+}

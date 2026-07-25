@@ -247,6 +247,12 @@ pub struct Iterable {
 }
 pub fn Iterable::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub struct MaplikeRest {
+  key_type : TypeWithExtendedAttributes
+  value_type : TypeWithExtendedAttributes
+}
+pub fn MaplikeRest::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum Null {
   Some
   None
