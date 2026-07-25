@@ -81,3 +81,19 @@ pub fn OperationRest::parse(input : Tokens) -> (OperationRest, Tokens)? {
 
   return None
 }
+
+///|
+pub struct RegularOperation {
+  type_ : Type
+  operation_rest : OperationRest
+}
+
+///|
+pub fn RegularOperation::parse(input : Tokens) -> (RegularOperation, Tokens)? {
+  if Type::parse(input) is Some((type_, after_type)) &&
+    OperationRest::parse(after_type) is Some((operation_rest, rest)) {
+    return Some((RegularOperation::{ type_, operation_rest }, rest))
+  }
+
+  return None
+}
