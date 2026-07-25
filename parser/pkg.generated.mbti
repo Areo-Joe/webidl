@@ -206,6 +206,30 @@ pub enum Ellipsis {
 }
 pub fn Ellipsis::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
+pub struct Enum {
+  identifier : StringView
+  enum_value_list : EnumValueList
+}
+pub fn Enum::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub struct EnumValueList {
+  string : StringView
+  enum_value_list_comma : EnumValueListComma
+}
+pub fn EnumValueList::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum EnumValueListComma {
+  Some(EnumValueListString)
+  None
+}
+pub fn EnumValueListComma::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
+
+pub enum EnumValueListString {
+  Some(StringView, EnumValueListComma)
+  None
+}
+pub fn EnumValueListString::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
+
 pub enum ExtendedAttribute {
   Parentheses(ExtendedAttributeInner, ExtendedAttributeRest)
   Brackets(ExtendedAttributeInner, ExtendedAttributeRest)
