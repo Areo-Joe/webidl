@@ -80,6 +80,12 @@ pub enum AttributeNameKeyword {
 }
 pub fn AttributeNameKeyword::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub struct AttributeRest {
+  type_with_extended_attributes : TypeWithExtendedAttributes
+  attribute_name : AttributeName
+}
+pub fn AttributeRest::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum BooleanLiteral {
   True
   False

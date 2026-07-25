@@ -34,3 +34,26 @@ pub fn AttributeName::parse(input : Tokens) -> (AttributeName, Tokens)? {
 
   None
 }
+
+///|
+pub struct AttributeRest {
+  type_with_extended_attributes : TypeWithExtendedAttributes
+  attribute_name : AttributeName
+}
+
+///|
+pub fn AttributeRest::parse(input : Tokens) -> (AttributeRest, Tokens)? {
+  if input is [(@lexer.TokenType::Keyword, "attribute"), .. after_attribute] &&
+    TypeWithExtendedAttributes::parse(after_attribute)
+    is Some(
+      (type_with_extended_attributes, after_type_with_extended_attributes)
+    ) &&
+    AttributeName::parse(after_type_with_extended_attributes)
+    is Some((attribute_name, [(@lexer.TokenType::Punctuation, ";"), .. rest])) {
+    return Some(
+      (AttributeRest::{ type_with_extended_attributes, attribute_name }, rest),
+    )
+  }
+
+  return None
+}
