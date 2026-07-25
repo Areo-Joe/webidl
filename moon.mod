@@ -19,11 +19,11 @@ repository = "https://github.com/Areo-Joe/webidl"
 
 license = "MIT"
 
-keywords = [ ]
+keywords = [ "webidl", "parser", "web" ]
 
 preferred_target = "native"
 
-description = ""
+description = "A Web IDL parser for MoonBit"
 
 import {
   "moonbitlang/async@0.20.2",
