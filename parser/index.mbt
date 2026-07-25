@@ -130,7 +130,7 @@ pub enum ExtendedAttributeInner {
 pub fn ExtendedAttributeInner::parse(
   input : ArrayView[(@lexer.TokenType, StringView)],
 ) -> (ExtendedAttributeInner, ArrayView[(@lexer.TokenType, StringView)]) {
-  fn pase_other_or_comma(
+  fn parse_other_or_comma(
     input : ArrayView[(@lexer.TokenType, StringView)],
   ) -> (ExtendedAttributeInner, ArrayView[(@lexer.TokenType, StringView)]) {
     guard OtherOrComma::parse(input)
@@ -214,9 +214,9 @@ pub fn ExtendedAttributeInner::parse(
             after_outer,
           )
         }
-        _ => pase_other_or_comma(input)
+        _ => parse_other_or_comma(input)
       }
-    _ => pase_other_or_comma(input)
+    _ => parse_other_or_comma(input)
   }
 }
 
