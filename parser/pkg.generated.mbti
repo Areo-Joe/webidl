@@ -409,6 +409,12 @@ pub enum PartialInterfaceMembers {
 }
 pub fn PartialInterfaceMembers::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
+pub enum PartialInterfaceOrPartialMixin {
+  PartialInterfaceRest(PartialInterfaceRest)
+  MixinRest(MixinRest)
+}
+pub fn PartialInterfaceOrPartialMixin::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub struct PartialInterfaceRest {
   identifier : StringView
   partial_interface_members : PartialInterfaceMembers

@@ -1002,3 +1002,31 @@ pub fn MixinRest::parse(input : Tokens) -> (MixinRest, Tokens)? {
 
   None
 }
+
+///|
+pub enum PartialInterfaceOrPartialMixin {
+  PartialInterfaceRest(PartialInterfaceRest)
+  MixinRest(MixinRest)
+}
+
+///|
+pub fn PartialInterfaceOrPartialMixin::parse(
+  input : Tokens,
+) -> (PartialInterfaceOrPartialMixin, Tokens)? {
+  if PartialInterfaceRest::parse(input) is Some((partial_interface_rest, rest)) {
+    return Some(
+      (
+        PartialInterfaceOrPartialMixin::PartialInterfaceRest(
+          partial_interface_rest,
+        ),
+        rest,
+      ),
+    )
+  }
+
+  if MixinRest::parse(input) is Some((mixin_rest, rest)) {
+    return Some((PartialInterfaceOrPartialMixin::MixinRest(mixin_rest), rest))
+  }
+
+  None
+}
