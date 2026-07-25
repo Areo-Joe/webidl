@@ -1,0 +1,3 @@
+import {
+  "Areo-Joe/webidl/lexer" @lexer,
+}

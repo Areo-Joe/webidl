@@ -1,0 +1,63 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "Areo-Joe/webidl/parser"
+
+import {
+  "Areo-Joe/webidl/lexer",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub enum ArgumentNameKeyword {
+  Attribute
+  Callback
+  Const
+  Constructor
+  Deleter
+  Dictionary
+  Enum
+  Getter
+  Includes
+  Inherit
+  Interface
+  Iterable
+  Maplike
+  Mixin
+  Namespace
+  Partial
+  Readonly
+  Required
+  Setlike
+  Setter
+  Static
+  Stringifier
+  Typedef
+  Unrestricted
+}
+pub fn ArgumentNameKeyword::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum BufferRelatedType {
+  ArrayBuffer
+  SharedArrayBuffer
+  DataView
+  Int8Array
+  Int16Array
+  Int32Array
+  Uint8Array
+  Uint16Array
+  Uint32Array
+  Uint8ClampedArray
+  BigInt64Array
+  BigUint64Array
+  Float16Array
+  Float32Array
+  Float64Array
+}
+pub fn BufferRelatedType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+// Type aliases
+
+// Traits
+
