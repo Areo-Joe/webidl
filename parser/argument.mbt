@@ -242,3 +242,19 @@ pub fn Argument::parse(input : Tokens) -> (Argument, Tokens)? {
 
   None
 }
+
+///|
+pub enum Arguments {
+  Some(Argument, Arguments)
+  None
+}
+
+///|
+pub fn Arguments::parse(input : Tokens) -> (Arguments, Tokens) {
+  if Argument::parse(input) is Some((argument, after_argument)) &&
+    Arguments::parse(after_argument) is (arguments, rest) {
+    return (Arguments::Some(argument, arguments), rest)
+  }
+
+  (Arguments::None, input)
+}

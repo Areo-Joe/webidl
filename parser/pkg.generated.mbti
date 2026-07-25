@@ -57,6 +57,12 @@ pub enum ArgumentRest {
 }
 pub fn ArgumentRest::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub enum Arguments {
+  Some(Argument, Arguments)
+  None
+}
+pub fn Arguments::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
+
 pub enum BufferRelatedType {
   ArrayBuffer
   SharedArrayBuffer
