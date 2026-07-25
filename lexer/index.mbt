@@ -24,7 +24,9 @@ pub enum TokenType {
   Integer
   Decimal
   Identifier
+  Keyword
   String
+  Punctuation
   Other
 } derive(Debug)
 
@@ -41,29 +43,35 @@ pub fn tokenize(input : StringView) -> Array[(TokenType, StringView)] raise {
 
     lexscan curr with longest {
       (INTEGER as t, after=after) => {
-        ret.push((TokenType::Integer, t))
+        ret.push((Integer, t))
         continue after
       }
       (DECIMAL as t, after=after) => {
-        ret.push((TokenType::Decimal, t))
+        ret.push((Decimal, t))
         continue after
       }
       (IDENTIFIER as t, after=after) => {
-        ret.push((TokenType::Identifier, t))
+        let kind = if is_keyword(t) { TokenType::Keyword } else { Identifier }
+        ret.push((kind, t))
         continue after
       }
       (STRING as t, after=after) => {
-        ret.push((TokenType::String, t))
+        ret.push((String, t))
         continue after
       }
       _ =>
         if curr.length() == 0 {
           break
         } else {
+          let punctuation_length = match_punctuation(curr)
+          if punctuation_length > 0 {
+            ret.push((Punctuation, curr[:punctuation_length]))
+            continue curr[punctuation_length:]
+          }
           guard OTHER.execute(curr) is Some(other) else {
             fail("nothing matched")
           }
-          ret.push((TokenType::Other, other.content()))
+          ret.push((Other, other.content()))
           continue other.after()
         }
     }

@@ -15,7 +15,9 @@ pub enum TokenType {
   Integer
   Decimal
   Identifier
+  Keyword
   String
+  Punctuation
   Other
 } derive(@debug.Debug)
 
