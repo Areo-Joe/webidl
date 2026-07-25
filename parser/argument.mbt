@@ -187,3 +187,40 @@ pub fn Ellipsis::parse(input : Tokens) -> (Ellipsis, Tokens) {
 
   (Ellipsis::None, input)
 }
+
+///|
+pub enum ArgumentRest {
+  Optional(TypeWithExtendedAttributes, ArgumentName, Default)
+  Ellipsisable(Type, Ellipsis, ArgumentName)
+}
+
+///|
+pub fn ArgumentRest::parse(input : Tokens) -> (ArgumentRest, Tokens)? {
+  if input is [(@lexer.TokenType::Keyword, "optional"), .. after_optional] &&
+    TypeWithExtendedAttributes::parse(after_optional)
+    is Some(
+      (type_with_extended_attributes, after_type_with_extended_attributes)
+    ) &&
+    ArgumentName::parse(after_type_with_extended_attributes)
+    is Some((argument_name, after_argument_name)) &&
+    Default::parse(after_argument_name) is (default, rest) {
+    return Some(
+      (
+        ArgumentRest::Optional(
+          type_with_extended_attributes, argument_name, default,
+        ),
+        rest,
+      ),
+    )
+  }
+
+  if Type::parse(input) is Some((type_, after_type)) &&
+    Ellipsis::parse(after_type) is (ellipsis, after_ellipsis) &&
+    ArgumentName::parse(after_ellipsis) is Some((argument_name, rest)) {
+    return Some(
+      (ArgumentRest::Ellipsisable(type_, ellipsis, argument_name), rest),
+    )
+  }
+
+  None
+}

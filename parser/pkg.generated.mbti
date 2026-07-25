@@ -45,6 +45,12 @@ pub enum ArgumentNameKeyword {
 } derive(@debug.Debug)
 pub fn ArgumentNameKeyword::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub enum ArgumentRest {
+  Optional(TypeWithExtendedAttributes, ArgumentName, Default)
+  Ellipsisable(Type, Ellipsis, ArgumentName)
+}
+pub fn ArgumentRest::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum BufferRelatedType {
   ArrayBuffer
   SharedArrayBuffer
@@ -101,6 +107,12 @@ pub enum DistinguishableType {
   Undefined(Null)
 }
 pub fn DistinguishableType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum Ellipsis {
+  Some
+  None
+}
+pub fn Ellipsis::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
 pub enum ExtendedAttribute {
   Parentheses(ExtendedAttributeInner, ExtendedAttributeRest)
