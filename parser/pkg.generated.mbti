@@ -400,6 +400,11 @@ pub struct RegularOperation {
 }
 pub fn RegularOperation::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub struct SetlikeRest {
+  type_with_extended_attributes : TypeWithExtendedAttributes
+}
+pub fn SetlikeRest::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum SingleType {
   DistinguishableType(DistinguishableType)
   Any

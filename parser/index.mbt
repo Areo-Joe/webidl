@@ -680,3 +680,33 @@ pub fn MaplikeRest::parse(input : Tokens) -> (MaplikeRest, Tokens)? {
 
   None
 }
+
+///|
+pub struct SetlikeRest {
+  type_with_extended_attributes : TypeWithExtendedAttributes
+}
+
+///|
+pub fn SetlikeRest::parse(input : Tokens) -> (SetlikeRest, Tokens)? {
+  if input
+    is [
+      (@lexer.TokenType::Keyword, "setlike"),
+      (@lexer.TokenType::Punctuation, "<"),
+      .. after_setlike_start,
+    ] &&
+    TypeWithExtendedAttributes::parse(after_setlike_start)
+    is Some(
+      (
+        type_with_extended_attributes,
+        [
+          (@lexer.TokenType::Punctuation, ">"),
+          (@lexer.TokenType::Punctuation, ";"),
+          .. rest,
+        ],
+      )
+    ) {
+    return Some((SetlikeRest::{ type_with_extended_attributes, }, rest))
+  }
+
+  None
+}
