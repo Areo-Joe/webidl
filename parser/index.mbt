@@ -1030,3 +1030,150 @@ pub fn PartialInterfaceOrPartialMixin::parse(
 
   None
 }
+
+///|
+pub enum Inheritance {
+  Some(StringView)
+  None
+}
+
+///|
+pub fn Inheritance::parse(input : Tokens) -> (Inheritance, Tokens) {
+  if input
+    is [
+      (@lexer.TokenType::Punctuation, ":"),
+      (@lexer.TokenType::Identifier, identifier),
+      .. rest,
+    ] {
+    return (Inheritance::Some(identifier), rest)
+  }
+
+  (Inheritance::None, input)
+}
+
+///|
+pub enum DictionaryMemberRest {
+  Required(TypeWithExtendedAttributes, StringView)
+  Optional(Type, StringView, Default)
+}
+
+///|
+pub fn DictionaryMemberRest::parse(
+  input : Tokens,
+) -> (DictionaryMemberRest, Tokens)? {
+  if input is [(@lexer.TokenType::Keyword, "required"), .. after_required] &&
+    TypeWithExtendedAttributes::parse(after_required)
+    is Some(
+      (
+        type_with_extended_attributes,
+        [
+          (@lexer.TokenType::Identifier, identifier),
+          (@lexer.TokenType::Punctuation, ";"),
+          .. rest,
+        ],
+      )
+    ) {
+    return Some(
+      (
+        DictionaryMemberRest::Required(
+          type_with_extended_attributes, identifier,
+        ),
+        rest,
+      ),
+    )
+  }
+
+  if Type::parse(input)
+    is Some(
+      (type_, [(@lexer.TokenType::Identifier, identifier), .. after_identifier])
+    ) &&
+    Default::parse(after_identifier)
+    is (default, [(@lexer.TokenType::Punctuation, ";"), .. rest]) {
+    return Some(
+      (DictionaryMemberRest::Optional(type_, identifier, default), rest),
+    )
+  }
+
+  None
+}
+
+///|
+pub struct DictionaryMember {
+  extended_attribute_list : ExtendedAttributeList
+  dictionary_member_rest : DictionaryMemberRest
+}
+
+///|
+pub fn DictionaryMember::parse(input : Tokens) -> (DictionaryMember, Tokens)? {
+  if ExtendedAttributeList::parse(input)
+    is (extended_attribute_list, after_extended_attribute_list) &&
+    DictionaryMemberRest::parse(after_extended_attribute_list)
+    is Some((dictionary_member_rest, rest)) {
+    return Some(
+      (
+        DictionaryMember::{ extended_attribute_list, dictionary_member_rest },
+        rest,
+      ),
+    )
+  }
+
+  None
+}
+
+///|
+pub enum DictionaryMembers {
+  Some(DictionaryMember, DictionaryMembers)
+  None
+}
+
+///|
+pub fn DictionaryMembers::parse(input : Tokens) -> (DictionaryMembers, Tokens) {
+  if DictionaryMember::parse(input)
+    is Some((dictionary_member, after_dictionary_member)) &&
+    DictionaryMembers::parse(after_dictionary_member)
+    is (dictionary_members, rest) {
+    return (
+      DictionaryMembers::Some(dictionary_member, dictionary_members),
+      rest,
+    )
+  }
+
+  (DictionaryMembers::None, input)
+}
+
+///|
+pub struct Dictionary {
+  identifier : StringView
+  inheritance : Inheritance
+  dictionary_members : DictionaryMembers
+}
+
+///|
+pub fn Dictionary::parse(input : Tokens) -> (Dictionary, Tokens)? {
+  if input
+    is [
+      (@lexer.TokenType::Keyword, "dictionary"),
+      (@lexer.TokenType::Identifier, identifier),
+      .. after_identifier,
+    ] &&
+    Inheritance::parse(after_identifier)
+    is (
+      inheritance,
+      [(@lexer.TokenType::Punctuation, "{"), .. after_dictionary_start],
+    ) &&
+    DictionaryMembers::parse(after_dictionary_start)
+    is (
+      dictionary_members,
+      [
+        (@lexer.TokenType::Punctuation, "}"),
+        (@lexer.TokenType::Punctuation, ";"),
+        .. rest,
+      ],
+    ) {
+    return Some(
+      (Dictionary::{ identifier, inheritance, dictionary_members }, rest),
+    )
+  }
+
+  None
+}

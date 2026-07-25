@@ -159,6 +159,31 @@ pub enum DefaultValue {
 }
 pub fn DefaultValue::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub struct Dictionary {
+  identifier : StringView
+  inheritance : Inheritance
+  dictionary_members : DictionaryMembers
+}
+pub fn Dictionary::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub struct DictionaryMember {
+  extended_attribute_list : ExtendedAttributeList
+  dictionary_member_rest : DictionaryMemberRest
+}
+pub fn DictionaryMember::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum DictionaryMemberRest {
+  Required(TypeWithExtendedAttributes, StringView)
+  Optional(Type, StringView, Default)
+}
+pub fn DictionaryMemberRest::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum DictionaryMembers {
+  Some(DictionaryMember, DictionaryMembers)
+  None
+}
+pub fn DictionaryMembers::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
+
 pub enum DistinguishableType {
   PrimitiveType(PrimitiveType, Null)
   StringType(StringType, Null)
@@ -234,6 +259,12 @@ pub struct InheritAttribute {
   attribute_rest : AttributeRest
 }
 pub fn InheritAttribute::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum Inheritance {
+  Some(StringView)
+  None
+}
+pub fn Inheritance::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
 pub enum IntegerType {
   Short
