@@ -134,3 +134,22 @@ pub fn SpecialOperation::parse(input : Tokens) -> (SpecialOperation, Tokens)? {
 
   None
 }
+
+///|
+pub enum Operation {
+  RegularOperation(RegularOperation)
+  SpecialOperation(SpecialOperation)
+}
+
+///|
+pub fn Operation::parse(input : Tokens) -> (Operation, Tokens)? {
+  if RegularOperation::parse(input) is Some((regular_operation, rest)) {
+    return Some((Operation::RegularOperation(regular_operation), rest))
+  }
+
+  if SpecialOperation::parse(input) is Some((special_operation, rest)) {
+    return Some((Operation::SpecialOperation(special_operation), rest))
+  }
+
+  None
+}

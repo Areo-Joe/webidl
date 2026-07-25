@@ -211,6 +211,12 @@ pub enum Null {
 } derive(@debug.Debug)
 pub fn Null::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
+pub enum Operation {
+  RegularOperation(RegularOperation)
+  SpecialOperation(SpecialOperation)
+}
+pub fn Operation::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum OperationName {
   OperationNameKeyword(OperationNameKeyword)
   Identifier(StringView)
