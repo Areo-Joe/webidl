@@ -5,6 +5,22 @@ A Web IDL parser for MoonBit.
 The parser follows the Web IDL grammar and produces a typed syntax tree rooted
 at `Definitions`.
 
+## Installation
+
+Add the package to your MoonBit project:
+
+```sh
+moon add Areo-Joe/webidl
+```
+
+Then import the root package in `moon.pkg`:
+
+```moonbit nocheck
+import {
+  "Areo-Joe/webidl",
+}
+```
+
 ## Usage
 
 ```mbt check
