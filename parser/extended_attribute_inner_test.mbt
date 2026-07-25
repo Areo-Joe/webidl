@@ -1,7 +1,7 @@
 ///|
 fn parse_extended_attribute_inner(
   input : String,
-) -> (ExtendedAttributeInner, ArrayView[(@lexer.TokenType, StringView)]) {
+) -> (ExtendedAttributeInner, Tokens) {
   ExtendedAttributeInner::parse((try! @lexer.tokenize(input)).view())
 }
 

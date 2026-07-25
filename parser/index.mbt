@@ -1,4 +1,7 @@
 ///|
+pub type Tokens = ArrayView[(@lexer.TokenType, StringView)]
+
+///|
 pub enum ExtendedAttributeList {
   Some(ExtendedAttribute, ExtendedAttributes)
   None
@@ -6,8 +9,8 @@ pub enum ExtendedAttributeList {
 
 ///|
 pub fn ExtendedAttributeList::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (ExtendedAttributeList, ArrayView[(@lexer.TokenType, StringView)]) {
+  input : Tokens,
+) -> (ExtendedAttributeList, Tokens) {
   match input {
     [(@lexer.TokenType::Punctuation, "["), .. after_open_bracket] => {
       guard ExtendedAttribute::parse(after_open_bracket)
@@ -41,8 +44,8 @@ pub enum ExtendedAttributes {
 
 ///|
 pub fn ExtendedAttributes::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (ExtendedAttributes, ArrayView[(@lexer.TokenType, StringView)]) {
+  input : Tokens,
+) -> (ExtendedAttributes, Tokens) {
   match input {
     [(@lexer.TokenType::Punctuation, ","), .. after_comma] => {
       guard ExtendedAttribute::parse(after_comma)
@@ -69,12 +72,8 @@ pub enum ExtendedAttribute {
 } derive(Debug)
 
 ///|
-pub fn ExtendedAttribute::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (ExtendedAttribute, ArrayView[(@lexer.TokenType, StringView)])? {
-  fn parse_other(
-    input : ArrayView[(@lexer.TokenType, StringView)],
-  ) -> (ExtendedAttribute, ArrayView[(@lexer.TokenType, StringView)])? {
+pub fn ExtendedAttribute::parse(input : Tokens) -> (ExtendedAttribute, Tokens)? {
+  fn parse_other(input : Tokens) -> (ExtendedAttribute, Tokens)? {
     guard Other::parse(input) is Some((other, after_other)) else { None }
 
     let (extended_attribute_rest, rest) = ExtendedAttributeRest::parse(
@@ -170,8 +169,8 @@ pub enum ExtendedAttributeRest {
 
 ///|
 pub fn ExtendedAttributeRest::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (ExtendedAttributeRest, ArrayView[(@lexer.TokenType, StringView)]) {
+  input : Tokens,
+) -> (ExtendedAttributeRest, Tokens) {
   match ExtendedAttribute::parse(input) {
     Some((extended_attribute, rest)) =>
       (ExtendedAttributeRest::ExtendedAttribute(extended_attribute), rest)
@@ -190,11 +189,9 @@ pub enum ExtendedAttributeInner {
 
 ///|
 pub fn ExtendedAttributeInner::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (ExtendedAttributeInner, ArrayView[(@lexer.TokenType, StringView)]) {
-  fn parse_other_or_comma(
-    input : ArrayView[(@lexer.TokenType, StringView)],
-  ) -> (ExtendedAttributeInner, ArrayView[(@lexer.TokenType, StringView)]) {
+  input : Tokens,
+) -> (ExtendedAttributeInner, Tokens) {
+  fn parse_other_or_comma(input : Tokens) -> (ExtendedAttributeInner, Tokens) {
     guard OtherOrComma::parse(input)
       is Some((other_or_comma, after_other_or_comma)) else {
       (ExtendedAttributeInner::None, input)
@@ -289,9 +286,7 @@ pub enum OtherOrComma {
 } derive(Debug)
 
 ///|
-pub fn OtherOrComma::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (OtherOrComma, ArrayView[(@lexer.TokenType, StringView)])? {
+pub fn OtherOrComma::parse(input : Tokens) -> (OtherOrComma, Tokens)? {
   match input {
     [first, .. rest] =>
       match first {
@@ -357,9 +352,7 @@ pub enum Other {
 } derive(Debug)
 
 ///|
-pub fn Other::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (Other, ArrayView[(@lexer.TokenType, StringView)])? {
+pub fn Other::parse(input : Tokens) -> (Other, Tokens)? {
   match input {
     [first, .. rest] =>
       match first {
@@ -464,8 +457,8 @@ pub enum ArgumentNameKeyword {
 
 ///|
 pub fn ArgumentNameKeyword::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (ArgumentNameKeyword, ArrayView[(@lexer.TokenType, StringView)])? {
+  input : Tokens,
+) -> (ArgumentNameKeyword, Tokens)? {
   match input {
     [first, .. rest] =>
       match first {

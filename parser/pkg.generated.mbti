@@ -274,6 +274,7 @@ pub enum UnsignedIntegerType {
 pub fn UnsignedIntegerType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
 // Type aliases
+pub type Tokens = ArrayView[(@lexer.TokenType, StringView)]
 
 // Traits
 

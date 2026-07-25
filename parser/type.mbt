@@ -6,8 +6,8 @@ pub enum Type {
 
 ///|
 pub fn Type::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (Type, ArrayView[(@lexer.TokenType, StringView)])? {
+  input : Tokens,
+) -> (Type, Tokens)? {
   if SingleType::parse(input) is Some((single_type, rest)) {
     return Some((Type::SingleType(single_type), rest))
   }
@@ -28,8 +28,8 @@ pub struct TypeWithExtendedAttributes {
 
 ///|
 pub fn TypeWithExtendedAttributes::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (TypeWithExtendedAttributes, ArrayView[(@lexer.TokenType, StringView)])? {
+  input : Tokens,
+) -> (TypeWithExtendedAttributes, Tokens)? {
   let (extended_attribute_list, after_extended_attribute_list) = ExtendedAttributeList::parse(
     input,
   )
@@ -49,8 +49,8 @@ pub struct RecordType {
 
 ///|
 pub fn RecordType::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (RecordType, ArrayView[(@lexer.TokenType, StringView)])? {
+  input : Tokens,
+) -> (RecordType, Tokens)? {
   guard input
     is [
       (@lexer.TokenType::Keyword, "record"),
@@ -108,8 +108,8 @@ pub enum DistinguishableType {
 
 ///|
 pub fn DistinguishableType::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (DistinguishableType, ArrayView[(@lexer.TokenType, StringView)])? {
+  input : Tokens,
+) -> (DistinguishableType, Tokens)? {
   if PrimitiveType::parse(input) is Some((primitive_type, after_primitive_type)) {
     let (null, rest) = Null::parse(after_primitive_type)
 
@@ -251,8 +251,8 @@ pub enum Null {
 
 ///|
 pub fn Null::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (Null, ArrayView[(@lexer.TokenType, StringView)]) {
+  input : Tokens,
+) -> (Null, Tokens) {
   match input {
     [(@lexer.TokenType::Punctuation, "?"), .. rest] => (Null::Some, rest)
     _ => (Null::None, input)
@@ -268,8 +268,8 @@ pub enum StringType {
 
 ///|
 pub fn StringType::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (StringType, ArrayView[(@lexer.TokenType, StringView)])? {
+  input : Tokens,
+) -> (StringType, Tokens)? {
   match input {
     [(@lexer.TokenType::Keyword, "ByteString"), .. rest] =>
       Some((StringType::ByteString, rest))
@@ -289,8 +289,8 @@ pub enum OptionalLong {
 
 ///|
 pub fn OptionalLong::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (OptionalLong, ArrayView[(@lexer.TokenType, StringView)]) {
+  input : Tokens,
+) -> (OptionalLong, Tokens) {
   match input {
     [(@lexer.TokenType::Keyword, "long"), .. rest] => (OptionalLong::Long, rest)
     _ => (OptionalLong::None, input)
@@ -305,8 +305,8 @@ pub enum IntegerType {
 
 ///|
 pub fn IntegerType::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (IntegerType, ArrayView[(@lexer.TokenType, StringView)])? {
+  input : Tokens,
+) -> (IntegerType, Tokens)? {
   match input {
     [(@lexer.TokenType::Keyword, "short"), .. rest] =>
       Some((IntegerType::Short, rest))
@@ -327,8 +327,8 @@ pub enum UnsignedIntegerType {
 
 ///|
 pub fn UnsignedIntegerType::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (UnsignedIntegerType, ArrayView[(@lexer.TokenType, StringView)])? {
+  input : Tokens,
+) -> (UnsignedIntegerType, Tokens)? {
   match input {
     [(@lexer.TokenType::Keyword, "unsigned"), .. after_unsigned] => {
       guard IntegerType::parse(after_unsigned) is Some((integer_type, rest)) else {
@@ -355,8 +355,8 @@ pub enum FloatType {
 
 ///|
 pub fn FloatType::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (FloatType, ArrayView[(@lexer.TokenType, StringView)])? {
+  input : Tokens,
+) -> (FloatType, Tokens)? {
   match input {
     [(@lexer.TokenType::Keyword, "float"), .. rest] =>
       Some((FloatType::Float, rest))
@@ -374,8 +374,8 @@ pub enum UnrestrictedFloatType {
 
 ///|
 pub fn UnrestrictedFloatType::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (UnrestrictedFloatType, ArrayView[(@lexer.TokenType, StringView)])? {
+  input : Tokens,
+) -> (UnrestrictedFloatType, Tokens)? {
   match input {
     [(@lexer.TokenType::Keyword, "unrestricted"), .. after_unrestricted] => {
       guard FloatType::parse(after_unrestricted) is Some((float_type, rest)) else {
@@ -404,8 +404,8 @@ pub enum PrimitiveType {
 
 ///|
 pub fn PrimitiveType::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (PrimitiveType, ArrayView[(@lexer.TokenType, StringView)])? {
+  input : Tokens,
+) -> (PrimitiveType, Tokens)? {
   if UnsignedIntegerType::parse(input) is Some((unsigned_integer_type, rest)) {
     return Some(
       (PrimitiveType::UnsignedIntegerType(unsigned_integer_type), rest),
@@ -453,8 +453,8 @@ pub enum BufferRelatedType {
 
 ///|
 pub fn BufferRelatedType::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (BufferRelatedType, ArrayView[(@lexer.TokenType, StringView)])? {
+  input : Tokens,
+) -> (BufferRelatedType, Tokens)? {
   match input {
     [first, .. rest] =>
       match first {
@@ -518,8 +518,8 @@ pub enum UnionMemberTypes {
 
 ///|
 pub fn UnionMemberTypes::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (UnionMemberTypes, ArrayView[(@lexer.TokenType, StringView)]) {
+  input : Tokens,
+) -> (UnionMemberTypes, Tokens) {
   if input is [(@lexer.TokenType::Keyword, "or"), .. after_or] &&
     UnionMemberType::parse(after_or)
     is Some((union_member_type, after_union_member_type)) &&
@@ -533,8 +533,8 @@ pub fn UnionMemberTypes::parse(
 
 ///|
 pub fn UnionMemberType::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (UnionMemberType, ArrayView[(@lexer.TokenType, StringView)])? {
+  input : Tokens,
+) -> (UnionMemberType, Tokens)? {
   if ExtendedAttributeList::parse(input)
     is (extended_attribute_list, after_extended_attribute_list) &&
     DistinguishableType::parse(after_extended_attribute_list)
@@ -559,8 +559,8 @@ pub fn UnionMemberType::parse(
 
 ///|
 pub fn UnionType::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (UnionType, ArrayView[(@lexer.TokenType, StringView)])? {
+  input : Tokens,
+) -> (UnionType, Tokens)? {
   if input is [(@lexer.TokenType::Punctuation, "("), .. after_parentheses_start] &&
     UnionMemberType::parse(after_parentheses_start)
     is Some(
@@ -601,8 +601,8 @@ pub struct PromiseType {
 
 ///|
 pub fn PromiseType::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (PromiseType, ArrayView[(@lexer.TokenType, StringView)])? {
+  input : Tokens,
+) -> (PromiseType, Tokens)? {
   if input
     is [
       (@lexer.TokenType::Keyword, "Promise"),
@@ -626,8 +626,8 @@ pub enum SingleType {
 
 ///|
 pub fn SingleType::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (SingleType, ArrayView[(@lexer.TokenType, StringView)])? {
+  input : Tokens,
+) -> (SingleType, Tokens)? {
   if DistinguishableType::parse(input) is Some((distinguishable_type, rest)) {
     return Some((SingleType::DistinguishableType(distinguishable_type), rest))
   }
@@ -651,8 +651,8 @@ pub enum ConstType {
 
 ///|
 pub fn ConstType::parse(
-  input : ArrayView[(@lexer.TokenType, StringView)],
-) -> (ConstType, ArrayView[(@lexer.TokenType, StringView)])? {
+  input : Tokens,
+) -> (ConstType, Tokens)? {
   if PrimitiveType::parse(input) is Some((primitive_type, rest)) {
     return Some((ConstType::PrimitiveType(primitive_type), rest))
   }
