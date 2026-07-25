@@ -581,3 +581,26 @@ pub fn UnionType::parse(
 
   None
 }
+
+///|
+pub struct PromiseType {
+  type_ : Type
+}
+
+///|
+pub fn PromiseType::parse(
+  input : ArrayView[(@lexer.TokenType, StringView)],
+) -> (PromiseType, ArrayView[(@lexer.TokenType, StringView)])? {
+  if input
+    is [
+      (@lexer.TokenType::Keyword, "Promise"),
+      (@lexer.TokenType::Punctuation, "<"),
+      .. after_promise_start,
+    ] &&
+    Type::parse(after_promise_start)
+    is Some((type_, [(@lexer.TokenType::Punctuation, ">"), .. rest])) {
+    return Some((PromiseType::{ type_, }, rest))
+  }
+
+  None
+}
