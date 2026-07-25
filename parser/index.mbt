@@ -1,4 +1,123 @@
 ///|
+pub enum ExtendedAttribute {
+  Parentheses(ExtendedAttributeInner, ExtendedAttributeRest)
+  Brackets(ExtendedAttributeInner, ExtendedAttributeRest)
+  Braces(ExtendedAttributeInner, ExtendedAttributeRest)
+  Other(Other, ExtendedAttributeRest)
+}
+
+///|
+pub fn ExtendedAttribute::parse(
+  input : ArrayView[(@lexer.TokenType, StringView)],
+) -> (ExtendedAttribute, ArrayView[(@lexer.TokenType, StringView)])? {
+  fn parse_other(
+    input : ArrayView[(@lexer.TokenType, StringView)],
+  ) -> (ExtendedAttribute, ArrayView[(@lexer.TokenType, StringView)])? {
+    guard Other::parse(input) is Some((other, after_other)) else { None }
+
+    let (extended_attribute_rest, rest) = ExtendedAttributeRest::parse(
+      after_other,
+    )
+
+    Some((ExtendedAttribute::Other(other, extended_attribute_rest), rest))
+  }
+
+  match input {
+    [first, .. rest] =>
+      match first {
+        (@lexer.TokenType::Punctuation, "(") => {
+          let (extended_attribute_inner, after_inner) = ExtendedAttributeInner::parse(
+            rest,
+          )
+
+          guard after_inner
+            is [(@lexer.TokenType::Punctuation, ")"), .. after_parentheses] else {
+            None
+          }
+
+          let (extended_attribute_rest, after_outer) = ExtendedAttributeRest::parse(
+            after_parentheses,
+          )
+
+          Some(
+            (
+              ExtendedAttribute::Parentheses(
+                extended_attribute_inner, extended_attribute_rest,
+              ),
+              after_outer,
+            ),
+          )
+        }
+        (@lexer.TokenType::Punctuation, "{") => {
+          let (extended_attribute_inner, after_inner) = ExtendedAttributeInner::parse(
+            rest,
+          )
+
+          guard after_inner
+            is [(@lexer.TokenType::Punctuation, "}"), .. after_braces] else {
+            None
+          }
+
+          let (extended_attribute_rest, after_outer) = ExtendedAttributeRest::parse(
+            after_braces,
+          )
+
+          Some(
+            (
+              ExtendedAttribute::Braces(
+                extended_attribute_inner, extended_attribute_rest,
+              ),
+              after_outer,
+            ),
+          )
+        }
+        (@lexer.TokenType::Punctuation, "[") => {
+          let (extended_attribute_inner, after_inner) = ExtendedAttributeInner::parse(
+            rest,
+          )
+
+          guard after_inner
+            is [(@lexer.TokenType::Punctuation, "]"), .. after_brackets] else {
+            None
+          }
+
+          let (extended_attribute_rest, after_outer) = ExtendedAttributeRest::parse(
+            after_brackets,
+          )
+
+          Some(
+            (
+              ExtendedAttribute::Brackets(
+                extended_attribute_inner, extended_attribute_rest,
+              ),
+              after_outer,
+            ),
+          )
+        }
+        _ => parse_other(input)
+      }
+    _ => parse_other(input)
+  }
+}
+
+///|
+pub enum ExtendedAttributeRest {
+  ExtendedAttribute(ExtendedAttribute)
+  None
+}
+
+///|
+pub fn ExtendedAttributeRest::parse(
+  input : ArrayView[(@lexer.TokenType, StringView)],
+) -> (ExtendedAttributeRest, ArrayView[(@lexer.TokenType, StringView)]) {
+  match ExtendedAttribute::parse(input) {
+    Some((extended_attribute, rest)) =>
+      (ExtendedAttributeRest::ExtendedAttribute(extended_attribute), rest)
+    None => (ExtendedAttributeRest::None, input)
+  }
+}
+
+///|
 pub enum ExtendedAttributeInner {
   Parentheses(ExtendedAttributeInner, ExtendedAttributeInner)
   Brackets(ExtendedAttributeInner, ExtendedAttributeInner)
