@@ -223,6 +223,11 @@ pub enum FloatType {
 }
 pub fn FloatType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub struct InheritAttribute {
+  attribute_rest : AttributeRest
+}
+pub fn InheritAttribute::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum IntegerType {
   Short
   Long(OptionalLong)

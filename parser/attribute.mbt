@@ -57,3 +57,18 @@ pub fn AttributeRest::parse(input : Tokens) -> (AttributeRest, Tokens)? {
 
   return None
 }
+
+///|
+pub struct InheritAttribute {
+  attribute_rest : AttributeRest
+}
+
+///|
+pub fn InheritAttribute::parse(input : Tokens) -> (InheritAttribute, Tokens)? {
+  if input is [(@lexer.TokenType::Keyword, "inherit"), .. after_inherit] &&
+    AttributeRest::parse(after_inherit) is Some((attribute_rest, rest)) {
+    return Some((InheritAttribute::{ attribute_rest, }, rest))
+  }
+
+  return None
+}
