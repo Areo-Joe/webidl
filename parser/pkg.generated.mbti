@@ -178,6 +178,14 @@ pub enum ExtendedAttributes {
 } derive(@debug.Debug)
 pub fn ExtendedAttributes::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
+pub enum FloatLiteral {
+  Decimal(StringView)
+  NegativeInfinity
+  Infinity
+  NaN
+}
+pub fn FloatLiteral::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum FloatType {
   Float
   Double

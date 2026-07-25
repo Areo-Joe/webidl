@@ -296,3 +296,32 @@ pub fn BooleanLiteral::parse(input : Tokens) -> (BooleanLiteral, Tokens)? {
     _ => None
   }
 }
+
+///|
+pub enum FloatLiteral {
+  Decimal(StringView)
+  NegativeInfinity
+  Infinity
+  NaN
+}
+
+///|
+pub fn FloatLiteral::parse(input : Tokens) -> (FloatLiteral, Tokens)? {
+  if input is [(@lexer.TokenType::Decimal, decimal), .. rest] {
+    return Some((FloatLiteral::Decimal(decimal), rest))
+  }
+
+  if input is [(@lexer.TokenType::Keyword, "-Infinity"), .. rest] {
+    return Some((FloatLiteral::NegativeInfinity, rest))
+  }
+
+  if input is [(@lexer.TokenType::Keyword, "Infinity"), .. rest] {
+    return Some((FloatLiteral::Infinity, rest))
+  }
+
+  if input is [(@lexer.TokenType::Keyword, "NaN"), .. rest] {
+    return Some((FloatLiteral::NaN, rest))
+  }
+
+  None
+}
