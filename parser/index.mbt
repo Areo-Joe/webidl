@@ -856,3 +856,30 @@ pub fn PartialInterfaceMember::parse(
 
   None
 }
+
+///|
+pub enum PartialInterfaceMembers {
+  Some(ExtendedAttributeList, PartialInterfaceMember, PartialInterfaceMembers)
+  None
+}
+
+///|
+pub fn PartialInterfaceMembers::parse(
+  input : Tokens,
+) -> (PartialInterfaceMembers, Tokens) {
+  if ExtendedAttributeList::parse(input)
+    is (extended_attribute_list, after_extended_attribute_list) &&
+    PartialInterfaceMember::parse(after_extended_attribute_list)
+    is Some((partial_interface_member, after_partial_interface_member)) &&
+    PartialInterfaceMembers::parse(after_partial_interface_member)
+    is (partial_interface_members, rest) {
+    return (
+      PartialInterfaceMembers::Some(
+        extended_attribute_list, partial_interface_member, partial_interface_members,
+      ),
+      rest,
+    )
+  }
+
+  (PartialInterfaceMembers::None, input)
+}
