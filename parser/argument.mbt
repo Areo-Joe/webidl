@@ -172,3 +172,18 @@ pub fn ArgumentName::parse(input : Tokens) -> (ArgumentName, Tokens)? {
 
   return None
 }
+
+///|
+pub enum Ellipsis {
+  Some
+  None
+}
+
+///|
+pub fn Ellipsis::parse(input : Tokens) -> (Ellipsis, Tokens) {
+  if input is [(@lexer.TokenType::Punctuation, "..."), .. rest] {
+    return (Ellipsis::Some, rest)
+  }
+
+  (Ellipsis::None, input)
+}
