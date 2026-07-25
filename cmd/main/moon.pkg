@@ -1,0 +1,7 @@
+// import {
+//   "Areo-Joe/webidl" @lib,
+// }
+
+options(
+  "is-main": true,
+)
