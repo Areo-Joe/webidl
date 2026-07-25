@@ -1110,6 +1110,7 @@ pub enum Definitions {
 }
 
 ///|
+#as_free_fn(parse, visibility="pub")
 pub fn Definitions::parse(input : Tokens) -> (Definitions, Tokens) {
   if ExtendedAttributeList::parse(input)
     is (extended_attribute_list, after_extended_attribute_list) &&

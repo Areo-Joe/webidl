@@ -205,6 +205,7 @@ pub enum Definitions {
   Some(ExtendedAttributeList, Definition, Definitions)
   None
 }
+#as_free_fn(parse)
 pub fn Definitions::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
 pub struct Dictionary {
