@@ -1,8 +1,8 @@
 /// Blackbox tests for INTEGER tokenization, per WebIDL spec:
 ///   integer = /-?([1-9][0-9]*|0[Xx][0-9A-Fa-f]+|0[0-7]*)/
 
-///| === Alt 1: [1-9][0-9]* (decimal with non-zero first digit) ===
-
+///|
+/// === Alt 1: [1-9][0-9]* (decimal with non-zero first digit) ===
 test "integer - decimal single digit 1" {
   let result = tokenize("1") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 1)
@@ -11,6 +11,7 @@ test "integer - decimal single digit 1" {
   assert_eq(s.to_owned(), "1")
 }
 
+///|
 test "integer - decimal single digit 9" {
   let result = tokenize("9") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 1)
@@ -19,6 +20,7 @@ test "integer - decimal single digit 9" {
   assert_eq(s.to_owned(), "9")
 }
 
+///|
 test "integer - decimal multi digit" {
   let result = tokenize("42") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 1)
@@ -27,6 +29,7 @@ test "integer - decimal multi digit" {
   assert_eq(s.to_owned(), "42")
 }
 
+///|
 test "integer - decimal large" {
   let result = tokenize("1234567890") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 1)
@@ -35,8 +38,8 @@ test "integer - decimal large" {
   assert_eq(s.to_owned(), "1234567890")
 }
 
-///| === Alt 1 with -? prefix (negative decimal) ===
-
+///|
+/// === Alt 1 with -? prefix (negative decimal) ===
 test "integer - negative decimal small" {
   let result = tokenize("-1") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 1)
@@ -45,6 +48,7 @@ test "integer - negative decimal small" {
   assert_eq(s.to_owned(), "-1")
 }
 
+///|
 test "integer - negative decimal large" {
   let result = tokenize("-42") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 1)
@@ -53,8 +57,8 @@ test "integer - negative decimal large" {
   assert_eq(s.to_owned(), "-42")
 }
 
-///| === Alt 2: 0[Xx][0-9A-Fa-f]+ (hex) ===
-
+///|
+/// === Alt 2: 0[Xx][0-9A-Fa-f]+ (hex) ===
 test "integer - hex lowercase x" {
   let result = tokenize("0x1A") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 1)
@@ -63,6 +67,7 @@ test "integer - hex lowercase x" {
   assert_eq(s.to_owned(), "0x1A")
 }
 
+///|
 test "integer - hex uppercase X" {
   let result = tokenize("0XFF") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 1)
@@ -71,6 +76,7 @@ test "integer - hex uppercase X" {
   assert_eq(s.to_owned(), "0XFF")
 }
 
+///|
 test "integer - hex single digit" {
   let result = tokenize("0x0") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 1)
@@ -79,6 +85,7 @@ test "integer - hex single digit" {
   assert_eq(s.to_owned(), "0x0")
 }
 
+///|
 test "integer - hex uppercase X single digit" {
   let result = tokenize("0X0") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 1)
@@ -87,6 +94,7 @@ test "integer - hex uppercase X single digit" {
   assert_eq(s.to_owned(), "0X0")
 }
 
+///|
 test "integer - hex all hex digits A-F" {
   let result = tokenize("0xDEADBEEF") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 1)
@@ -95,6 +103,7 @@ test "integer - hex all hex digits A-F" {
   assert_eq(s.to_owned(), "0xDEADBEEF")
 }
 
+///|
 test "integer - hex mixed case" {
   let result = tokenize("0xAbCdEf") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 1)
@@ -103,8 +112,8 @@ test "integer - hex mixed case" {
   assert_eq(s.to_owned(), "0xAbCdEf")
 }
 
-///| === Alt 2 with -? prefix (negative hex) ===
-
+///|
+/// === Alt 2 with -? prefix (negative hex) ===
 test "integer - negative hex" {
   let result = tokenize("-0x1A") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 1)
@@ -113,8 +122,8 @@ test "integer - negative hex" {
   assert_eq(s.to_owned(), "-0x1A")
 }
 
-///| === Alt 3: 0[0-7]* (octal) ===
-
+///|
+/// === Alt 3: 0[0-7]* (octal) ===
 test "integer - octal zero" {
   let result = tokenize("0") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 1)
@@ -123,6 +132,7 @@ test "integer - octal zero" {
   assert_eq(s.to_owned(), "0")
 }
 
+///|
 test "integer - octal single digit" {
   let result = tokenize("01") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 1)
@@ -131,6 +141,7 @@ test "integer - octal single digit" {
   assert_eq(s.to_owned(), "01")
 }
 
+///|
 test "integer - octal multi digit" {
   let result = tokenize("0777") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 1)
@@ -139,6 +150,7 @@ test "integer - octal multi digit" {
   assert_eq(s.to_owned(), "0777")
 }
 
+///|
 test "integer - octal leading zeros octal" {
   let result = tokenize("007") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 1)
@@ -147,8 +159,8 @@ test "integer - octal leading zeros octal" {
   assert_eq(s.to_owned(), "007")
 }
 
-///| === Alt 3 with -? prefix (negative octal) ===
-
+///|
+/// === Alt 3 with -? prefix (negative octal) ===
 test "integer - negative octal" {
   let result = tokenize("-0777") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 1)
@@ -157,6 +169,7 @@ test "integer - negative octal" {
   assert_eq(s.to_owned(), "-0777")
 }
 
+///|
 test "integer - negative zero" {
   let result = tokenize("-0") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 1)
@@ -165,8 +178,8 @@ test "integer - negative zero" {
   assert_eq(s.to_owned(), "-0")
 }
 
-///| === Edge cases ===
-
+///|
+/// === Edge cases ===
 test "integer - 0x no hex digits falls back to octal 0 + identifier x" {
   let result = tokenize("0x") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 2)
@@ -178,6 +191,7 @@ test "integer - 0x no hex digits falls back to octal 0 + identifier x" {
   assert_eq(s1.to_owned(), "x")
 }
 
+///|
 test "integer - 0X no hex digits falls back to octal 0 + identifier X" {
   let result = tokenize("0X") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 2)
@@ -189,6 +203,7 @@ test "integer - 0X no hex digits falls back to octal 0 + identifier X" {
   assert_eq(s1.to_owned(), "X")
 }
 
+///|
 test "integer - -0x falls back to negative octal 0 + identifier x" {
   let result = tokenize("-0x") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 2)
@@ -200,6 +215,7 @@ test "integer - -0x falls back to negative octal 0 + identifier x" {
   assert_eq(s1.to_owned(), "x")
 }
 
+///|
 test "integer - 08 splits into octal 0 + decimal 8" {
   let result = tokenize("08") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 2)
@@ -211,6 +227,7 @@ test "integer - 08 splits into octal 0 + decimal 8" {
   assert_eq(s1.to_owned(), "8")
 }
 
+///|
 test "integer - 09 splits into octal 0 + decimal 9" {
   let result = tokenize("09") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 2)
@@ -222,6 +239,7 @@ test "integer - 09 splits into octal 0 + decimal 9" {
   assert_eq(s1.to_owned(), "9")
 }
 
+///|
 test "integer - just a minus sign is not an integer" {
   let result = tokenize("-") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 1)
@@ -230,6 +248,7 @@ test "integer - just a minus sign is not an integer" {
   assert_eq(s.to_owned(), "-")
 }
 
+///|
 test "integer - in context with other tokens" {
   let result = tokenize("const a = 42;") catch { _ => fail("unexpected") }
   let int_tokens = result.filter(fn(pair) {
@@ -241,6 +260,7 @@ test "integer - in context with other tokens" {
   assert_eq(s.to_owned(), "42")
 }
 
+///|
 test "integer - identifier starting with digits" {
   let result = tokenize("42abc") catch { _ => fail("unexpected") }
   assert_eq(result.length(), 2)
