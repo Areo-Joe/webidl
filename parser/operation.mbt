@@ -136,6 +136,30 @@ pub fn SpecialOperation::parse(input : Tokens) -> (SpecialOperation, Tokens)? {
 }
 
 ///|
+pub enum StringifierRest {
+  Attribute(OptionalReadOnly, AttributeRest)
+  Semicolon
+}
+
+///|
+pub fn StringifierRest::parse(input : Tokens) -> (StringifierRest, Tokens)? {
+  if OptionalReadOnly::parse(input)
+    is (optional_read_only, after_optional_read_only) &&
+    AttributeRest::parse(after_optional_read_only)
+    is Some((attribute_rest, rest)) {
+    return Some(
+      (StringifierRest::Attribute(optional_read_only, attribute_rest), rest),
+    )
+  }
+
+  if input is [(@lexer.TokenType::Punctuation, ";"), .. rest] {
+    return Some((StringifierRest::Semicolon, rest))
+  }
+
+  None
+}
+
+///|
 pub enum Operation {
   RegularOperation(RegularOperation)
   SpecialOperation(SpecialOperation)

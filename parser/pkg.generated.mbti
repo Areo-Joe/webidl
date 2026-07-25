@@ -396,6 +396,12 @@ pub enum StringType {
 } derive(@debug.Debug)
 pub fn StringType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub enum StringifierRest {
+  Attribute(OptionalReadOnly, AttributeRest)
+  Semicolon
+}
+pub fn StringifierRest::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum Type {
   SingleType(SingleType)
   UnionType(UnionType, Null)
