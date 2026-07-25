@@ -93,6 +93,24 @@ pub enum ExtendedAttributes {
 } derive(@debug.Debug)
 pub fn ExtendedAttributes::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
+pub enum IntegerType {
+  Short
+  Long(OptionalLong)
+}
+pub fn IntegerType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum Null {
+  Some
+  None
+} derive(@debug.Debug)
+pub fn Null::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
+
+pub enum OptionalLong {
+  Long
+  None
+}
+pub fn OptionalLong::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
+
 pub enum Other {
   Integer(StringView)
   Decimal(StringView)
@@ -148,6 +166,19 @@ pub enum OtherOrComma {
   Comma
 } derive(@debug.Debug)
 pub fn OtherOrComma::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum StringType {
+  ByteString
+  DOMString
+  USVString
+} derive(@debug.Debug)
+pub fn StringType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
+pub enum UnsignedIntegerType {
+  UnsignedIntegerType(IntegerType)
+  IntegerType(IntegerType)
+}
+pub fn UnsignedIntegerType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
 // Type aliases
 
