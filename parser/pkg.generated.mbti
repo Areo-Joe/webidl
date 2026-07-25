@@ -405,6 +405,11 @@ pub struct ReadWriteMaplike {
 }
 pub fn ReadWriteMaplike::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub struct ReadWriteSetlike {
+  setlike_rest : SetlikeRest
+}
+pub fn ReadWriteSetlike::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub struct RecordType {
   string_type : StringType
   type_with_extended_attributes : TypeWithExtendedAttributes

@@ -766,3 +766,17 @@ pub fn ReadWriteMaplike::parse(input : Tokens) -> (ReadWriteMaplike, Tokens)? {
 
   None
 }
+
+///|
+pub struct ReadWriteSetlike {
+  setlike_rest : SetlikeRest
+}
+
+///|
+pub fn ReadWriteSetlike::parse(input : Tokens) -> (ReadWriteSetlike, Tokens)? {
+  if SetlikeRest::parse(input) is Some((setlike_rest, rest)) {
+    return Some((ReadWriteSetlike::{ setlike_rest, }, rest))
+  }
+
+  None
+}
