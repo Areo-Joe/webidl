@@ -1,11 +1,23 @@
 ///|
-pub enum Type {}
+pub enum Type {
+  SingleType(SingleType)
+  UnionType(UnionType, Null)
+}
 
 ///|
 pub fn Type::parse(
   input : ArrayView[(@lexer.TokenType, StringView)],
 ) -> (Type, ArrayView[(@lexer.TokenType, StringView)])? {
-  ...
+  if SingleType::parse(input) is Some((single_type, rest)) {
+    return Some((Type::SingleType(single_type), rest))
+  }
+
+  if UnionType::parse(input) is Some((union_type, after_union_type)) &&
+    Null::parse(after_union_type) is (null, rest) {
+    return Some((Type::UnionType(union_type, null), rest))
+  }
+
+  None
 }
 
 ///|
