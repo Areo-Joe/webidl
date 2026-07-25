@@ -604,3 +604,29 @@ pub fn PromiseType::parse(
 
   None
 }
+
+///|
+pub enum SingleType {
+  DistinguishableType(DistinguishableType)
+  Any
+  PromiseType(PromiseType)
+}
+
+///|
+pub fn SingleType::parse(
+  input : ArrayView[(@lexer.TokenType, StringView)],
+) -> (SingleType, ArrayView[(@lexer.TokenType, StringView)])? {
+  if DistinguishableType::parse(input) is Some((distinguishable_type, rest)) {
+    return Some((SingleType::DistinguishableType(distinguishable_type), rest))
+  }
+
+  if input is [(@lexer.TokenType::Keyword, "any"), .. rest] {
+    return Some((SingleType::Any, rest))
+  }
+
+  if PromiseType::parse(input) is Some((promise_type, rest)) {
+    return Some((SingleType::PromiseType(promise_type), rest))
+  }
+
+  return None
+}
