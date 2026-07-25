@@ -1,7 +1,6 @@
-// import {
-//   "Areo-Joe/webidl" @lib,
-// }
+import {
+  "Areo-Joe/webidl/lexer",
+  "moonbitlang/core/debug",
+}
 
-options(
-  "is-main": true,
-)
+pkgtype(kind: "executable")

@@ -1,0 +1,25 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "Areo-Joe/webidl/lexer"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn tokenize(StringView) -> Array[(TokenType, StringView)] raise
+
+// Errors
+
+// Types and methods
+pub enum TokenType {
+  Integer
+  Decimal
+  Identifier
+  String
+  Other
+} derive(@debug.Debug)
+
+// Type aliases
+
+// Traits
+
