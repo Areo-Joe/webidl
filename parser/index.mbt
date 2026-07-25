@@ -883,3 +883,36 @@ pub fn PartialInterfaceMembers::parse(
 
   (PartialInterfaceMembers::None, input)
 }
+
+///|
+pub struct PartialInterfaceRest {
+  identifier : StringView
+  partial_interface_members : PartialInterfaceMembers
+}
+
+///|
+pub fn PartialInterfaceRest::parse(
+  input : Tokens,
+) -> (PartialInterfaceRest, Tokens)? {
+  if input
+    is [
+      (@lexer.TokenType::Identifier, identifier),
+      (@lexer.TokenType::Punctuation, "{"),
+      .. after_partial_interface_start,
+    ] &&
+    PartialInterfaceMembers::parse(after_partial_interface_start)
+    is (
+      partial_interface_members,
+      [
+        (@lexer.TokenType::Punctuation, "}"),
+        (@lexer.TokenType::Punctuation, ";"),
+        .. rest,
+      ],
+    ) {
+    return Some(
+      (PartialInterfaceRest::{ identifier, partial_interface_members }, rest),
+    )
+  }
+
+  None
+}

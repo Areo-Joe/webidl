@@ -389,6 +389,12 @@ pub enum PartialInterfaceMembers {
 }
 pub fn PartialInterfaceMembers::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
+pub struct PartialInterfaceRest {
+  identifier : StringView
+  partial_interface_members : PartialInterfaceMembers
+}
+pub fn PartialInterfaceRest::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum PrimitiveType {
   UnsignedIntegerType(UnsignedIntegerType)
   UnrestrictedFloatType(UnrestrictedFloatType)
