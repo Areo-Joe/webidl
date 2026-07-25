@@ -46,3 +46,19 @@ pub fn DefaultValue::parse(input : Tokens) -> (DefaultValue, Tokens)? {
 
   None
 }
+
+///|
+pub enum Default {
+  Some(DefaultValue)
+  None
+}
+
+///|
+pub fn Default::parse(input : Tokens) -> (Default, Tokens) {
+  if input is [(@lexer.TokenType::Punctuation, "="), .. after_equal] &&
+    DefaultValue::parse(after_equal) is Some((default_value, rest)) {
+    return (Default::Some(default_value), rest)
+  }
+
+  (Default::None, input)
+}
