@@ -916,3 +916,37 @@ pub fn PartialInterfaceRest::parse(
 
   None
 }
+
+///|
+pub enum MixinMember {
+  Const(Const)
+  RegularOperation(RegularOperation)
+  Stringifier(Stringifier)
+  Attribute(OptionalReadOnly, AttributeRest)
+}
+
+///|
+pub fn MixinMember::parse(input : Tokens) -> (MixinMember, Tokens)? {
+  if Const::parse(input) is Some((const_, rest)) {
+    return Some((MixinMember::Const(const_), rest))
+  }
+
+  if RegularOperation::parse(input) is Some((regular_operation, rest)) {
+    return Some((MixinMember::RegularOperation(regular_operation), rest))
+  }
+
+  if Stringifier::parse(input) is Some((stringifier, rest)) {
+    return Some((MixinMember::Stringifier(stringifier), rest))
+  }
+
+  if OptionalReadOnly::parse(input)
+    is (optional_read_only, after_optional_read_only) &&
+    AttributeRest::parse(after_optional_read_only)
+    is Some((attribute_rest, rest)) {
+    return Some(
+      (MixinMember::Attribute(optional_read_only, attribute_rest), rest),
+    )
+  }
+
+  None
+}

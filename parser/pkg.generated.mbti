@@ -253,6 +253,14 @@ pub struct MaplikeRest {
 }
 pub fn MaplikeRest::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+pub enum MixinMember {
+  Const(Const)
+  RegularOperation(RegularOperation)
+  Stringifier(Stringifier)
+  Attribute(OptionalReadOnly, AttributeRest)
+}
+pub fn MixinMember::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+
 pub enum Null {
   Some
   None
