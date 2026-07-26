@@ -231,6 +231,7 @@ pub enum DictionaryMembers {
   Some(DictionaryMember, DictionaryMembers)
   None
 }
+pub fn DictionaryMembers::iter(Self) -> Iter[DictionaryMember]
 pub fn DictionaryMembers::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
 pub enum DistinguishableType {
@@ -483,6 +484,7 @@ pub enum MixinMembers {
   Some(ExtendedAttributeList, MixinMember, MixinMembers)
   None
 }
+pub fn MixinMembers::iter(Self) -> Iter[(ExtendedAttributeList, MixinMember)]
 pub fn MixinMembers::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
 pub struct MixinRest {
@@ -662,6 +664,7 @@ pub enum PartialInterfaceMembers {
   Some(ExtendedAttributeList, PartialInterfaceMember, PartialInterfaceMembers)
   None
 }
+pub fn PartialInterfaceMembers::iter(Self) -> Iter[(ExtendedAttributeList, PartialInterfaceMember)]
 pub fn PartialInterfaceMembers::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
 pub enum PartialInterfaceOrPartialMixin {

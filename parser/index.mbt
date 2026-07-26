@@ -438,6 +438,24 @@ pub enum PartialInterfaceMembers {
 }
 
 ///|
+pub fn PartialInterfaceMembers::iter(
+  self : Self,
+) -> Iter[(ExtendedAttributeList, PartialInterfaceMember)] {
+  let mut target = self
+
+  Iter::new(() => {
+    match target {
+      Some(attribute_list, current_member, rest) => {
+        target = rest
+
+        Some((attribute_list, current_member))
+      }
+      None => None
+    }
+  })
+}
+
+///|
 pub fn PartialInterfaceMembers::parse(
   input : Tokens,
 ) -> (PartialInterfaceMembers, Tokens) {
@@ -529,6 +547,24 @@ pub fn MixinMember::parse(input : Tokens) -> (MixinMember, Tokens)? {
 pub enum MixinMembers {
   Some(ExtendedAttributeList, MixinMember, MixinMembers)
   None
+}
+
+///|
+pub fn MixinMembers::iter(
+  self : Self,
+) -> Iter[(ExtendedAttributeList, MixinMember)] {
+  let mut target = self
+
+  Iter::new(() => {
+    match target {
+      Some(attribute_list, current_member, rest) => {
+        target = rest
+
+        Some((attribute_list, current_member))
+      }
+      None => None
+    }
+  })
 }
 
 ///|
@@ -698,6 +734,22 @@ pub fn DictionaryMember::parse(input : Tokens) -> (DictionaryMember, Tokens)? {
 pub enum DictionaryMembers {
   Some(DictionaryMember, DictionaryMembers)
   None
+}
+
+///|
+pub fn DictionaryMembers::iter(self : Self) -> Iter[DictionaryMember] {
+  let mut target = self
+
+  Iter::new(() => {
+    match target {
+      Some(current_member, rest) => {
+        target = rest
+
+        Some(current_member)
+      }
+      None => None
+    }
+  })
 }
 
 ///|
