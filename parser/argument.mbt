@@ -283,6 +283,15 @@ pub enum ArgumentList {
 }
 
 ///|
+pub fn ArgumentList::iter(self : Self) -> Iter[Argument] {
+  match self {
+    Some(first_argument, rest) =>
+      Iter::singleton(first_argument).concat(rest.iter())
+    None => Iter::empty()
+  }
+}
+
+///|
 pub fn ArgumentList::parse(input : Tokens) -> (ArgumentList, Tokens) {
   if Argument::parse(input) is Some((argument, after_argument)) &&
     Arguments::parse(after_argument) is (arguments, rest) {

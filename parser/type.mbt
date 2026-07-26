@@ -484,6 +484,13 @@ pub struct UnionType {
 }
 
 ///|
+pub fn UnionType::iter(self : Self) -> Iter[UnionMemberType] {
+  Iter::singleton(self.first_union_member_type)
+  .concat(Iter::singleton(self.second_union_member_type))
+  .concat(self.union_member_types.iter())
+}
+
+///|
 pub enum UnionMemberType {
   UnionType(UnionType, Null)
   DistinguishableTypeWithExtendedAttributeList(

@@ -69,3 +69,51 @@ test "recursive list iterators visit every parsed element" {
   )
   assert_eq(definitions.iter().count(), 2)
 }
+
+///|
+test "complete list iterators include their first and remaining elements" {
+  let (argument_list, _) = ArgumentList::parse(
+    iter_tokens("DOMString value, optional long count"),
+  )
+  assert_eq(argument_list.iter().count(), 2)
+
+  let (attribute_list, _) = ExtendedAttributeList::parse(
+    iter_tokens("[Clamp, Exposed] tail"),
+  )
+  assert_eq(attribute_list.iter().count(), 2)
+
+  guard IdentifierList::parse(iter_tokens("One, Two, Three tail"))
+    is Some((identifier_list, _)) else {
+    fail("expected identifier list")
+  }
+  assert_eq(identifier_list.iter().to_array(), ["One", "Two", "Three"])
+
+  guard IntegerList::parse(iter_tokens("1, -2, 3 tail"))
+    is Some((integer_list, _)) else {
+    fail("expected integer list")
+  }
+  assert_eq(integer_list.iter().to_array(), ["1", "-2", "3"])
+
+  guard UnionType::parse(iter_tokens("(long or DOMString or boolean) tail"))
+    is Some((union_type, _)) else {
+    fail("expected union type")
+  }
+  assert_eq(union_type.iter().count(), 3)
+
+  guard EnumValueList::parse(iter_tokens("\"one\", \"two\", \"three\" tail"))
+    is Some((enum_value_list, _)) else {
+    fail("expected enum value list")
+  }
+  assert_eq(enum_value_list.iter().to_array(), [
+    "\"one\"", "\"two\"", "\"three\"",
+  ])
+}
+
+///|
+test "optional complete list iterators handle empty lists" {
+  let tokens = iter_tokens("tail")
+  let (argument_list, _) = ArgumentList::parse(tokens)
+  assert_eq(argument_list.iter().count(), 0)
+  let (attribute_list, _) = ExtendedAttributeList::parse(tokens)
+  assert_eq(attribute_list.iter().count(), 0)
+}

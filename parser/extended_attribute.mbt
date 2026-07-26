@@ -5,6 +5,15 @@ pub enum ExtendedAttributeList {
 } derive(Debug)
 
 ///|
+pub fn ExtendedAttributeList::iter(self : Self) -> Iter[ExtendedAttribute] {
+  match self {
+    Some(first_attribute, rest) =>
+      Iter::singleton(first_attribute).concat(rest.iter())
+    None => Iter::empty()
+  }
+}
+
+///|
 pub fn ExtendedAttributeList::parse(
   input : Tokens,
 ) -> (ExtendedAttributeList, Tokens) {
@@ -447,6 +456,11 @@ pub struct IdentifierList {
 }
 
 ///|
+pub fn IdentifierList::iter(self : Self) -> Iter[StringView] {
+  Iter::singleton(self.identifier).concat(self.identifiers.iter())
+}
+
+///|
 pub fn IdentifierList::parse(input : Tokens) -> (IdentifierList, Tokens)? {
   if input is [(@lexer.TokenType::Identifier, identifier), .. after_identifier] &&
     Identifiers::parse(after_identifier) is (identifiers, rest) {
@@ -497,6 +511,11 @@ pub fn Identifiers::parse(input : Tokens) -> (Identifiers, Tokens) {
 pub struct IntegerList {
   integer : StringView
   integers : Integers
+}
+
+///|
+pub fn IntegerList::iter(self : Self) -> Iter[StringView] {
+  Iter::singleton(self.integer).concat(self.integers.iter())
 }
 
 ///|

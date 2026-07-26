@@ -21,6 +21,7 @@ pub enum ArgumentList {
   Some(Argument, Arguments)
   None
 }
+pub fn ArgumentList::iter(Self) -> Iter[Argument]
 pub fn ArgumentList::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
 pub enum ArgumentName {
@@ -269,6 +270,7 @@ pub struct EnumValueList {
   string : StringView
   enum_value_list_comma : EnumValueListComma
 }
+pub fn EnumValueList::iter(Self) -> Iter[StringView]
 pub fn EnumValueList::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
 pub enum EnumValueListComma {
@@ -340,6 +342,7 @@ pub enum ExtendedAttributeList {
   Some(ExtendedAttribute, ExtendedAttributes)
   None
 } derive(@debug.Debug)
+pub fn ExtendedAttributeList::iter(Self) -> Iter[ExtendedAttribute]
 pub fn ExtendedAttributeList::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
 pub struct ExtendedAttributeNamedArgList {
@@ -396,6 +399,7 @@ pub struct IdentifierList {
   identifier : StringView
   identifiers : Identifiers
 }
+pub fn IdentifierList::iter(Self) -> Iter[StringView]
 pub fn IdentifierList::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
 pub enum Identifiers {
@@ -426,6 +430,7 @@ pub struct IntegerList {
   integer : StringView
   integers : Integers
 }
+pub fn IntegerList::iter(Self) -> Iter[StringView]
 pub fn IntegerList::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
 pub enum IntegerType {
@@ -831,6 +836,7 @@ pub struct UnionType {
   second_union_member_type : UnionMemberType
   union_member_types : UnionMemberTypes
 }
+pub fn UnionType::iter(Self) -> Iter[UnionMemberType]
 pub fn UnionType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
 pub enum UnrestrictedFloatType {

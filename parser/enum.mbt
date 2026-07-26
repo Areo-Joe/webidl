@@ -37,6 +37,29 @@ pub struct EnumValueList {
 }
 
 ///|
+pub fn EnumValueList::iter(self : Self) -> Iter[StringView] {
+  let mut first : StringView? = Some(self.string)
+  let mut rest = self.enum_value_list_comma
+
+  Iter::new(() => {
+    match first {
+      Some(current_string) => {
+        first = None
+        Some(current_string)
+      }
+      None =>
+        match rest {
+          Some(Some(current_string, next)) => {
+            rest = next
+            Some(current_string)
+          }
+          Some(None) | None => None
+        }
+    }
+  })
+}
+
+///|
 pub fn EnumValueList::parse(input : Tokens) -> (EnumValueList, Tokens)? {
   if input is [(@lexer.TokenType::String, string), .. after_string] &&
     EnumValueListComma::parse(after_string) is (enum_value_list_comma, rest) {
