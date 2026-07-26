@@ -866,6 +866,24 @@ pub enum NamespaceMembers {
 }
 
 ///|
+pub fn NamespaceMembers::iter(
+  self : Self,
+) -> Iter[(ExtendedAttributeList, NamespaceMember)] {
+  let mut target = self
+
+  Iter::new(() => {
+    match target {
+      Some(attribute_list, current_member, rest) => {
+        target = rest
+
+        Some((attribute_list, current_member))
+      }
+      None => None
+    }
+  })
+}
+
+///|
 pub fn NamespaceMembers::parse(input : Tokens) -> (NamespaceMembers, Tokens) {
   if ExtendedAttributeList::parse(input)
     is (extended_attribute_list, after_extended_attribute_list) &&
@@ -982,6 +1000,24 @@ pub fn InterfaceMember::parse(input : Tokens) -> (InterfaceMember, Tokens)? {
 pub enum InterfaceMembers {
   Some(ExtendedAttributeList, InterfaceMember, InterfaceMembers)
   None
+}
+
+///|
+pub fn InterfaceMembers::iter(
+  self : Self,
+) -> Iter[(ExtendedAttributeList, InterfaceMember)] {
+  let mut target = self
+
+  Iter::new(() => {
+    match target {
+      Some(attribute_list, current_member, rest) => {
+        target = rest
+
+        Some((attribute_list, current_member))
+      }
+      None => None
+    }
+  })
 }
 
 ///|
@@ -1159,6 +1195,24 @@ pub fn Definition::parse(input : Tokens) -> (Definition, Tokens)? {
 pub enum Definitions {
   Some(ExtendedAttributeList, Definition, Definitions)
   None
+}
+
+///|
+pub fn Definitions::iter(
+  self : Self,
+) -> Iter[(ExtendedAttributeList, Definition)] {
+  let mut target = self
+
+  Iter::new(() => {
+    match target {
+      Some(attribute_list, current_definition, rest) => {
+        target = rest
+
+        Some((attribute_list, current_definition))
+      }
+      None => None
+    }
+  })
 }
 
 ///|

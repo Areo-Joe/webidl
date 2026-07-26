@@ -40,6 +40,22 @@ pub enum ExtendedAttributes {
 } derive(Debug)
 
 ///|
+pub fn ExtendedAttributes::iter(self : Self) -> Iter[ExtendedAttribute] {
+  let mut target = self
+
+  Iter::new(() => {
+    match target {
+      Some(current_attribute, rest) => {
+        target = rest
+
+        Some(current_attribute)
+      }
+      None => None
+    }
+  })
+}
+
+///|
 pub fn ExtendedAttributes::parse(
   input : Tokens,
 ) -> (ExtendedAttributes, Tokens) {
@@ -447,6 +463,22 @@ pub enum Identifiers {
 }
 
 ///|
+pub fn Identifiers::iter(self : Self) -> Iter[StringView] {
+  let mut target = self
+
+  Iter::new(() => {
+    match target {
+      Some(current_identifier, rest) => {
+        target = rest
+
+        Some(current_identifier)
+      }
+      None => None
+    }
+  })
+}
+
+///|
 pub fn Identifiers::parse(input : Tokens) -> (Identifiers, Tokens) {
   if input
     is [
@@ -481,6 +513,22 @@ pub fn IntegerList::parse(input : Tokens) -> (IntegerList, Tokens)? {
 pub enum Integers {
   Some(StringView, Integers)
   None
+}
+
+///|
+pub fn Integers::iter(self : Self) -> Iter[StringView] {
+  let mut target = self
+
+  Iter::new(() => {
+    match target {
+      Some(current_integer, rest) => {
+        target = rest
+
+        Some(current_integer)
+      }
+      None => None
+    }
+  })
 }
 
 ///|

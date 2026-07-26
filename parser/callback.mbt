@@ -62,6 +62,24 @@ pub enum CallbackInterfaceMembers {
 }
 
 ///|
+pub fn CallbackInterfaceMembers::iter(
+  self : Self,
+) -> Iter[(ExtendedAttributeList, CallbackInterfaceMember)] {
+  let mut target = self
+
+  Iter::new(() => {
+    match target {
+      Some(attribute_list, current_member, rest) => {
+        target = rest
+
+        Some((attribute_list, current_member))
+      }
+      None => None
+    }
+  })
+}
+
+///|
 pub fn CallbackInterfaceMembers::parse(
   input : Tokens,
 ) -> (CallbackInterfaceMembers, Tokens) {

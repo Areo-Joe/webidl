@@ -499,6 +499,22 @@ pub enum UnionMemberTypes {
 }
 
 ///|
+pub fn UnionMemberTypes::iter(self : Self) -> Iter[UnionMemberType] {
+  let mut target = self
+
+  Iter::new(() => {
+    match target {
+      Some(current_member_type, rest) => {
+        target = rest
+
+        Some(current_member_type)
+      }
+      None => None
+    }
+  })
+}
+
+///|
 pub fn UnionMemberTypes::parse(input : Tokens) -> (UnionMemberTypes, Tokens) {
   if input is [(@lexer.TokenType::Keyword, "or"), .. after_or] &&
     UnionMemberType::parse(after_or)

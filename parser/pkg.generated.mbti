@@ -67,6 +67,7 @@ pub enum Arguments {
   Some(Argument, Arguments)
   None
 }
+pub fn Arguments::iter(Self) -> Iter[Argument]
 pub fn Arguments::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
 pub struct AsyncIterable {
@@ -128,6 +129,7 @@ pub enum CallbackInterfaceMembers {
   Some(ExtendedAttributeList, CallbackInterfaceMember, CallbackInterfaceMembers)
   None
 }
+pub fn CallbackInterfaceMembers::iter(Self) -> Iter[(ExtendedAttributeList, CallbackInterfaceMember)]
 pub fn CallbackInterfaceMembers::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
 pub enum CallbackOrInterfaceOrMixin {
@@ -205,6 +207,7 @@ pub enum Definitions {
   Some(ExtendedAttributeList, Definition, Definitions)
   None
 }
+pub fn Definitions::iter(Self) -> Iter[(ExtendedAttributeList, Definition)]
 #as_free_fn(parse)
 pub fn Definitions::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
@@ -372,6 +375,7 @@ pub enum ExtendedAttributes {
   Some(ExtendedAttribute, ExtendedAttributes)
   None
 } derive(@debug.Debug)
+pub fn ExtendedAttributes::iter(Self) -> Iter[ExtendedAttribute]
 pub fn ExtendedAttributes::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
 pub enum FloatLiteral {
@@ -398,6 +402,7 @@ pub enum Identifiers {
   Some(StringView, Identifiers)
   None
 }
+pub fn Identifiers::iter(Self) -> Iter[StringView]
 pub fn Identifiers::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
 pub struct IncludesStatement {
@@ -433,6 +438,7 @@ pub enum Integers {
   Some(StringView, Integers)
   None
 }
+pub fn Integers::iter(Self) -> Iter[StringView]
 pub fn Integers::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
 pub enum InterfaceMember {
@@ -445,6 +451,7 @@ pub enum InterfaceMembers {
   Some(ExtendedAttributeList, InterfaceMember, InterfaceMembers)
   None
 }
+pub fn InterfaceMembers::iter(Self) -> Iter[(ExtendedAttributeList, InterfaceMember)]
 pub fn InterfaceMembers::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
 pub enum InterfaceOrMixin {
@@ -510,6 +517,7 @@ pub enum NamespaceMembers {
   Some(ExtendedAttributeList, NamespaceMember, NamespaceMembers)
   None
 }
+pub fn NamespaceMembers::iter(Self) -> Iter[(ExtendedAttributeList, NamespaceMember)]
 pub fn NamespaceMembers::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
 pub enum Null {
@@ -815,6 +823,7 @@ pub enum UnionMemberTypes {
   Some(UnionMemberType, UnionMemberTypes)
   None
 }
+pub fn UnionMemberTypes::iter(Self) -> Iter[UnionMemberType]
 pub fn UnionMemberTypes::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
 pub struct UnionType {

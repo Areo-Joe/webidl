@@ -250,6 +250,22 @@ pub enum Arguments {
 }
 
 ///|
+pub fn Arguments::iter(self : Self) -> Iter[Argument] {
+  let mut target = self
+
+  Iter::new(() => {
+    match target {
+      Some(current_argument, rest) => {
+        target = rest
+
+        Some(current_argument)
+      }
+      None => None
+    }
+  })
+}
+
+///|
 pub fn Arguments::parse(input : Tokens) -> (Arguments, Tokens) {
   if input is [(@lexer.TokenType::Punctuation, ","), .. after_comma] &&
     Argument::parse(after_comma) is Some((argument, after_argument)) &&
