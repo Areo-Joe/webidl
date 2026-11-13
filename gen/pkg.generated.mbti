@@ -24,6 +24,14 @@ type Enum
 
 type Exposed
 
+type ExposedAble
+
+type ExposedSetStruct
+
+type ExposeureSetIntersectionStruct
+
+type ExposureSet
+
 type IncludesStatement
 
 type Interface
@@ -59,10 +67,6 @@ type PartialNamespace
 type PartialNamespaceMember
 
 type TypeDef
-
-type WithExposed
-
-type WithExposedBody
 
 // Type aliases
 

@@ -3,10 +3,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
   // The identifier of any of the abovementioned IDL constructs (except operation arguments) must not be "constructor", "toString", or begin with a U+005F (_). These are known as reserved identifiers.
   // Although the "toJSON" identifier is not a reserved identifier, it must only be used for regular operations that convert objects to JSON types, as described in § 2.5.3.1 toJSON.
 
-  let definitions = definitions
-    .iter()
-    .map(x => Definition::from_parser(x.0, x.1))
-    .collect()
+  let definitions = Definition::from_parser(definitions)
 
   let definition_names = definitions.filter_map(name_of_definition)
 
