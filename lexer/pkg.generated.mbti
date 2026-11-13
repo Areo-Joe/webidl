@@ -20,6 +20,7 @@ pub enum TokenType {
   Punctuation
   Other
 } derive(@debug.Debug)
+pub fn TokenType::to_repr(Self) -> @debug.Repr
 
 // Type aliases
 

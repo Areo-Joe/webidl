@@ -1,6 +1,6 @@
 ///|
 fn parse_setlike_rest(input : String) -> (@parser.SetlikeRest, @parser.Tokens)? {
-  @parser.SetlikeRest::parse((try! @lexer.tokenize(input)).view())
+  @parser.SetlikeRest::parse((try! @lexer.tokenize(input)).exact_view())
 }
 
 ///|

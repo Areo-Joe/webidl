@@ -65,6 +65,9 @@ pub enum OptionalReadOnly {
 } derive(Debug)
 
 ///|
+pub extend OptionalReadOnly with @debug.Debug::{to_repr}
+
+///|
 pub fn OptionalReadOnly::parse(input : Tokens) -> (OptionalReadOnly, Tokens) {
   if input is [(@lexer.TokenType::Keyword, "readonly"), .. rest] {
     return (OptionalReadOnly::ReadOnly, rest)

@@ -1,6 +1,6 @@
 ///|
 fn parse_mixin_member(input : String) -> (@parser.MixinMember, @parser.Tokens)? {
-  @parser.MixinMember::parse((try! @lexer.tokenize(input)).view())
+  @parser.MixinMember::parse((try! @lexer.tokenize(input)).exact_view())
 }
 
 ///|

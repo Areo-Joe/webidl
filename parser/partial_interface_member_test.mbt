@@ -2,7 +2,9 @@
 fn parse_partial_interface_member(
   input : String,
 ) -> (@parser.PartialInterfaceMember, @parser.Tokens)? {
-  @parser.PartialInterfaceMember::parse((try! @lexer.tokenize(input)).view())
+  @parser.PartialInterfaceMember::parse(
+    (try! @lexer.tokenize(input)).exact_view(),
+  )
 }
 
 ///|

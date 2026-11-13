@@ -1,6 +1,6 @@
 ///|
 fn extended_attribute_tokens(input : String) -> @parser.Tokens {
-  (try! @lexer.tokenize(input)).view()
+  (try! @lexer.tokenize(input)).exact_view()
 }
 
 ///|

@@ -1,7 +1,7 @@
 ///|
 test "interface inheritance is resolved after definitions are created" {
   let (definitions, rest) = @parser.parse(
-    (try! @lexer.tokenize("interface Child : Parent {}; interface Parent {};")).view(),
+    (try! @lexer.tokenize("interface Child : Parent {}; interface Parent {};")).exact_view(),
   )
   assert_true(rest is [])
 
@@ -20,7 +20,7 @@ test "interface inheritance is resolved after definitions are created" {
 ///|
 test "interface identifiers are normalized once" {
   let (definitions, rest) = @parser.parse(
-    (try! @lexer.tokenize("interface _interface {};")).view(),
+    (try! @lexer.tokenize("interface _interface {};")).exact_view(),
   )
   assert_true(rest is [])
 

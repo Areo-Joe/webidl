@@ -92,6 +92,9 @@ pub enum ArgumentNameKeyword {
 } derive(Debug)
 
 ///|
+pub extend ArgumentNameKeyword with @debug.Debug::{to_repr}
+
+///|
 pub fn ArgumentNameKeyword::parse(
   input : Tokens,
 ) -> (ArgumentNameKeyword, Tokens)? {

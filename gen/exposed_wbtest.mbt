@@ -1,6 +1,6 @@
 ///|
 fn parse_exposure_definitions(input : String) -> Array[Definition] raise {
-  let (definitions, rest) = @parser.parse(@lexer.tokenize(input).view())
+  let (definitions, rest) = @parser.parse(@lexer.tokenize(input).exact_view())
   assert_true(rest is [])
   Definition::from_parser(definitions)
 }
@@ -49,15 +49,15 @@ test "partial mixin exposure depends on the including interface" {
         _ => None
       }
     })
-    let member = ExposedSetStruct::PartialInterfaceMixinMember(
+    let mixin_member = ExposedSetStruct::PartialInterfaceMixinMember(
       partials[0].members[0],
     )
-    guard exposure_set(member, Some(interfaces[0])) is List(window_set) else {
+    guard exposure_set(mixin_member, Some(interfaces[0])) is List(window_set) else {
       fail("expected a finite exposure set")
     }
     assert_eq(window_set.length(), 1)
     assert_true(window_set.contains("Window"))
-    guard exposure_set(member, Some(interfaces[1])) is List(worker_set) else {
+    guard exposure_set(mixin_member, Some(interfaces[1])) is List(worker_set) else {
       fail("expected a finite exposure set")
     }
     assert_eq(worker_set.length(), if exposed_in_worker { 1 } else { 0 })

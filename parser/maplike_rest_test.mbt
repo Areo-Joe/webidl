@@ -1,6 +1,6 @@
 ///|
 fn parse_maplike_rest(input : String) -> (@parser.MaplikeRest, @parser.Tokens)? {
-  @parser.MaplikeRest::parse((try! @lexer.tokenize(input)).view())
+  @parser.MaplikeRest::parse((try! @lexer.tokenize(input)).exact_view())
 }
 
 ///|

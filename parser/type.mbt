@@ -246,6 +246,9 @@ pub enum Null {
 } derive(Debug)
 
 ///|
+pub extend Null with @debug.Debug::{to_repr}
+
+///|
 pub fn Null::parse(input : Tokens) -> (Null, Tokens) {
   match input {
     [(@lexer.TokenType::Punctuation, "?"), .. rest] => (Null::Some, rest)
@@ -259,6 +262,9 @@ pub enum StringType {
   DOMString
   USVString
 } derive(Debug)
+
+///|
+pub extend StringType with @debug.Debug::{to_repr}
 
 ///|
 pub fn StringType::parse(input : Tokens) -> (StringType, Tokens)? {
@@ -434,6 +440,9 @@ pub enum BufferRelatedType {
   Float32Array
   Float64Array
 } derive(Debug)
+
+///|
+pub extend BufferRelatedType with @debug.Debug::{to_repr}
 
 ///|
 pub fn BufferRelatedType::parse(input : Tokens) -> (BufferRelatedType, Tokens)? {

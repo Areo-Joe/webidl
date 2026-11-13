@@ -31,6 +31,9 @@ pub enum TokenType {
 } derive(Debug)
 
 ///|
+pub extend TokenType with @debug.Debug::{to_repr}
+
+///|
 pub fn tokenize(input : StringView) -> Array[(TokenType, StringView)] raise {
   let ret = []
 

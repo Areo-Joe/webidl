@@ -1,9 +1,9 @@
 import {
+  "moonbitlang/core/debug",
   "Areo-Joe/webidl/lexer",
 }
 
 import {
   "moonbitlang/async",
   "moonbitlang/async/fs",
-  "moonbitlang/async/io",
 } for "test"

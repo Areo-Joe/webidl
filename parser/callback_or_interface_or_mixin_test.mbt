@@ -3,7 +3,7 @@ fn parse_callback_or_interface_or_mixin(
   input : String,
 ) -> (@parser.CallbackOrInterfaceOrMixin, @parser.Tokens)? {
   @parser.CallbackOrInterfaceOrMixin::parse(
-    (try! @lexer.tokenize(input)).view(),
+    (try! @lexer.tokenize(input)).exact_view(),
   )
 }
 
@@ -11,13 +11,13 @@ fn parse_callback_or_interface_or_mixin(
 test "InterfaceMember parses partial members and constructors" {
   assert_true(
     @parser.InterfaceMember::parse(
-      (try! @lexer.tokenize("attribute DOMString name; tail")).view(),
+      (try! @lexer.tokenize("attribute DOMString name; tail")).exact_view(),
     )
     is Some((@parser.InterfaceMember::PartialInterfaceMember(_), [(_, "tail")])),
   )
   assert_true(
     @parser.InterfaceMember::parse(
-      (try! @lexer.tokenize("constructor(); tail")).view(),
+      (try! @lexer.tokenize("constructor(); tail")).exact_view(),
     )
     is Some((@parser.InterfaceMember::Constructor(_), [(_, "tail")])),
   )
@@ -29,13 +29,13 @@ test "InterfaceRest parses inheritance and recursive members" {
     @parser.InterfaceRest::parse(
       (try! @lexer.tokenize(
         "Example : Base { [Clamp] constructor(); attribute DOMString name; }; tail",
-      )).view(),
+      )).exact_view(),
     )
     is Some((_, [(_, "tail")])),
   )
   assert_true(
     @parser.InterfaceRest::parse(
-      (try! @lexer.tokenize("Empty {}; tail")).view(),
+      (try! @lexer.tokenize("Empty {}; tail")).exact_view(),
     )
     is Some((_, [(_, "tail")])),
   )

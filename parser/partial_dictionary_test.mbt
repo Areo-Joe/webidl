@@ -2,7 +2,7 @@
 fn parse_partial_dictionary(
   input : String,
 ) -> (@parser.PartialDictionary, @parser.Tokens)? {
-  @parser.PartialDictionary::parse((try! @lexer.tokenize(input)).view())
+  @parser.PartialDictionary::parse((try! @lexer.tokenize(input)).exact_view())
 }
 
 ///|

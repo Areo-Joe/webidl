@@ -3,7 +3,7 @@ fn parse_partial_interface_or_partial_mixin(
   input : String,
 ) -> (@parser.PartialInterfaceOrPartialMixin, @parser.Tokens)? {
   @parser.PartialInterfaceOrPartialMixin::parse(
-    (try! @lexer.tokenize(input)).view(),
+    (try! @lexer.tokenize(input)).exact_view(),
   )
 }
 

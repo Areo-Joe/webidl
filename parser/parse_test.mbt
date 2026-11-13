@@ -1,6 +1,6 @@
 ///|
 fn parse_source(input : String) -> (@parser.Definitions, @parser.Tokens) {
-  @parser.parse((try! @lexer.tokenize(input)).view())
+  @parser.parse((try! @lexer.tokenize(input)).exact_view())
 }
 
 ///|

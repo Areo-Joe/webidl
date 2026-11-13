@@ -454,7 +454,7 @@ fn build_interfaces(
     })
     .collect()
 
-  let ret = Array::new(capacity=parser_interfaces.length())
+  let ret = Array(capacity=parser_interfaces.length())
 
   for x in parser_interfaces {
     let (_, _, interface) = build_interface(

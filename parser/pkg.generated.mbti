@@ -57,6 +57,7 @@ pub enum ArgumentNameKeyword {
   Unrestricted
 } derive(@debug.Debug)
 pub fn ArgumentNameKeyword::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+pub fn ArgumentNameKeyword::to_repr(Self) -> @debug.Repr
 
 pub enum ArgumentRest {
   Optional(TypeWithExtendedAttributes, ArgumentName, Default)
@@ -119,6 +120,7 @@ pub enum BufferRelatedType {
   Float64Array
 } derive(@debug.Debug)
 pub fn BufferRelatedType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+pub fn BufferRelatedType::to_repr(Self) -> @debug.Repr
 
 pub enum CallbackInterfaceMember {
   Const(Const)
@@ -521,6 +523,7 @@ pub enum Null {
   None
 } derive(@debug.Debug)
 pub fn Null::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
+pub fn Null::to_repr(Self) -> @debug.Repr
 
 pub enum Operation {
   RegularOperation(RegularOperation)
@@ -568,6 +571,7 @@ pub enum OptionalReadOnly {
   None
 } derive(@debug.Debug)
 pub fn OptionalReadOnly::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
+pub fn OptionalReadOnly::to_repr(Self) -> @debug.Repr
 
 pub enum OptionalType {
   Some(TypeWithExtendedAttributes)
@@ -723,6 +727,7 @@ pub enum StringType {
   USVString
 } derive(@debug.Debug)
 pub fn StringType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
+pub fn StringType::to_repr(Self) -> @debug.Repr
 
 pub struct Stringifier {
   stringifier_rest : StringifierRest

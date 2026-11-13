@@ -58,7 +58,7 @@ fn generate_test_source(files : ArrayView[WptFile]) -> String {
     #|async fn parse_wpt_idl_fixture(file : String) -> Unit {
     #|  let source = @fs.read_file("parser/fixtures/wpt/" + file).text()
     #|  let tokens = @lexer.tokenize(source)
-    #|  let (_, rest) = parse(tokens.view())
+    #|  let (_, rest) = @parser.parse(tokens.exact_view())
     #|  if rest is [(_, text), ..] {
     #|    fail(
     #|      file + ": first unconsumed token '" + text.to_owned() + "' (" +

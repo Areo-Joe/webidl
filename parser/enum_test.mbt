@@ -1,6 +1,6 @@
 ///|
 fn parse_enum(input : String) -> (@parser.Enum, @parser.Tokens)? {
-  @parser.Enum::parse((try! @lexer.tokenize(input)).view())
+  @parser.Enum::parse((try! @lexer.tokenize(input)).exact_view())
 }
 
 ///|

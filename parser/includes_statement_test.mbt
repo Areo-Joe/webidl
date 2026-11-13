@@ -2,7 +2,7 @@
 fn parse_includes_statement(
   input : String,
 ) -> (@parser.IncludesStatement, @parser.Tokens)? {
-  @parser.IncludesStatement::parse((try! @lexer.tokenize(input)).view())
+  @parser.IncludesStatement::parse((try! @lexer.tokenize(input)).exact_view())
 }
 
 ///|

@@ -2,7 +2,7 @@
 fn parse_read_write_setlike(
   input : String,
 ) -> (@parser.ReadWriteSetlike, @parser.Tokens)? {
-  @parser.ReadWriteSetlike::parse((try! @lexer.tokenize(input)).view())
+  @parser.ReadWriteSetlike::parse((try! @lexer.tokenize(input)).exact_view())
 }
 
 ///|

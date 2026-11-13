@@ -1,6 +1,6 @@
 ///|
 fn parse_typedef(input : String) -> (@parser.Typedef, @parser.Tokens)? {
-  @parser.Typedef::parse((try! @lexer.tokenize(input)).view())
+  @parser.Typedef::parse((try! @lexer.tokenize(input)).exact_view())
 }
 
 ///|
