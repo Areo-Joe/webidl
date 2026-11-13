@@ -26,14 +26,7 @@ fn check_interface_inheritance_no_cross_origin_isolated(
   interfaces : Array[Interface],
   interface : Interface,
 ) -> Unit raise {
-  guard interface.inheritance is Some(name) else { return }
-
-  let name = strip_underscore(name)
-
-  let inheritance_index = interfaces
-    .search_by(x => name_of_interface(x) == name)
-    .unwrap()
-  let inheritance = interfaces[inheritance_index]
+  guard interface.inheritance is Some(inheritance) else { return }
 
   assert_false(
     inheritance.extended_attribute_list

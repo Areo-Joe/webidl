@@ -37,12 +37,11 @@ fn check_inheritance_exists(interfaces : Array[Interface]) -> Unit raise {
   assert_true(
     interfaces.every(interface => {
       match interface.inheritance {
-        Some(interface_name) => {
-          let interface_name = strip_underscore(interface_name)
-
-          interfaces.search_by(i => name_of_interface(i) == interface_name)
+        Some(inherited_interface) =>
+          interfaces.search_by(i => {
+            name_of_interface(i) == name_of_interface(inherited_interface)
+          })
           is Some(_)
-        }
         None => true
       }
     }),
@@ -67,17 +66,7 @@ fn check_inheritance_no_circle(interfaces : Array[Interface]) -> Unit raise {
     visiting.add(name)
 
     match interface.inheritance {
-      Some(interface_name) => {
-        let interface_name = strip_underscore(interface_name)
-
-        let inherited_interface_index = interfaces
-          .search_by(i => name_of_interface(i) == interface_name)
-          .unwrap()
-
-        let inherited_interface = interfaces[inherited_interface_index]
-
-        visit_interface(inherited_interface)
-      }
+      Some(inherited_interface) => visit_interface(inherited_interface)
       None => ()
     }
 

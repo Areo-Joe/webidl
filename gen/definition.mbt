@@ -2,7 +2,7 @@
 struct Interface {
   extended_attribute_list : @parser.ExtendedAttributeList
   identifier : StringView
-  inheritance : @parser.Inheritance
+  inheritance : Interface?
   members : Array[InterfaceMember]
   partials : Array[PartialInterface]
 }
@@ -159,7 +159,9 @@ enum Definition {
 }
 
 ///|
-fn Definition::from_parser(definitions : @parser.Definitions) -> Array[Self] {
+fn Definition::from_parser(
+  definitions : @parser.Definitions,
+) -> Array[Self] raise {
   let ret = definitions
     .iter()
     .filter_map(definition => {
@@ -184,31 +186,7 @@ fn Definition::from_parser(definitions : @parser.Definitions) -> Array[Self] {
               extended_attribute_list,
             }),
           )
-        CallbackOrInterfaceOrMixin(
-          Interface(
-            InterfaceRest({ identifier, inheritance, interface_members })
-          )
-        ) => {
-          let interface = Interface::{
-            identifier,
-            inheritance,
-            members: [],
-            extended_attribute_list,
-            partials: [],
-          }
-
-          let interface_members = interface_members
-            .iter()
-            .map(x => InterfaceMember::{
-              extended_attribute_list: x.0,
-              body: x.1,
-              host: interface,
-            })
-
-          interface.members.push_iter(interface_members)
-
-          Some(Interface(interface))
-        }
+        CallbackOrInterfaceOrMixin(Interface(InterfaceRest(_))) => None
         CallbackOrInterfaceOrMixin(
           Interface(MixinRest({ identifier, mixin_members }))
         ) => {
@@ -300,6 +278,10 @@ fn Definition::from_parser(definitions : @parser.Definitions) -> Array[Self] {
       }
     })
     .collect()
+
+  ret.push_iter(
+    build_interfaces(definitions).iter().map(x => Definition::Interface(x)),
+  )
 
   ret.push_iter(
     definitions
@@ -452,4 +434,94 @@ struct CallbackInterface {
   extended_attribute_list : @parser.ExtendedAttributeList
   identifier : StringView
   members : @parser.CallbackInterfaceMembers
+}
+
+///|
+fn build_interfaces(
+  definitions : @parser.Definitions,
+) -> Array[Interface] raise {
+  let interfaces = Map([])
+  let visiting = Set([])
+  let parser_interfaces = definitions
+    .iter()
+    .filter_map(x => {
+      guard x.1
+        is CallbackOrInterfaceOrMixin(Interface(InterfaceRest(interface_rest))) else {
+        None
+      }
+
+      Some((x.0, interface_rest))
+    })
+    .collect()
+
+  let ret = Array::new(capacity=parser_interfaces.length())
+
+  for x in parser_interfaces {
+    let (_, _, interface) = build_interface(
+      interfaces,
+      visiting,
+      x.1.identifier,
+      parser_interfaces,
+    )
+
+    ret.push(interface)
+  }
+
+  ret
+}
+
+///|
+fn build_interface(
+  interfaces : Map[StringView, Interface],
+  visiting : Set[StringView],
+  name : StringView,
+  parser_interfaces : Array[
+    (@parser.ExtendedAttributeList, @parser.InterfaceRest),
+  ],
+) -> (Map[StringView, Interface], Set[StringView], Interface) raise {
+  let name = strip_underscore(name)
+  let parser_interface = parser_interfaces[parser_interfaces
+    .search_by(x => strip_underscore(x.1.identifier) == name)
+    .unwrap()]
+
+  assert_false(visiting.contains(name))
+
+  match interfaces.get(name) {
+    Some(x) => (interfaces, visiting, x)
+    None => {
+      visiting.add(name)
+
+      let interface = Interface::{
+        identifier: parser_interface.1.identifier,
+        extended_attribute_list: parser_interface.0,
+        inheritance: match parser_interface.1.inheritance {
+          Some(interface_name) => {
+            let interface_name = strip_underscore(interface_name)
+            let (_, _, inheritance) = build_interface(
+              interfaces, visiting, interface_name, parser_interfaces,
+            )
+            Some(inheritance)
+          }
+          None => None
+        },
+        partials: [],
+        members: [],
+      }
+
+      interface.members.push_iter(
+        parser_interface.1.interface_members
+        .iter()
+        .map(x => InterfaceMember::{
+          extended_attribute_list: x.0,
+          body: x.1,
+          host: interface,
+        }),
+      )
+
+      visiting.remove(name)
+      interfaces.set(name, interface)
+
+      (interfaces, visiting, interface)
+    }
+  }
 }

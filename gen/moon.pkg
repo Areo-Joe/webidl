@@ -1,3 +1,7 @@
 import {
   "Areo-Joe/webidl/parser",
 }
+
+import {
+  "Areo-Joe/webidl/lexer",
+} for "wbtest"
