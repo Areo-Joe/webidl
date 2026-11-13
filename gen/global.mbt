@@ -1,13 +1,37 @@
 ///|
+priv enum Global {
+  Ident(StringView)
+  IdentList(Array[StringView])
+}
+
+///|
+/// The [Global] extended attribute also defines the global names for the interface:
+///
+/// If the [Global] extended attribute takes an identifier
+/// « the given identifier »
+///
+/// If the [Global] extended attribute takes an identifier list
+/// the identifier list
+///
+/// The [Global] extended attribute must be one of the forms given above.
+fn is_valid_global(attr : @parser.ExtendedAttribute) -> Global? {
+  match attr {
+    Ident({ identifier: "Global", value, }) => Some(Ident(value))
+    IdentList({ identifier: "Global", identifier_list, }) =>
+      Some(IdentList(identifier_list.iter().collect()))
+    _ => None
+  }
+}
+
+///|
 fn global_names(attr_list : @parser.ExtendedAttributeList) -> Array[StringView] {
   attr_list
   .iter()
-  .filter_map(x => {
+  .filter_map(is_valid_global)
+  .map(x => {
     match x {
-      Ident({ identifier: "Global", value, }) => Some([strip_underscore(value)])
-      IdentList({ identifier: "Global", identifier_list, }) =>
-        Some(identifier_list.iter().map(strip_underscore).collect())
-      _ => None
+      Ident(value) => [strip_underscore(value)]
+      IdentList(identifier_list) => identifier_list.map(strip_underscore)
     }
   })
   .collect()
