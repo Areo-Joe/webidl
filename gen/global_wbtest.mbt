@@ -114,3 +114,48 @@ test "Global constructor check only uses the original interface annotation" {
     }
   }
 }
+
+///|
+test "LegacyOverrideBuiltIns recognizes only the no arguments form" {
+  for
+    (source, valid) in [
+      ("[LegacyOverrideBuiltIns]", true),
+      ("[LegacyOverrideBuiltIns()]", false),
+      ("[LegacyOverrideBuiltIns=Value()]", false),
+      ("[LegacyOverrideBuiltIns=Value]", false),
+      ("[LegacyOverrideBuiltIns=(Value,Other)]", false),
+      ("[LegacyOverrideBuiltIns=*]", false),
+      ("[LegacyOverrideBuiltIns=\"Value\"]", false),
+      ("[LegacyOverrideBuiltIns=1]", false),
+      ("[LegacyOverrideBuiltIns=1.5]", false),
+      ("[LegacyOverrideBuiltIns=(1,2)]", false),
+      ("[SecureContext]", false),
+      ("[legacyOverrideBuiltIns]", false),
+    ] {
+    let attrs = parse_global_attributes(source)
+    assert_eq(attrs.iter().count(), 1)
+    assert_eq(attrs.iter().any(is_valid_legacy_override_built_ins), valid)
+  }
+}
+
+///|
+test "Global and LegacyOverrideBuiltIns cannot annotate the same interface" {
+  let body = " interface A { getter any (DOMString name); };"
+  for global_attr in ["Global=Window", "Global=(Window,Worker)"] {
+    assert_true(check_global_source("[" + global_attr + "]" + body))
+    for
+      attrs in [
+        "[" + global_attr + ", LegacyOverrideBuiltIns]",
+        "[LegacyOverrideBuiltIns, " + global_attr + "]",
+      ] {
+      assert_false(check_global_source(attrs + body))
+    }
+  }
+  assert_true(check_global_source("[LegacyOverrideBuiltIns]" + body))
+  assert_true(check_global_source(body))
+  assert_true(
+    check_global_source(
+      "[Global=Window] interface A {}; [LegacyOverrideBuiltIns] interface B { getter any (DOMString name); };",
+    ),
+  )
+}

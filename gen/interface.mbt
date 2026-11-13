@@ -16,6 +16,7 @@ fn check_interfaces(
 
   for interface in interfaces {
     check_global_interface_no_constructor(interface)
+    check_global_interface_no_legacy_override_built_ins(interface)
     check_exposed_global_names_on_interface(interface, available_global_names)
     check_exposed_partial_interface_member_no_duplicate(interface)
     check_exposed_partial_interface_is_subset_of_interface(interface)

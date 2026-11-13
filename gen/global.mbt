@@ -54,3 +54,20 @@ fn check_global_interface_no_constructor(interface : Interface) -> Unit raise {
     )
   }
 }
+
+///|
+/// If the [Global] extended attributes is used on an interface, then:
+/// The interface must not also be declared with the [LegacyOverrideBuiltIns] extended attribute.
+fn check_global_interface_no_legacy_override_built_ins(
+  interface : Interface,
+) -> Unit raise {
+  if interface.extended_attribute_list
+    .iter()
+    .any(attr => is_valid_global(attr) is Some(_)) {
+    assert_false(
+      interface.extended_attribute_list
+      .iter()
+      .any(is_valid_legacy_override_built_ins),
+    )
+  }
+}
