@@ -1,14 +1,36 @@
 ///|
 fn check_interfaces(
-  interfaces : Array[Interface],
+  interfaces : Array[(@parser.ExtendedAttributeList, Interface)],
   includes_statements : Array[@parser.IncludesStatement],
   interface_mixins : Array[InterfaceMixin],
   partial_interfaces : Array[PartialInterface],
 ) -> Unit raise {
-  check_inheritance_exists(interfaces)
-  check_inheritance_no_circle(interfaces)
-  check_includes_valid(includes_statements, interfaces, interface_mixins)
-  check_partial_interface_name(partial_interfaces, interfaces)
+  let pure_interfaces = interfaces.map(x => x.1)
+
+  check_inheritance_exists(pure_interfaces)
+  check_inheritance_no_circle(pure_interfaces)
+  check_includes_valid(includes_statements, pure_interfaces, interface_mixins)
+  check_partial_interface_name(partial_interfaces, pure_interfaces)
+
+  for interface in interfaces {
+    let (extended_attribute_list, interface) = interface
+
+    let mut has_cross_origin_isolated = false
+
+    for extended_attribute in extended_attribute_list.iter() {
+      if is_valid_cross_origin_isolated(extended_attribute) {
+        has_cross_origin_isolated = true
+
+        check_is_valid_cross_origin_isolated_on_interface(interface)
+      }
+    }
+
+    if !has_cross_origin_isolated {
+      check_interface_inheritance_no_cross_origin_isolated(
+        interfaces, interface,
+      )
+    }
+  }
 }
 
 ///|
