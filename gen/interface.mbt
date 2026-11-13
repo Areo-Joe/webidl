@@ -11,17 +11,14 @@ fn check_interfaces(
   check_partial_interface_name(partial_interfaces, interfaces)
 
   for interface in interfaces {
-    // let (extended_attribute_list, interface) = interface
+    let has_cross_origin_isolated = interface.extended_attribute_list
+      .iter()
+      .any(is_valid_cross_origin_isolated)
 
-    let mut has_cross_origin_isolated = false
-
-    for extended_attribute in interface.extended_attribute_list.iter() {
-      if is_valid_cross_origin_isolated(extended_attribute) {
-        has_cross_origin_isolated = true
-
-        check_is_valid_cross_origin_isolated_on_interface(interface)
-      }
-    }
+    check_is_valid_cross_origin_isolated_on_interface(
+      interface,
+      interface_marked=has_cross_origin_isolated,
+    )
 
     if !has_cross_origin_isolated {
       check_interface_inheritance_no_cross_origin_isolated(

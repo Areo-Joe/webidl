@@ -11,11 +11,28 @@ fn is_valid_cross_origin_isolated(attr : @parser.ExtendedAttribute) -> Bool {
 /// an interface member and its interface or partial interface;
 fn check_is_valid_cross_origin_isolated_on_interface(
   interface : Interface,
+  interface_marked~ : Bool,
 ) -> Unit raise {
-  for x in interface.members.iter() {
-    let attrs = x.extended_attribute_list
-    for attr in attrs.iter() {
-      assert_false(is_valid_cross_origin_isolated(attr))
+  if interface_marked {
+    for interface_member in interface.members {
+      assert_false(
+        interface_member.extended_attribute_list
+        .iter()
+        .any(is_valid_cross_origin_isolated),
+      )
+    }
+  }
+
+  for partial in interface.partials {
+    if interface_marked ||
+      partial.extended_attribute_list.iter().any(is_valid_cross_origin_isolated) {
+      for partial_interface_member in partial.members {
+        assert_false(
+          partial_interface_member.extended_attribute_list
+          .iter()
+          .any(is_valid_cross_origin_isolated),
+        )
+      }
     }
   }
 }
