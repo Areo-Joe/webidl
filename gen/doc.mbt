@@ -1,7 +1,6 @@
 ///|
 fn doc(definitions : @parser.Definitions) -> Unit raise {
   // The identifier of any of the abovementioned IDL constructs (except operation arguments) must not be "constructor", "toString", or begin with a U+005F (_). These are known as reserved identifiers.
-
   // Although the "toJSON" identifier is not a reserved identifier, it must only be used for regular operations that convert objects to JSON types, as described in § 2.5.3.1 toJSON.
 
   let definitions = definitions
@@ -171,4 +170,35 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
     .flatten()
 
   let operation_names = operations.filter_map(name_of_operation)
+
+  let operations_not_regular = operations.filter_map(x => {
+    match x.tag {
+      Regular => None
+      _ => Some(x)
+    }
+  })
+
+  let operation_names_not_regular = operations_not_regular.filter_map(
+    name_of_operation,
+  )
+
+  // The identifier of any of the abovementioned IDL constructs (except operation arguments) must not be "constructor", "toString", or begin with a U+005F (_). These are known as reserved identifiers.
+  assert_true(
+    (definition_names +
+    attribute_names +
+    dictionary_member_names +
+    constant_names +
+    operation_names).every(name => {
+      name != "constructor" && name != "toString" && !name.has_prefix("_")
+    }),
+  )
+
+  // Although the "toJSON" identifier is not a reserved identifier, it must only be used for regular operations that convert objects to JSON types, as described in § 2.5.3.1 toJSON.
+  assert_true(
+    (definition_names +
+    attribute_names +
+    dictionary_member_names +
+    constant_names +
+    operation_names_not_regular).every(name => name != "toJSON"),
+  )
 }
