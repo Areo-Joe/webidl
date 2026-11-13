@@ -286,11 +286,17 @@ pub enum EnumValueListString {
 pub fn EnumValueListString::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
 pub enum ExtendedAttribute {
-  Parentheses(ExtendedAttributeInner, ExtendedAttributeRest)
-  Brackets(ExtendedAttributeInner, ExtendedAttributeRest)
-  Braces(ExtendedAttributeInner, ExtendedAttributeRest)
-  Other(Other, ExtendedAttributeRest)
-} derive(@debug.Debug)
+  NoArgs(ExtendedAttributeNoArgs)
+  ArgList(ExtendedAttributeArgList)
+  NamedArgList(ExtendedAttributeNamedArgList)
+  Ident(ExtendedAttributeIdent)
+  String(ExtendedAttributeString)
+  Integer(ExtendedAttributeInteger)
+  Decimal(ExtendedAttributeDecimal)
+  IntegerList(ExtendedAttributeIntegerList)
+  IdentList(ExtendedAttributeIdentList)
+  Wildcard(ExtendedAttributeWildcard)
+}
 pub fn ExtendedAttribute::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
 pub struct ExtendedAttributeArgList {
@@ -341,7 +347,7 @@ pub fn ExtendedAttributeIntegerList::parse(ArrayView[(@lexer.TokenType, StringVi
 pub enum ExtendedAttributeList {
   Some(ExtendedAttribute, ExtendedAttributes)
   None
-} derive(@debug.Debug)
+}
 pub fn ExtendedAttributeList::iter(Self) -> Iter[ExtendedAttribute]
 pub fn ExtendedAttributeList::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
@@ -357,12 +363,6 @@ pub struct ExtendedAttributeNoArgs {
 }
 pub fn ExtendedAttributeNoArgs::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
-pub enum ExtendedAttributeRest {
-  ExtendedAttribute(ExtendedAttribute)
-  None
-} derive(@debug.Debug)
-pub fn ExtendedAttributeRest::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
-
 pub struct ExtendedAttributeString {
   identifier : StringView
   value : StringView
@@ -377,7 +377,7 @@ pub fn ExtendedAttributeWildcard::parse(ArrayView[(@lexer.TokenType, StringView)
 pub enum ExtendedAttributes {
   Some(ExtendedAttribute, ExtendedAttributes)
   None
-} derive(@debug.Debug)
+}
 pub fn ExtendedAttributes::iter(Self) -> Iter[ExtendedAttribute]
 pub fn ExtendedAttributes::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 

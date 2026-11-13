@@ -2,7 +2,7 @@
 pub enum ExtendedAttributeList {
   Some(ExtendedAttribute, ExtendedAttributes)
   None
-} derive(Debug)
+}
 
 ///|
 pub fn ExtendedAttributeList::iter(self : Self) -> Iter[ExtendedAttribute] {
@@ -46,7 +46,7 @@ pub fn ExtendedAttributeList::parse(
 pub enum ExtendedAttributes {
   Some(ExtendedAttribute, ExtendedAttributes)
   None
-} derive(Debug)
+}
 
 ///|
 pub fn ExtendedAttributes::iter(self : Self) -> Iter[ExtendedAttribute] {
@@ -86,118 +86,70 @@ pub fn ExtendedAttributes::parse(
 }
 
 ///|
+/// The ten forms an extended attribute may take, per WebIDL § 2.14.
+///
+/// The `ExtendedAttribute` production in the grammar matches nearly any token
+/// sequence; this parser instead accepts only the forms the specification
+/// defines, so an extended attribute using any other shape is rejected.
 pub enum ExtendedAttribute {
-  Parentheses(ExtendedAttributeInner, ExtendedAttributeRest)
-  Brackets(ExtendedAttributeInner, ExtendedAttributeRest)
-  Braces(ExtendedAttributeInner, ExtendedAttributeRest)
-  Other(Other, ExtendedAttributeRest)
-} derive(Debug)
-
-///|
-pub fn ExtendedAttribute::parse(input : Tokens) -> (ExtendedAttribute, Tokens)? {
-  fn parse_other(input : Tokens) -> (ExtendedAttribute, Tokens)? {
-    guard Other::parse(input) is Some((other, after_other)) else { None }
-
-    let (extended_attribute_rest, rest) = ExtendedAttributeRest::parse(
-      after_other,
-    )
-
-    Some((ExtendedAttribute::Other(other, extended_attribute_rest), rest))
-  }
-
-  match input {
-    [first, .. rest] =>
-      match first {
-        (@lexer.TokenType::Punctuation, "(") => {
-          let (extended_attribute_inner, after_inner) = ExtendedAttributeInner::parse(
-            rest,
-          )
-
-          guard after_inner
-            is [(@lexer.TokenType::Punctuation, ")"), .. after_parentheses] else {
-            None
-          }
-
-          let (extended_attribute_rest, after_outer) = ExtendedAttributeRest::parse(
-            after_parentheses,
-          )
-
-          Some(
-            (
-              ExtendedAttribute::Parentheses(
-                extended_attribute_inner, extended_attribute_rest,
-              ),
-              after_outer,
-            ),
-          )
-        }
-        (@lexer.TokenType::Punctuation, "{") => {
-          let (extended_attribute_inner, after_inner) = ExtendedAttributeInner::parse(
-            rest,
-          )
-
-          guard after_inner
-            is [(@lexer.TokenType::Punctuation, "}"), .. after_braces] else {
-            None
-          }
-
-          let (extended_attribute_rest, after_outer) = ExtendedAttributeRest::parse(
-            after_braces,
-          )
-
-          Some(
-            (
-              ExtendedAttribute::Braces(
-                extended_attribute_inner, extended_attribute_rest,
-              ),
-              after_outer,
-            ),
-          )
-        }
-        (@lexer.TokenType::Punctuation, "[") => {
-          let (extended_attribute_inner, after_inner) = ExtendedAttributeInner::parse(
-            rest,
-          )
-
-          guard after_inner
-            is [(@lexer.TokenType::Punctuation, "]"), .. after_brackets] else {
-            None
-          }
-
-          let (extended_attribute_rest, after_outer) = ExtendedAttributeRest::parse(
-            after_brackets,
-          )
-
-          Some(
-            (
-              ExtendedAttribute::Brackets(
-                extended_attribute_inner, extended_attribute_rest,
-              ),
-              after_outer,
-            ),
-          )
-        }
-        _ => parse_other(input)
-      }
-    _ => parse_other(input)
-  }
+  NoArgs(ExtendedAttributeNoArgs)
+  ArgList(ExtendedAttributeArgList)
+  NamedArgList(ExtendedAttributeNamedArgList)
+  Ident(ExtendedAttributeIdent)
+  String(ExtendedAttributeString)
+  Integer(ExtendedAttributeInteger)
+  Decimal(ExtendedAttributeDecimal)
+  IntegerList(ExtendedAttributeIntegerList)
+  IdentList(ExtendedAttributeIdentList)
+  Wildcard(ExtendedAttributeWildcard)
 }
 
 ///|
-pub enum ExtendedAttributeRest {
-  ExtendedAttribute(ExtendedAttribute)
-  None
-} derive(Debug)
-
-///|
-pub fn ExtendedAttributeRest::parse(
-  input : Tokens,
-) -> (ExtendedAttributeRest, Tokens) {
-  match ExtendedAttribute::parse(input) {
-    Some((extended_attribute, rest)) =>
-      (ExtendedAttributeRest::ExtendedAttribute(extended_attribute), rest)
-    None => (ExtendedAttributeRest::None, input)
+/// Forms are tried from the most specific to the most general, because several
+/// of them share a prefix: `Attr=Value(...)` also starts like `Attr=Value`, and
+/// `Attr(...)` also starts like a bare `Attr`.
+pub fn ExtendedAttribute::parse(input : Tokens) -> (ExtendedAttribute, Tokens)? {
+  if ExtendedAttributeNamedArgList::parse(input) is Some((form, rest)) {
+    return Some((ExtendedAttribute::NamedArgList(form), rest))
   }
+
+  if ExtendedAttributeArgList::parse(input) is Some((form, rest)) {
+    return Some((ExtendedAttribute::ArgList(form), rest))
+  }
+
+  if ExtendedAttributeIdentList::parse(input) is Some((form, rest)) {
+    return Some((ExtendedAttribute::IdentList(form), rest))
+  }
+
+  if ExtendedAttributeIntegerList::parse(input) is Some((form, rest)) {
+    return Some((ExtendedAttribute::IntegerList(form), rest))
+  }
+
+  if ExtendedAttributeWildcard::parse(input) is Some((form, rest)) {
+    return Some((ExtendedAttribute::Wildcard(form), rest))
+  }
+
+  if ExtendedAttributeIdent::parse(input) is Some((form, rest)) {
+    return Some((ExtendedAttribute::Ident(form), rest))
+  }
+
+  if ExtendedAttributeString::parse(input) is Some((form, rest)) {
+    return Some((ExtendedAttribute::String(form), rest))
+  }
+
+  if ExtendedAttributeInteger::parse(input) is Some((form, rest)) {
+    return Some((ExtendedAttribute::Integer(form), rest))
+  }
+
+  if ExtendedAttributeDecimal::parse(input) is Some((form, rest)) {
+    return Some((ExtendedAttribute::Decimal(form), rest))
+  }
+
+  if ExtendedAttributeNoArgs::parse(input) is Some((form, rest)) {
+    return Some((ExtendedAttribute::NoArgs(form), rest))
+  }
+
+  None
 }
 
 ///|
