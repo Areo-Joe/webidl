@@ -34,46 +34,47 @@ pub enum TokenType {
 pub fn tokenize(input : StringView) -> Array[(TokenType, StringView)] raise {
   let ret = []
 
-  for curr = input {
-    lexscan curr {
-      (WHITESPACE, after=after) => continue after
-      (COMMENT, after=after) => continue after
+  let scanner = @lexbuf.StringScanner::{ data: input, cursor: 0, }
+  while scanner.cursor < input.length() {
+    lexscan scanner {
+      WHITESPACE => continue
+      COMMENT => continue
       _ => ()
     }
 
-    lexscan curr with longest {
-      (INTEGER as t, after=after) => {
+    lexscan scanner with longest {
+      INTEGER as t => {
         ret.push((Integer, t))
-        continue after
+        continue
       }
-      (DECIMAL as t, after=after) => {
+      DECIMAL as t => {
         ret.push((Decimal, t))
-        continue after
+        continue
       }
-      (IDENTIFIER as t, after=after) => {
+      IDENTIFIER as t => {
         let kind = if is_keyword(t) { TokenType::Keyword } else { Identifier }
         ret.push((kind, t))
-        continue after
+        continue
       }
-      (STRING as t, after=after) => {
+      STRING as t => {
         ret.push((String, t))
-        continue after
+        continue
       }
-      _ =>
-        if curr.length() == 0 {
-          break
-        } else {
-          let punctuation_length = match_punctuation(curr)
-          if punctuation_length > 0 {
-            ret.push((Punctuation, curr[:punctuation_length]))
-            continue curr[punctuation_length:]
-          }
-          guard OTHER.execute(curr) is Some(other) else {
-            fail("nothing matched")
-          }
-          ret.push((Other, other.content()))
-          continue other.after()
+      _ => {
+        let curr = input[scanner.cursor:]
+        let punctuation_length = match_punctuation(curr)
+        if punctuation_length > 0 {
+          ret.push((Punctuation, curr[:punctuation_length]))
+          scanner.cursor += punctuation_length
+          continue
         }
+        guard OTHER.execute(curr) is Some(other) else {
+          fail("nothing matched")
+        }
+        ret.push((Other, other.content()))
+        scanner.cursor += other.content().length()
+        continue
+      }
     }
   }
 
