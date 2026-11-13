@@ -81,6 +81,15 @@ fn ExposureSet::empty() -> Self {
 }
 
 ///|
+fn ExposureSet::is_subset(self : Self, other : Self) -> Bool {
+  match (self, other) {
+    (_, All) => true
+    (All, _) => false
+    (List(self_set), List(other_set)) => self_set.is_subset(other_set)
+  }
+}
+
+///|
 /// The [Exposed] extended attribute must either take an identifier, take an identifier list or take a wildcard. 
 fn is_valid_exposed(attr : @parser.ExtendedAttribute) -> Exposed? {
   match attr {
@@ -109,6 +118,23 @@ fn exposed_unique_identifier_match_interface_global_name(
       assert_true(names.every(name => global_names.contains(name)))
     }
     Wildcard => ()
+  }
+}
+
+///|
+/// If [Exposed] appears on an interface or namespace member, then the member’s exposure set must be a subset of the exposure set of the interface or namespace it is a member of.
+fn check_exposed_interface_member_is_subset_of_interface(
+  interface : Interface,
+) -> Unit raise {
+  for
+    interface_member in interface.members.filter(x => {
+      x.extended_attribute_list.iter().any(x => is_valid_exposed(x) is Some(_))
+    }) {
+    assert_true(
+      exposure_set(ExposedSetStruct::InterfaceMember(interface_member), None).is_subset(
+        exposure_set(ExposedSetStruct::Interface(interface), None),
+      ),
+    )
   }
 }
 
