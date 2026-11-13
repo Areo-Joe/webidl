@@ -264,7 +264,8 @@ fn exposure_set(c : ExposedSetStruct, host : Interface?) -> ExposureSet raise {
 
   // Let H be C’s host interface if C is an interface mixin member, or null otherwise.
   let h = match c {
-    InterfaceMixinMember(_) => Some(host.unwrap())
+    InterfaceMixinMember(_) | PartialInterfaceMixinMember(_) =>
+      Some(host.unwrap())
     _ => None
   }
 
