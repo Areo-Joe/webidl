@@ -47,10 +47,10 @@ struct WithExposed {
 enum WithExposedBody {
   Interface(Interface)
   CallbackInterface(CallbackInterface)
-  Namespace(@parser.Namespace)
+  Namespace(Namespace)
   InterfaceMember(InterfaceMember)
-  InterfaceMinxinMember(@parser.MixinMember)
-  NamespaceMember(@parser.NamespaceMember)
+  InterfaceMinxinMember(InterfaceMixinMember)
+  NamespaceMember(NamespaceMember)
 }
 
 ///|

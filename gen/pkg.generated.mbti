@@ -18,6 +18,10 @@ type Definition
 
 type DefinitionBody
 
+type Dictionary
+
+type DictionaryMember
+
 type Exposed
 
 type Interface
@@ -26,13 +30,31 @@ type InterfaceMember
 
 type InterfaceMixin
 
+type InterfaceMixinMember
+
+type Namespace
+
+type NamespaceMember
+
 type Operation
 
 type OperationTag
 
+type PartialDictionary
+
+type PartialDictionaryMember
+
 type PartialInterface
 
+type PartialInterfaceMember
+
 type PartialInterfaceMixin
+
+type PartialInterfaceMixinMember
+
+type PartialNamespace
+
+type PartialNamespaceMember
 
 type WithExposed
 

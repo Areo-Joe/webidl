@@ -55,8 +55,8 @@ fn name_of_attribute(attribute : Attribute) -> StringView raise {
 }
 
 ///|
-fn name_of_dictionary_member(x : @parser.DictionaryMember) -> StringView {
-  let name = match x.dictionary_member_rest {
+fn name_of_dictionary_member(x : @parser.DictionaryMemberRest) -> StringView {
+  let name = match x {
     Required(_, name) => name
     Optional(_, name, _) => name
   }

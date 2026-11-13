@@ -78,6 +78,33 @@ struct PartialNamespaceMember {
 }
 
 ///|
+struct Dictionary {
+  identifier : StringView
+  inheritance : @parser.Inheritance
+  members : Array[DictionaryMember]
+}
+
+///|
+struct DictionaryMember {
+  extended_attribute_list : @parser.ExtendedAttributeList
+  body : @parser.DictionaryMemberRest
+  host : Dictionary
+}
+
+///|
+struct PartialDictionary {
+  identifier : StringView
+  members : Array[PartialDictionaryMember]
+}
+
+///|
+struct PartialDictionaryMember {
+  extended_attribute_list : @parser.ExtendedAttributeList
+  body : @parser.DictionaryMemberRest
+  host : PartialDictionary
+}
+
+///|
 fn check_interfaces(
   interfaces : Array[(@parser.ExtendedAttributeList, Interface)],
   includes_statements : Array[@parser.IncludesStatement],

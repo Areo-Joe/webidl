@@ -53,8 +53,8 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
   let dictionary_member_names = definitions
     .filter_map(x => {
       match x.body {
-        Dictionary(x) => Some(x.dictionary_members)
-        PartialDictionary(x) => Some(x.dictionary_members)
+        Dictionary(x) => Some(x.members.map(x => x.body))
+        PartialDictionary(x) => Some(x.members.map(x => x.body))
         _ => None
       }
     })

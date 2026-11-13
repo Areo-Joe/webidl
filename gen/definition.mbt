@@ -24,9 +24,9 @@ enum DefinitionBody {
   Namespace(Namespace)
   PartialInterface(PartialInterface)
   PartialInterfaceMixin(PartialInterfaceMixin)
-  PartialDictionary(@parser.PartialDictionary)
+  PartialDictionary(PartialDictionary)
   PartialNamespace(PartialNamespace)
-  Dictionary(@parser.Dictionary)
+  Dictionary(Dictionary)
   Enum(@parser.Enum)
   Typedef(@parser.Typedef)
   IncludesStatement(@parser.IncludesStatement)
@@ -134,7 +134,24 @@ fn DefinitionBody::from_parser_definition(
 
       PartialInterfaceMixin(partial_interface_mixin)
     }
-    Partial({ partial_definition: Dictionary(x) }) => PartialDictionary(x)
+    Partial({ partial_definition: Dictionary(x) }) => {
+      let dictionary = PartialDictionary::{
+        identifier: x.identifier,
+        members: [],
+      }
+
+      dictionary.members.push_iter(
+        x.dictionary_members
+        .iter()
+        .map(x => PartialDictionaryMember::{
+          extended_attribute_list: x.extended_attribute_list,
+          body: x.dictionary_member_rest,
+          host: dictionary,
+        }),
+      )
+
+      PartialDictionary(dictionary)
+    }
     Partial({ partial_definition: Namespace(x) }) => {
       let partial_namespace = PartialNamespace::{
         identifier: x.identifier,
@@ -153,7 +170,25 @@ fn DefinitionBody::from_parser_definition(
 
       PartialNamespace(partial_namespace)
     }
-    Dictionary(x) => Dictionary(x)
+    Dictionary(x) => {
+      let dictionary = Dictionary::{
+        inheritance: x.inheritance,
+        identifier: x.identifier,
+        members: [],
+      }
+
+      dictionary.members.push_iter(
+        x.dictionary_members
+        .iter()
+        .map(x => DictionaryMember::{
+          extended_attribute_list: x.extended_attribute_list,
+          body: x.dictionary_member_rest,
+          host: dictionary,
+        }),
+      )
+
+      Dictionary(dictionary)
+    }
     Enum(x) => Enum(x)
     Typedef(x) => Typedef(x)
     IncludesStatement(x) => IncludesStatement(x)
