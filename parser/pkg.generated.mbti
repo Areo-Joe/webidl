@@ -790,4 +790,3 @@ pub fn UnsignedIntegerType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> 
 pub type Tokens = ArrayView[(@lexer.TokenType, StringView)]
 
 // Traits
-
