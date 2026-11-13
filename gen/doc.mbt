@@ -12,7 +12,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
 
   let attributes = definitions
     .map(definition => {
-      match definition.body {
+      match definition {
         Interface(interface) =>
           interface.members
           .iter()
@@ -52,7 +52,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
 
   let dictionary_member_names = definitions
     .filter_map(x => {
-      match x.body {
+      match x {
         Dictionary(x) => Some(x.members.map(x => x.body))
         PartialDictionary(x) => Some(x.members.map(x => x.body))
         _ => None
@@ -65,7 +65,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
 
   let constants = definitions
     .filter_map(x => {
-      match x.body {
+      match x {
         Interface(interface) =>
           Some(
             interface.members
@@ -131,7 +131,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
 
   let operations = definitions
     .filter_map(definition => {
-      match definition.body {
+      match definition {
         Interface(interface) =>
           Some(
             interface.members
@@ -215,7 +215,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
 
   // Within the set of IDL fragments that a given implementation supports, the identifier of every interface, namespace, dictionary, enumeration, callback function, callback interface and typedef must not be the same as the identifier of any other interface, namespace, dictionary, enumeration, callback function, callback interface or typedef.
   let no_name_conflict_definitions = definitions.filter_map(x => {
-    match x.body {
+    match x {
       Interface(_)
       | Callback(_)
       | Namespace(_)
@@ -234,25 +234,25 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
   assert_eq(no_conflict_names.length(), Set(no_conflict_names).length())
 
   let interfaces = definitions.filter_map(x => {
-    match x.body {
-      Interface(interface) => Some((x.extended_attribute_list, interface))
+    match x {
+      Interface(interface) => Some(interface)
       _ => None
     }
   })
   let interface_mixins = definitions.filter_map(x => {
-    match x.body {
+    match x {
       InterfaceMixin(i) => Some(i)
       _ => None
     }
   })
   let partial_interfaces = definitions.filter_map(x => {
-    match x.body {
+    match x {
       PartialInterface(i) => Some(i)
       _ => None
     }
   })
   let includes_statements = definitions.filter_map(x => {
-    match x.body {
+    match x {
       IncludesStatement(i) => Some(i)
       _ => None
     }

@@ -23,7 +23,7 @@ fn check_is_valid_cross_origin_isolated_on_interface(
 ///|
 /// An interface without the [CrossOriginIsolated] extended attribute must not inherit from another interface that does specify [CrossOriginIsolated].
 fn check_interface_inheritance_no_cross_origin_isolated(
-  interfaces : Array[(@parser.ExtendedAttributeList, Interface)],
+  interfaces : Array[Interface],
   interface : Interface,
 ) -> Unit raise {
   guard interface.inheritance is Some(name) else { return }
@@ -31,14 +31,15 @@ fn check_interface_inheritance_no_cross_origin_isolated(
   let name = strip_underscore(name)
 
   let inheritance_index = interfaces
-    .search_by(x => name_of_interface(x.1) == name)
+    .search_by(x => name_of_interface(x) == name)
     .unwrap()
   let inheritance = interfaces[inheritance_index]
 
-  assert_false(inheritance.0.iter().any(is_valid_cross_origin_isolated))
-
-  check_interface_inheritance_no_cross_origin_isolated(
-    interfaces,
-    inheritance.1,
+  assert_false(
+    inheritance.extended_attribute_list
+    .iter()
+    .any(is_valid_cross_origin_isolated),
   )
+
+  check_interface_inheritance_no_cross_origin_isolated(interfaces, inheritance)
 }

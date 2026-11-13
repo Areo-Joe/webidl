@@ -1,5 +1,6 @@
 ///|
 struct Interface {
+  extended_attribute_list : @parser.ExtendedAttributeList
   identifier : StringView
   inheritance : @parser.Inheritance
   members : Array[InterfaceMember]
@@ -14,6 +15,7 @@ struct InterfaceMember {
 
 ///|
 struct InterfaceMixin {
+  extended_attribute_list : @parser.ExtendedAttributeList
   identifier : StringView
   members : Array[InterfaceMixinMember]
 }
@@ -27,6 +29,7 @@ struct InterfaceMixinMember {
 
 ///|
 struct PartialInterface {
+  extended_attribute_list : @parser.ExtendedAttributeList
   identifier : StringView
   members : Array[PartialInterfaceMember]
 }
@@ -40,6 +43,7 @@ struct PartialInterfaceMember {
 
 ///|
 struct PartialInterfaceMixin {
+  extended_attribute_list : @parser.ExtendedAttributeList
   identifier : StringView
   members : Array[PartialInterfaceMixinMember]
 }
@@ -53,6 +57,7 @@ struct PartialInterfaceMixinMember {
 
 ///|
 struct Namespace {
+  extended_attribute_list : @parser.ExtendedAttributeList
   identifier : StringView
   members : Array[NamespaceMember]
 }
@@ -66,6 +71,7 @@ struct NamespaceMember {
 
 ///|
 struct PartialNamespace {
+  extended_attribute_list : @parser.ExtendedAttributeList
   identifier : StringView
   members : Array[PartialNamespaceMember]
 }
@@ -79,6 +85,7 @@ struct PartialNamespaceMember {
 
 ///|
 struct Dictionary {
+  extended_attribute_list : @parser.ExtendedAttributeList
   identifier : StringView
   inheritance : @parser.Inheritance
   members : Array[DictionaryMember]
@@ -93,6 +100,7 @@ struct DictionaryMember {
 
 ///|
 struct PartialDictionary {
+  extended_attribute_list : @parser.ExtendedAttributeList
   identifier : StringView
   members : Array[PartialDictionaryMember]
 }
@@ -106,41 +114,27 @@ struct PartialDictionaryMember {
 
 ///|
 struct Enum {
+  extended_attribute_list : @parser.ExtendedAttributeList
   identifier : StringView
   values : Array[StringView]
 }
 
 ///|
 struct TypeDef {
+  extended_attribute_list : @parser.ExtendedAttributeList
   identifier : StringView
   type_with_extended_attributes : @parser.TypeWithExtendedAttributes
 }
 
 ///|
 struct IncludesStatement {
+  extended_attribute_list : @parser.ExtendedAttributeList
   interface : StringView
   mixin_ : StringView
 }
 
 ///|
-struct Definition {
-  body : DefinitionBody
-  extended_attribute_list : @parser.ExtendedAttributeList
-}
-
-///|
-fn Definition::from_parser(
-  extended_attribute_list : @parser.ExtendedAttributeList,
-  definition : @parser.Definition,
-) -> Self {
-  Definition::{
-    body: DefinitionBody::from_parser_definition(definition),
-    extended_attribute_list,
-  }
-}
-
-///|
-enum DefinitionBody {
+enum Definition {
   Callback(Callback)
   CallbackInterface(CallbackInterface)
   Interface(Interface)
@@ -157,19 +151,35 @@ enum DefinitionBody {
 }
 
 ///|
-fn DefinitionBody::from_parser_definition(
+fn Definition::from_parser(
+  extended_attribute_list : @parser.ExtendedAttributeList,
   definition : @parser.Definition,
 ) -> Self {
   match definition {
     CallbackOrInterfaceOrMixin(
       Callback(CallbackRest({ identifier, type_, argument_list }))
-    ) => Callback(Callback::{ identifier, type_, argument_list })
+    ) =>
+      Callback(Callback::{
+        identifier,
+        type_,
+        argument_list,
+        extended_attribute_list,
+      })
     CallbackOrInterfaceOrMixin(Callback(Interface(identifier, members))) =>
-      CallbackInterface(CallbackInterface::{ identifier, members })
+      CallbackInterface(CallbackInterface::{
+        identifier,
+        members,
+        extended_attribute_list,
+      })
     CallbackOrInterfaceOrMixin(
       Interface(InterfaceRest({ identifier, inheritance, interface_members }))
     ) => {
-      let interface = Interface::{ identifier, inheritance, members: [] }
+      let interface = Interface::{
+        identifier,
+        inheritance,
+        members: [],
+        extended_attribute_list,
+      }
 
       let interface_members = interface_members
         .iter()
@@ -186,7 +196,11 @@ fn DefinitionBody::from_parser_definition(
     CallbackOrInterfaceOrMixin(
       Interface(MixinRest({ identifier, mixin_members }))
     ) => {
-      let interface_mixin = InterfaceMixin::{ identifier, members: [] }
+      let interface_mixin = InterfaceMixin::{
+        identifier,
+        members: [],
+        extended_attribute_list,
+      }
 
       interface_mixin.members.push_iter(
         mixin_members
@@ -201,7 +215,11 @@ fn DefinitionBody::from_parser_definition(
       InterfaceMixin(interface_mixin)
     }
     Namespace(x) => {
-      let namespace_ = Namespace::{ identifier: x.identifier, members: [] }
+      let namespace_ = Namespace::{
+        identifier: x.identifier,
+        members: [],
+        extended_attribute_list,
+      }
 
       namespace_.members.push_iter(
         x.namespace_members
@@ -222,7 +240,11 @@ fn DefinitionBody::from_parser_definition(
         ),
       }
     ) => {
-      let partial_interface = PartialInterface::{ identifier, members: [] }
+      let partial_interface = PartialInterface::{
+        identifier,
+        members: [],
+        extended_attribute_list,
+      }
 
       partial_interface.members.push_iter(
         partial_interface_members
@@ -244,6 +266,7 @@ fn DefinitionBody::from_parser_definition(
       let partial_interface_mixin = PartialInterfaceMixin::{
         identifier,
         members: [],
+        extended_attribute_list,
       }
 
       partial_interface_mixin.members.push_iter(
@@ -262,6 +285,7 @@ fn DefinitionBody::from_parser_definition(
       let dictionary = PartialDictionary::{
         identifier: x.identifier,
         members: [],
+        extended_attribute_list,
       }
 
       dictionary.members.push_iter(
@@ -280,6 +304,7 @@ fn DefinitionBody::from_parser_definition(
       let partial_namespace = PartialNamespace::{
         identifier: x.identifier,
         members: [],
+        extended_attribute_list,
       }
 
       partial_namespace.members.push_iter(
@@ -299,6 +324,7 @@ fn DefinitionBody::from_parser_definition(
         inheritance: x.inheritance,
         identifier: x.identifier,
         members: [],
+        extended_attribute_list,
       }
 
       dictionary.members.push_iter(
@@ -317,22 +343,26 @@ fn DefinitionBody::from_parser_definition(
       Enum(Enum::{
         identifier: x.identifier,
         values: x.enum_value_list.iter().collect(),
+        extended_attribute_list,
       })
     Typedef(x) =>
       Typedef(TypeDef::{
         type_with_extended_attributes: x.type_with_extended_attributes,
         identifier: x.identifier,
+        extended_attribute_list,
       })
     IncludesStatement(x) =>
       IncludesStatement(IncludesStatement::{
         interface: x.interface_identifier,
         mixin_: x.mixin_identifier,
+        extended_attribute_list,
       })
   }
 }
 
 ///|
 struct Callback {
+  extended_attribute_list : @parser.ExtendedAttributeList
   identifier : StringView
   type_ : @parser.Type
   argument_list : @parser.ArgumentList
@@ -340,6 +370,7 @@ struct Callback {
 
 ///|
 struct CallbackInterface {
+  extended_attribute_list : @parser.ExtendedAttributeList
   identifier : StringView
   members : @parser.CallbackInterfaceMembers
 }

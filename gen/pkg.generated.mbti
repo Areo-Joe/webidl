@@ -16,8 +16,6 @@ type CallbackInterface
 
 type Definition
 
-type DefinitionBody
-
 type Dictionary
 
 type DictionaryMember

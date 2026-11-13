@@ -17,7 +17,7 @@ fn name_of_partial_interface(
 
 ///|
 fn name_of_definition(definition : Definition) -> StringView? {
-  match definition.body {
+  match definition {
     Callback({ identifier: name, .. })
     | CallbackInterface({ identifier: name, .. })
     | Namespace({ identifier: name, .. })
