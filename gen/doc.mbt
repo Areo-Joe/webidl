@@ -201,4 +201,23 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
     constant_names +
     operation_names_not_regular).every(name => name != "toJSON"),
   )
+
+  // Within the set of IDL fragments that a given implementation supports, the identifier of every interface, namespace, dictionary, enumeration, callback function, callback interface and typedef must not be the same as the identifier of any other interface, namespace, dictionary, enumeration, callback function, callback interface or typedef.
+  let no_name_conflict_definitions = definitions.filter_map(x => {
+    match x {
+      Callback(_)
+      | Namespace(_)
+      | Dictionary(_)
+      | Enum(_)
+      | CallbackInterface(_)
+      | Typedef(_) => Some(x)
+      _ => None
+    }
+  })
+
+  let no_conflict_names = no_name_conflict_definitions.filter_map(
+    name_of_definition,
+  )
+
+  assert_eq(no_conflict_names.length(), Set(no_conflict_names).length())
 }
