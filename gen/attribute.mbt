@@ -18,9 +18,9 @@ enum AttributeTag {
 
 ///|
 fn Attribute::from_interface_member(
-  interface_member : InterfaceMember,
+  interface_member : @parser.InterfaceMember,
 ) -> Attribute? {
-  match interface_member.body {
+  match interface_member {
     PartialInterfaceMember(x) => Attribute::from_partial_interface_member(x)
     _ => None
   }

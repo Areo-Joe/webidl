@@ -16,27 +16,32 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
         Interface(interface) =>
           interface.members
           .iter()
-          .filter_map(x => Attribute::from_interface_member(x))
+          .filter_map(x => Attribute::from_interface_member(x.body))
           .collect()
         InterfaceMixin(interface_mixin) =>
           interface_mixin.members
           .iter()
-          .filter_map(x => Attribute::from_mixin_member(x.1))
+          .filter_map(x => Attribute::from_mixin_member(x.body))
           .collect()
         PartialInterface(interface) =>
           interface.members
           .iter()
-          .filter_map(x => Attribute::from_partial_interface_member(x.1))
+          .filter_map(x => Attribute::from_partial_interface_member(x.body))
           .collect()
         PartialInterfaceMixin(partial_interface_mixin) =>
           partial_interface_mixin.members
           .iter()
-          .filter_map(x => Attribute::from_mixin_member(x.1))
+          .filter_map(x => Attribute::from_mixin_member(x.body))
           .collect()
-        Namespace(namespace_) | PartialNamespace(namespace_) =>
-          namespace_.namespace_members
+        Namespace(x) =>
+          x.members
           .iter()
-          .filter_map(x => Attribute::from_namespace_member(x.1))
+          .filter_map(x => Attribute::from_namespace_member(x.body))
+          .collect()
+        PartialNamespace(x) =>
+          x.members
+          .iter()
+          .filter_map(x => Attribute::from_namespace_member(x.body))
           .collect()
         _ => []
       }
@@ -77,7 +82,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
             partial_interface.members
             .iter()
             .filter_map(x => {
-              match x.1 {
+              match x.body {
                 Const(c) => Some(c)
                 _ => None
               }
@@ -88,7 +93,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
             interface_mixin.members
             .iter()
             .filter_map(x => {
-              match x.1 {
+              match x.body {
                 Const(c) => Some(c)
                 _ => None
               }
@@ -99,7 +104,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
             partial_interface_mixin.members
             .iter()
             .filter_map(x => {
-              match x.1 {
+              match x.body {
                 Const(c) => Some(c)
                 _ => None
               }
@@ -137,25 +142,31 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
           Some(
             partial_interface.members
             .iter()
-            .filter_map(x => Operation::from_partial_interface_member(x.1)),
+            .filter_map(x => Operation::from_partial_interface_member(x.body)),
           )
         InterfaceMixin(interface_mixin) =>
           Some(
             interface_mixin.members
             .iter()
-            .filter_map(x => Operation::from_interface_mixin_member(x.1)),
+            .filter_map(x => Operation::from_interface_mixin_member(x.body)),
           )
         PartialInterfaceMixin(partial_interface_mixin) =>
           Some(
             partial_interface_mixin.members
             .iter()
-            .filter_map(x => Operation::from_interface_mixin_member(x.1)),
+            .filter_map(x => Operation::from_interface_mixin_member(x.body)),
           )
-        Namespace(namespace_) | PartialNamespace(namespace_) =>
+        Namespace(namespace_) =>
           Some(
-            namespace_.namespace_members
+            namespace_.members
             .iter()
-            .filter_map(x => Operation::from_namespace_member(x.1)),
+            .filter_map(x => Operation::from_namespace_member(x.body)),
+          )
+        PartialNamespace(namespace_) =>
+          Some(
+            namespace_.members
+            .iter()
+            .filter_map(x => Operation::from_namespace_member(x.body)),
           )
         CallbackInterface(callback_interface) =>
           Some(
