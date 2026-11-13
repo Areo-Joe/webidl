@@ -27,7 +27,7 @@ enum DefinitionBody {
   PartialDictionary(PartialDictionary)
   PartialNamespace(PartialNamespace)
   Dictionary(Dictionary)
-  Enum(@parser.Enum)
+  Enum(Enum)
   Typedef(@parser.Typedef)
   IncludesStatement(@parser.IncludesStatement)
 }
@@ -189,7 +189,11 @@ fn DefinitionBody::from_parser_definition(
 
       Dictionary(dictionary)
     }
-    Enum(x) => Enum(x)
+    Enum(x) =>
+      Enum(Enum::{
+        identifier: x.identifier,
+        values: x.enum_value_list.iter().collect(),
+      })
     Typedef(x) => Typedef(x)
     IncludesStatement(x) => IncludesStatement(x)
   }

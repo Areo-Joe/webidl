@@ -22,6 +22,8 @@ type Dictionary
 
 type DictionaryMember
 
+type Enum
+
 type Exposed
 
 type Interface

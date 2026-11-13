@@ -105,6 +105,12 @@ struct PartialDictionaryMember {
 }
 
 ///|
+struct Enum {
+  identifier : StringView
+  values : Array[StringView]
+}
+
+///|
 fn check_interfaces(
   interfaces : Array[(@parser.ExtendedAttributeList, Interface)],
   includes_statements : Array[@parser.IncludesStatement],
