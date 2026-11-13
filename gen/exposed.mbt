@@ -122,6 +122,49 @@ fn exposed_unique_identifier_match_interface_global_name(
 }
 
 ///|
+fn check_exposed_attributes(
+  attrs : @parser.ExtendedAttributeList,
+  available_global_names : Array[StringView],
+) -> Unit raise {
+  for attr in attrs.iter() {
+    if is_valid_exposed(attr) is Some(exposed) {
+      exposed_unique_identifier_match_interface_global_name(
+        exposed, available_global_names,
+      )
+    }
+  }
+}
+
+///|
+fn check_exposed_global_names_on_interface(
+  interface : Interface,
+  available_global_names : Array[StringView],
+) -> Unit raise {
+  check_exposed_attributes(
+    interface.extended_attribute_list,
+    available_global_names,
+  )
+  for interface_member in interface.members {
+    check_exposed_attributes(
+      interface_member.extended_attribute_list,
+      available_global_names,
+    )
+  }
+  for partial in interface.partials {
+    check_exposed_attributes(
+      partial.extended_attribute_list,
+      available_global_names,
+    )
+    for partial_interface_member in partial.members {
+      check_exposed_attributes(
+        partial_interface_member.extended_attribute_list,
+        available_global_names,
+      )
+    }
+  }
+}
+
+///|
 /// If [Exposed] appears on an interface or namespace member, then the member’s exposure set must be a subset of the exposure set of the interface or namespace it is a member of.
 fn check_exposed_interface_member_is_subset_of_interface(
   interface : Interface,

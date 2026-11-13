@@ -10,7 +10,15 @@ fn check_interfaces(
   check_includes_valid(includes_statements, interfaces, interface_mixins)
   check_partial_interface_name(partial_interfaces, interfaces)
 
+  let available_global_names = interfaces
+    .map(interface => global_names(interface.extended_attribute_list))
+    .flatten()
+
   for interface in interfaces {
+    check_exposed_global_names_on_interface(interface, available_global_names)
+    check_exposed_interface_member_is_subset_of_interface(interface)
+    check_exposed_interface_is_subset_of_inheritance(interface)
+
     let has_cross_origin_isolated = interface.extended_attribute_list
       .iter()
       .any(is_valid_cross_origin_isolated)
