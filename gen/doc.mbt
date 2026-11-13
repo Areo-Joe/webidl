@@ -228,6 +228,26 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
       _ => None
     }
   })
+  let interface_mixins = definitions.filter_map(x => {
+    match x {
+      InterfaceMixin(i) => Some(i)
+      _ => None
+    }
+  })
+  let partial_interfaces = definitions.filter_map(x => {
+    match x {
+      PartialInterface(i) => Some(i)
+      _ => None
+    }
+  })
+  let includes_statements = definitions.filter_map(x => {
+    match x {
+      IncludesStatement(i) => Some(i)
+      _ => None
+    }
+  })
 
-  check_interfaces(interfaces)
+  check_interfaces(
+    interfaces, includes_statements, interface_mixins, partial_interfaces,
+  )
 }

@@ -4,13 +4,23 @@ fn name_of_interface(interface : Interface) -> StringView {
 }
 
 ///|
+fn name_of_interface_mixin(interface_mixin : InterfaceMixin) -> StringView {
+  strip_underscore(interface_mixin.identifier)
+}
+
+///|
+fn name_of_partial_interface(
+  partial_interface : PartialInterface,
+) -> StringView {
+  strip_underscore(partial_interface.identifier)
+}
+
+///|
 fn name_of_definition(definition : Definition) -> StringView? {
   match definition {
     Callback({ identifier: name, .. })
     | CallbackInterface({ identifier: name, .. })
-    | InterfaceMixin({ identifier: name, .. })
     | Namespace({ identifier: name, .. })
-    | PartialInterface({ identifier: name, .. })
     | PartialInterfaceMixin({ identifier: name, .. })
     | PartialDictionary({ identifier: name, .. })
     | PartialNamespace({ identifier: name, .. })
@@ -18,6 +28,10 @@ fn name_of_definition(definition : Definition) -> StringView? {
     | Enum({ identifier: name, .. })
     | Typedef({ identifier: name, .. }) => Some(strip_underscore(name))
     Interface(interface) => Some(name_of_interface(interface))
+    InterfaceMixin(interface_mixin) =>
+      Some(name_of_interface_mixin(interface_mixin))
+    PartialInterface(partial_interface) =>
+      Some(name_of_partial_interface(partial_interface))
     _ => None
   }
 }

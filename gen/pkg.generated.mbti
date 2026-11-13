@@ -20,6 +20,10 @@ type Interface
 
 type InterfaceMixin
 
+type Operation
+
+type OperationTag
+
 type PartialInterface
 
 type PartialInterfaceMixin
