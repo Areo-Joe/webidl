@@ -1,6 +1,8 @@
 ///|
-fn parse_read_write_setlike(input : String) -> (ReadWriteSetlike, Tokens)? {
-  ReadWriteSetlike::parse((try! @lexer.tokenize(input)).view())
+fn parse_read_write_setlike(
+  input : String,
+) -> (@parser.ReadWriteSetlike, @parser.Tokens)? {
+  @parser.ReadWriteSetlike::parse((try! @lexer.tokenize(input)).view())
 }
 
 ///|

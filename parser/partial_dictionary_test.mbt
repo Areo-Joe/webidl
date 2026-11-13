@@ -1,6 +1,8 @@
 ///|
-fn parse_partial_dictionary(input : String) -> (PartialDictionary, Tokens)? {
-  PartialDictionary::parse((try! @lexer.tokenize(input)).view())
+fn parse_partial_dictionary(
+  input : String,
+) -> (@parser.PartialDictionary, @parser.Tokens)? {
+  @parser.PartialDictionary::parse((try! @lexer.tokenize(input)).view())
 }
 
 ///|

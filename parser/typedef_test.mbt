@@ -1,6 +1,6 @@
 ///|
-fn parse_typedef(input : String) -> (Typedef, Tokens)? {
-  Typedef::parse((try! @lexer.tokenize(input)).view())
+fn parse_typedef(input : String) -> (@parser.Typedef, @parser.Tokens)? {
+  @parser.Typedef::parse((try! @lexer.tokenize(input)).view())
 }
 
 ///|

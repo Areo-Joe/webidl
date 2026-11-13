@@ -1,6 +1,8 @@
 ///|
-fn parse_read_write_maplike(input : String) -> (ReadWriteMaplike, Tokens)? {
-  ReadWriteMaplike::parse((try! @lexer.tokenize(input)).view())
+fn parse_read_write_maplike(
+  input : String,
+) -> (@parser.ReadWriteMaplike, @parser.Tokens)? {
+  @parser.ReadWriteMaplike::parse((try! @lexer.tokenize(input)).view())
 }
 
 ///|

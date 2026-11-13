@@ -5,7 +5,7 @@
 async fn parse_wpt_idl_fixture(file : String) -> Unit {
   let source = @fs.read_file("parser/fixtures/wpt/" + file).text()
   let tokens = @lexer.tokenize(source)
-  let (_, rest) = parse(tokens.view())
+  let (_, rest) = @parser.parse(tokens.view())
   if rest is [(_, text), ..] {
     fail(
       file +

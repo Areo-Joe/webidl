@@ -1,8 +1,8 @@
 ///|
 fn parse_partial_interface_rest(
   input : String,
-) -> (PartialInterfaceRest, Tokens)? {
-  PartialInterfaceRest::parse((try! @lexer.tokenize(input)).view())
+) -> (@parser.PartialInterfaceRest, @parser.Tokens)? {
+  @parser.PartialInterfaceRest::parse((try! @lexer.tokenize(input)).view())
 }
 
 ///|

@@ -1,47 +1,58 @@
 ///|
-fn dictionary_tokens(input : String) -> Tokens {
+fn dictionary_tokens(input : String) -> @parser.Tokens {
   (try! @lexer.tokenize(input)).view()
 }
 
 ///|
 test "Inheritance parses an identifier or epsilon" {
   assert_true(
-    Inheritance::parse(dictionary_tokens(": Base tail"))
-    is (Inheritance::Some("Base"), [(_, "tail")]),
+    @parser.Inheritance::parse(dictionary_tokens(": Base tail"))
+    is (@parser.Inheritance::Some("Base"), [(_, "tail")]),
   )
   assert_true(
-    Inheritance::parse(dictionary_tokens("tail"))
-    is (Inheritance::None, [(_, "tail")]),
+    @parser.Inheritance::parse(dictionary_tokens("tail"))
+    is (@parser.Inheritance::None, [(_, "tail")]),
   )
   assert_true(
-    Inheritance::parse(dictionary_tokens(":"))
-    is (Inheritance::None, [(@lexer.TokenType::Punctuation, ":")]),
+    @parser.Inheritance::parse(dictionary_tokens(":"))
+    is (@parser.Inheritance::None, [(@lexer.TokenType::Punctuation, ":")]),
   )
 }
 
 ///|
 test "DictionaryMemberRest parses required and optional members" {
   assert_true(
-    DictionaryMemberRest::parse(
+    @parser.DictionaryMemberRest::parse(
       dictionary_tokens("required [Clamp] unsigned long count; tail"),
     )
-    is Some((DictionaryMemberRest::Required(_, "count"), [(_, "tail")])),
+    is Some((@parser.DictionaryMemberRest::Required(_, "count"), [(_, "tail")])),
   )
   assert_true(
-    DictionaryMemberRest::parse(
+    @parser.DictionaryMemberRest::parse(
       dictionary_tokens("DOMString label = \"default\"; tail"),
     )
     is Some(
       (
-        DictionaryMemberRest::Optional(_, "label", Default::Some(_)),
+        @parser.DictionaryMemberRest::Optional(
+          _,
+          "label",
+          @parser.Default::Some(_)
+        ),
         [(_, "tail")],
       )
     ),
   )
   assert_true(
-    DictionaryMemberRest::parse(dictionary_tokens("long count; tail"))
+    @parser.DictionaryMemberRest::parse(dictionary_tokens("long count; tail"))
     is Some(
-      (DictionaryMemberRest::Optional(_, "count", Default::None), [(_, "tail")])
+      (
+        @parser.DictionaryMemberRest::Optional(
+          _,
+          "count",
+          @parser.Default::None
+        ),
+        [(_, "tail")],
+      )
     ),
   )
 }
@@ -49,7 +60,7 @@ test "DictionaryMemberRest parses required and optional members" {
 ///|
 test "DictionaryMember parses its extended attributes" {
   assert_true(
-    DictionaryMember::parse(
+    @parser.DictionaryMember::parse(
       dictionary_tokens("[Clamp] required unsigned long count; tail"),
     )
     is Some((_, [(_, "tail")])),
@@ -59,15 +70,15 @@ test "DictionaryMember parses its extended attributes" {
 ///|
 test "DictionaryMembers parses epsilon without consuming input" {
   assert_true(
-    DictionaryMembers::parse(dictionary_tokens("tail"))
-    is (DictionaryMembers::None, [(_, "tail")]),
+    @parser.DictionaryMembers::parse(dictionary_tokens("tail"))
+    is (@parser.DictionaryMembers::None, [(_, "tail")]),
   )
 }
 
 ///|
 test "Dictionary parses inheritance and recursive members" {
   assert_true(
-    Dictionary::parse(
+    @parser.Dictionary::parse(
       dictionary_tokens(
         "dictionary Options : Base { [Clamp] required unsigned long count; DOMString label = \"default\"; }; tail",
       ),
@@ -75,7 +86,7 @@ test "Dictionary parses inheritance and recursive members" {
     is Some((_, [(_, "tail")])),
   )
   assert_true(
-    Dictionary::parse(dictionary_tokens("dictionary Empty {}; tail"))
+    @parser.Dictionary::parse(dictionary_tokens("dictionary Empty {}; tail"))
     is Some((_, [(_, "tail")])),
   )
 }
@@ -83,14 +94,18 @@ test "Dictionary parses inheritance and recursive members" {
 ///|
 test "Dictionary rejects incomplete members and delimiters" {
   assert_true(
-    Dictionary::parse(
+    @parser.Dictionary::parse(
       dictionary_tokens("dictionary Options { required long count };"),
     )
     is None,
   )
   assert_true(
-    Dictionary::parse(dictionary_tokens("dictionary Options { long count; }"))
+    @parser.Dictionary::parse(
+      dictionary_tokens("dictionary Options { long count; }"),
+    )
     is None,
   )
-  assert_true(Dictionary::parse(dictionary_tokens("dictionary {};")) is None)
+  assert_true(
+    @parser.Dictionary::parse(dictionary_tokens("dictionary {};")) is None,
+  )
 }

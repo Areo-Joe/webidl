@@ -1,8 +1,10 @@
 ///|
 fn parse_partial_interface_or_partial_mixin(
   input : String,
-) -> (PartialInterfaceOrPartialMixin, Tokens)? {
-  PartialInterfaceOrPartialMixin::parse((try! @lexer.tokenize(input)).view())
+) -> (@parser.PartialInterfaceOrPartialMixin, @parser.Tokens)? {
+  @parser.PartialInterfaceOrPartialMixin::parse(
+    (try! @lexer.tokenize(input)).view(),
+  )
 }
 
 ///|
@@ -12,7 +14,10 @@ test "PartialInterfaceOrPartialMixin parses PartialInterfaceRest" {
       "Example { attribute DOMString name; }; tail",
     )
     is Some(
-      (PartialInterfaceOrPartialMixin::PartialInterfaceRest(_), [(_, "tail")])
+      (
+        @parser.PartialInterfaceOrPartialMixin::PartialInterfaceRest(_),
+        [(_, "tail")],
+      )
     ),
   )
 }
@@ -23,7 +28,9 @@ test "PartialInterfaceOrPartialMixin parses MixinRest" {
     parse_partial_interface_or_partial_mixin(
       "mixin Example { readonly attribute DOMString name; }; tail",
     )
-    is Some((PartialInterfaceOrPartialMixin::MixinRest(_), [(_, "tail")])),
+    is Some(
+      (@parser.PartialInterfaceOrPartialMixin::MixinRest(_), [(_, "tail")])
+    ),
   )
 }
 

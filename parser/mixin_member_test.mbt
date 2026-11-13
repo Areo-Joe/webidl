@@ -1,30 +1,38 @@
 ///|
-fn parse_mixin_member(input : String) -> (MixinMember, Tokens)? {
-  MixinMember::parse((try! @lexer.tokenize(input)).view())
+fn parse_mixin_member(input : String) -> (@parser.MixinMember, @parser.Tokens)? {
+  @parser.MixinMember::parse((try! @lexer.tokenize(input)).view())
 }
 
 ///|
 test "MixinMember parses every alternative" {
   assert_true(
     parse_mixin_member("const long value = 1; tail")
-    is Some((MixinMember::Const(_), [(_, "tail")])),
+    is Some((@parser.MixinMember::Const(_), [(_, "tail")])),
   )
   assert_true(
     parse_mixin_member("long operation(); tail")
-    is Some((MixinMember::RegularOperation(_), [(_, "tail")])),
+    is Some((@parser.MixinMember::RegularOperation(_), [(_, "tail")])),
   )
   assert_true(
     parse_mixin_member("stringifier; tail")
-    is Some((MixinMember::Stringifier(_), [(_, "tail")])),
+    is Some((@parser.MixinMember::Stringifier(_), [(_, "tail")])),
   )
   assert_true(
     parse_mixin_member("attribute DOMString name; tail")
-    is Some((MixinMember::Attribute(OptionalReadOnly::None, _), [(_, "tail")])),
+    is Some(
+      (
+        @parser.MixinMember::Attribute(@parser.OptionalReadOnly::None, _),
+        [(_, "tail")],
+      )
+    ),
   )
   assert_true(
     parse_mixin_member("readonly attribute DOMString name; tail")
     is Some(
-      (MixinMember::Attribute(OptionalReadOnly::ReadOnly, _), [(_, "tail")])
+      (
+        @parser.MixinMember::Attribute(@parser.OptionalReadOnly::ReadOnly, _),
+        [(_, "tail")],
+      )
     ),
   )
 }

@@ -1,6 +1,8 @@
 ///|
-fn parse_includes_statement(input : String) -> (IncludesStatement, Tokens)? {
-  IncludesStatement::parse((try! @lexer.tokenize(input)).view())
+fn parse_includes_statement(
+  input : String,
+) -> (@parser.IncludesStatement, @parser.Tokens)? {
+  @parser.IncludesStatement::parse((try! @lexer.tokenize(input)).view())
 }
 
 ///|
