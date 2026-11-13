@@ -139,6 +139,22 @@ fn check_exposed_interface_member_is_subset_of_interface(
 }
 
 ///|
+/// If an interface X inherits from another interface Y then the exposure set of X must be a subset of the exposure set of Y.
+fn check_exposed_interface_is_subset_of_inheritance(
+  interface : Interface,
+) -> Unit raise {
+  match interface.inheritance {
+    Some(inheritance) =>
+      assert_true(
+        exposure_set(ExposedSetStruct::Interface(interface), None).is_subset(
+          exposure_set(ExposedSetStruct::Interface(inheritance), None),
+        ),
+      )
+    None => ()
+  }
+}
+
+///|
 /// C is an interface, callback interface, namespace, interface member, interface mixin member, or namespace member.
 enum ExposedSetStruct {
   Interface(Interface)
