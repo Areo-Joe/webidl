@@ -10,6 +10,17 @@ fn parse_global_attributes(
 }
 
 ///|
+fn check_global_source(source : String) -> Bool raise {
+  let (definitions, rest) = @parser.parse(@lexer.tokenize(source).exact_view())
+  assert_true(rest is [])
+  try doc(definitions) catch {
+    _ => false
+  } noraise {
+    _ => true
+  }
+}
+
+///|
 test "Global recognizes identifier and identifier list forms" {
   let attrs = parse_global_attributes(
     "[Global=_Window, Global=(_Window,Worker)]",
@@ -50,4 +61,56 @@ test "Global names extraction keeps order and duplicates while ignoring other fo
     ["Window", "Worker", "Window"],
   )
   assert_eq(global_names(parse_global_attributes("")), [])
+}
+
+///|
+test "Global interface cannot define constructors" {
+  for attrs in ["[Global=Window]", "[Global=(Window,Worker)]"] {
+    for body in ["", "undefined f();"] {
+      assert_true(check_global_source(attrs + " interface A { " + body + " };"))
+      for
+        constructor_source in [
+          "constructor();", "constructor(DOMString value);",
+        ] {
+        assert_false(
+          check_global_source(
+            attrs + " interface A { " + body + constructor_source + " };",
+          ),
+        )
+      }
+    }
+  }
+  assert_true(check_global_source("interface A { constructor(); };"))
+  assert_true(
+    check_global_source(
+      "[Global=Window] interface A {}; interface B { constructor(); };",
+    ),
+  )
+}
+
+///|
+test "Global constructor check only uses the original interface annotation" {
+  for attrs in ["[Global=Window]", "[Global=(Window,Worker)]"] {
+    let partial = attrs +
+      " partial interface A { getter any (DOMString name); };"
+    for partial_first in [true, false] {
+      for body in ["", "constructor();"] {
+        let original = "interface A { " + body + " };"
+        let source = if partial_first {
+          partial + original
+        } else {
+          original + partial
+        }
+        let (definitions, rest) = @parser.parse(
+          @lexer.tokenize(source).exact_view(),
+        )
+        assert_true(rest is [])
+        for definition in Definition::from_parser(definitions) {
+          if definition is Interface(interface) {
+            check_global_interface_no_constructor(interface)
+          }
+        }
+      }
+    }
+  }
 }
