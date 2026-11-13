@@ -124,7 +124,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
     .map(x => x.collect())
     .flatten()
 
-  let constant_names = constants.map(x => x.identifier)
+  let constant_names = constants.map(x => strip_underscore(x.identifier))
 
   let operations = definitions
     .filter_map(definition => {
