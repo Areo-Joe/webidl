@@ -186,6 +186,23 @@ fn check_exposed_partial_interface_member_no_duplicate(
 }
 
 ///|
+/// A partial interface annotated with [Exposed] must have an own exposure set that is a subset of its original interface's exposure set.
+fn check_exposed_partial_interface_is_subset_of_interface(
+  interface : Interface,
+) -> Unit raise {
+  for partial in interface.partials {
+    if ExposedAble::PartialInterface(partial).exposed_attribute()
+      is Some(exposed) {
+      assert_true(
+        exposed
+        .own_exposure_set()
+        .is_subset(exposure_set(ExposedSetStruct::Interface(interface), None)),
+      )
+    }
+  }
+}
+
+///|
 /// If [Exposed] appears on an interface or namespace member, then the member’s exposure set must be a subset of the exposure set of the interface or namespace it is a member of.
 fn check_exposed_interface_member_is_subset_of_interface(
   interface : Interface,

@@ -162,3 +162,50 @@ test "Exposed partial annotation is local to that partial" {
     ),
   )
 }
+
+///|
+test "Exposed partial own exposure set must be a subset of the original interface" {
+  let globals = "[Exposed=*, Global=Window] interface W {}; [Exposed=*, Global=Worker] interface G {};"
+  for
+    (interface_attrs, partial_attrs, valid) in [
+      ("[Exposed=(Window,Worker)]", "[Exposed=Window]", true),
+      ("[Exposed=(Window,Worker)]", "[Exposed=(Worker,Window)]", true),
+      ("[Exposed=Window]", "[Exposed=_Window]", true),
+      ("[Exposed=*]", "[Exposed=Worker]", true),
+      ("[Exposed=*]", "[Exposed=*]", true),
+      ("[Exposed=Window]", "[Exposed=Worker]", false),
+      ("[Exposed=Window]", "[Exposed=(Window,Worker)]", false),
+      ("[Exposed=Window]", "[Exposed=*]", false),
+      ("[Exposed=Window]", "", true),
+      ("", "", true),
+    ] {
+    for body in ["", "undefined f();"] {
+      for partial_first in [true, false] {
+        let original = interface_attrs + " interface A {};"
+        let partial = partial_attrs + " partial interface A { " + body + " };"
+        let source = if partial_first {
+          globals + partial + original
+        } else {
+          globals + original + partial
+        }
+        assert_eq(check_exposed_source(source), valid)
+      }
+    }
+  }
+}
+
+///|
+test "Exposed partial subset validation checks every partial against its own original" {
+  let globals = "[Exposed=*, Global=Window] interface W {}; [Exposed=*, Global=Worker] interface G {};"
+  let originals = "[Exposed=Window] interface A {}; [Exposed=Worker] interface B {};"
+  let valid_partials = "[Exposed=Window] partial interface A {}; partial interface A {}; [Exposed=Worker] partial interface B {};"
+  assert_true(check_exposed_source(globals + valid_partials + originals))
+  assert_false(
+    check_exposed_source(
+      globals +
+      valid_partials +
+      "[Exposed=Worker] partial interface A {};" +
+      originals,
+    ),
+  )
+}
