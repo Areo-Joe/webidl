@@ -205,7 +205,8 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
   // Within the set of IDL fragments that a given implementation supports, the identifier of every interface, namespace, dictionary, enumeration, callback function, callback interface and typedef must not be the same as the identifier of any other interface, namespace, dictionary, enumeration, callback function, callback interface or typedef.
   let no_name_conflict_definitions = definitions.filter_map(x => {
     match x {
-      Callback(_)
+      Interface(_)
+      | Callback(_)
       | Namespace(_)
       | Dictionary(_)
       | Enum(_)
@@ -220,4 +221,13 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
   )
 
   assert_eq(no_conflict_names.length(), Set(no_conflict_names).length())
+
+  let interfaces = definitions.filter_map(x => {
+    match x {
+      Interface(interface) => Some(interface)
+      _ => None
+    }
+  })
+
+  check_interfaces(interfaces)
 }

@@ -1,9 +1,13 @@
 ///|
+fn name_of_interface(interface : Interface) -> StringView {
+  strip_underscore(interface.identifier)
+}
+
+///|
 fn name_of_definition(definition : Definition) -> StringView? {
-  guard definition
-    is (Callback({ identifier: name, .. })
+  match definition {
+    Callback({ identifier: name, .. })
     | CallbackInterface({ identifier: name, .. })
-    | Interface({ identifier: name, .. })
     | InterfaceMixin({ identifier: name, .. })
     | Namespace({ identifier: name, .. })
     | PartialInterface({ identifier: name, .. })
@@ -12,11 +16,10 @@ fn name_of_definition(definition : Definition) -> StringView? {
     | PartialNamespace({ identifier: name, .. })
     | Dictionary({ identifier: name, .. })
     | Enum({ identifier: name, .. })
-    | Typedef({ identifier: name, .. })) else {
-    None
+    | Typedef({ identifier: name, .. }) => Some(strip_underscore(name))
+    Interface(interface) => Some(name_of_interface(interface))
+    _ => None
   }
-
-  Some(strip_underscore(name))
 }
 
 ///|
