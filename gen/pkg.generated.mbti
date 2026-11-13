@@ -6,6 +6,10 @@ package "Areo-Joe/webidl/gen"
 // Errors
 
 // Types and methods
+type Attribute
+
+type AttributeTag
+
 type Callback
 
 type CallbackInterface
