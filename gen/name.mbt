@@ -1,7 +1,7 @@
 ///|
-fn name_of_definition(definition : Definition) -> StringView raise {
-  let name = match definition {
-    Callback({ identifier: name, .. })
+fn name_of_definition(definition : Definition) -> StringView? {
+  guard definition
+    is (Callback({ identifier: name, .. })
     | CallbackInterface({ identifier: name, .. })
     | Interface({ identifier: name, .. })
     | InterfaceMixin({ identifier: name, .. })
@@ -12,11 +12,11 @@ fn name_of_definition(definition : Definition) -> StringView raise {
     | PartialNamespace({ identifier: name, .. })
     | Dictionary({ identifier: name, .. })
     | Enum({ identifier: name, .. })
-    | Typedef({ identifier: name, .. }) => name
-    IncludesStatement(_) => fail("no name found")
+    | Typedef({ identifier: name, .. })) else {
+    None
   }
 
-  strip_underscore(name)
+  Some(strip_underscore(name))
 }
 
 ///|
