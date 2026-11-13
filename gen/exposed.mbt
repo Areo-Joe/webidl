@@ -165,6 +165,27 @@ fn check_exposed_global_names_on_interface(
 }
 
 ///|
+/// [Exposed] must not be specified both on an interface member and on the
+/// partial interface definition the member is declared on.
+fn check_exposed_partial_interface_member_no_duplicate(
+  interface : Interface,
+) -> Unit raise {
+  for partial in interface.partials {
+    if partial.extended_attribute_list
+      .iter()
+      .any(attr => is_valid_exposed(attr) is Some(_)) {
+      for partial_interface_member in partial.members {
+        assert_false(
+          partial_interface_member.extended_attribute_list
+          .iter()
+          .any(attr => is_valid_exposed(attr) is Some(_)),
+        )
+      }
+    }
+  }
+}
+
+///|
 /// If [Exposed] appears on an interface or namespace member, then the member’s exposure set must be a subset of the exposure set of the interface or namespace it is a member of.
 fn check_exposed_interface_member_is_subset_of_interface(
   interface : Interface,

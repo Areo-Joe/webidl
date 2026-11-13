@@ -118,3 +118,47 @@ test "Exposed partial annotations validate global names and duplicates" {
     )
   }
 }
+
+///|
+test "Exposed partial and member annotations are mutually exclusive" {
+  let globals = "[Exposed=*, Global=Window] interface W {}; [Exposed=*, Global=Worker] interface G {};"
+  let annotations = [
+    "", "[Exposed=Window]", "[Exposed=(Window,Worker)]", "[Exposed=*]",
+  ]
+  for
+    body in [
+      "undefined f();", "readonly attribute boolean value;", "const long value = 1;",
+      "static undefined f();",
+    ] {
+    for partial_attrs in annotations {
+      for member_attrs in annotations {
+        // The partial can precede the original interface.
+        let source = globals +
+          partial_attrs +
+          " partial interface A { " +
+          member_attrs +
+          body +
+          " }; [Exposed=*] interface A {};"
+        assert_eq(
+          check_exposed_source(source),
+          partial_attrs == "" || member_attrs == "",
+        )
+      }
+    }
+  }
+  assert_false(
+    check_exposed_source(
+      globals +
+      "[Exposed=*] interface A {}; [Exposed=Window] partial interface A { [Exposed=Worker] undefined f(); };",
+    ),
+  )
+}
+
+///|
+test "Exposed partial annotation is local to that partial" {
+  assert_true(
+    check_exposed_source(
+      "[Exposed=*, Global=Window] interface W {}; [Exposed=*] interface A { [Exposed=Window] undefined original(); }; [Exposed=Window] partial interface A { undefined first(); }; partial interface A { [Exposed=Window] undefined second(); };",
+    ),
+  )
+}
