@@ -111,6 +111,12 @@ struct Enum {
 }
 
 ///|
+struct TypeDef {
+  identifier : StringView
+  type_with_extended_attributes : @parser.TypeWithExtendedAttributes
+}
+
+///|
 fn check_interfaces(
   interfaces : Array[(@parser.ExtendedAttributeList, Interface)],
   includes_statements : Array[@parser.IncludesStatement],
