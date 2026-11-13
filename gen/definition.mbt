@@ -29,7 +29,7 @@ enum DefinitionBody {
   Dictionary(Dictionary)
   Enum(Enum)
   Typedef(TypeDef)
-  IncludesStatement(@parser.IncludesStatement)
+  IncludesStatement(IncludesStatement)
 }
 
 ///|
@@ -199,7 +199,11 @@ fn DefinitionBody::from_parser_definition(
         type_with_extended_attributes: x.type_with_extended_attributes,
         identifier: x.identifier,
       })
-    IncludesStatement(x) => IncludesStatement(x)
+    IncludesStatement(x) =>
+      IncludesStatement(IncludesStatement::{
+        interface: x.interface_identifier,
+        mixin_: x.mixin_identifier,
+      })
   }
 }
 

@@ -117,9 +117,15 @@ struct TypeDef {
 }
 
 ///|
+struct IncludesStatement {
+  interface : StringView
+  mixin_ : StringView
+}
+
+///|
 fn check_interfaces(
   interfaces : Array[(@parser.ExtendedAttributeList, Interface)],
-  includes_statements : Array[@parser.IncludesStatement],
+  includes_statements : Array[IncludesStatement],
   interface_mixins : Array[InterfaceMixin],
   partial_interfaces : Array[PartialInterface],
 ) -> Unit raise {
@@ -213,16 +219,16 @@ fn check_inheritance_no_circle(interfaces : Array[Interface]) -> Unit raise {
 ///|
 /// In addition, an includes statement can be used to define that objects implementing an interface A will always also include the members of the interface mixins A includes.
 fn check_includes_valid(
-  includes_statements : Array[@parser.IncludesStatement],
+  includes_statements : Array[IncludesStatement],
   interfaces : Array[Interface],
   interface_mixins : Array[InterfaceMixin],
 ) -> Unit raise {
   assert_true(
     includes_statements.every(includes_statement => {
-      let { interface_identifier, mixin_identifier } = includes_statement
+      let { interface, mixin_ } = includes_statement
 
-      let interface_identifier = strip_underscore(interface_identifier)
-      let mixin_identifier = strip_underscore(mixin_identifier)
+      let interface_identifier = strip_underscore(interface)
+      let mixin_identifier = strip_underscore(mixin_)
 
       interfaces.search_by(interface => {
         name_of_interface(interface) == interface_identifier

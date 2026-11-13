@@ -26,6 +26,8 @@ type Enum
 
 type Exposed
 
+type IncludesStatement
+
 type Interface
 
 type InterfaceMember
