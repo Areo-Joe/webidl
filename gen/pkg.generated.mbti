@@ -1,0 +1,25 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "Areo-Joe/webidl/gen"
+
+// Values
+
+// Errors
+
+// Types and methods
+type Callback
+
+type CallbackInterface
+
+type Definition
+
+type Interface
+
+type InterfaceMixin
+
+type PartialInterface
+
+type PartialInterfaceMixin
+
+// Type aliases
+
+// Traits
