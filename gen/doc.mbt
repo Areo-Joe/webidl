@@ -224,7 +224,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
 
   let interfaces = definitions.filter_map(x => {
     match x.body {
-      Interface(interface) => Some(interface)
+      Interface(interface) => Some((x.extended_attribute_list, interface))
       _ => None
     }
   })
