@@ -16,6 +16,8 @@ type CallbackInterface
 
 type Definition
 
+type DefinitionBody
+
 type Interface
 
 type InterfaceMixin
