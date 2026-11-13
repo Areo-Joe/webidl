@@ -93,10 +93,10 @@ fn ExposureSet::is_subset(self : Self, other : Self) -> Bool {
 /// The [Exposed] extended attribute must either take an identifier, take an identifier list or take a wildcard. 
 fn is_valid_exposed(attr : @parser.ExtendedAttribute) -> Exposed? {
   match attr {
-    Ident({ identifier: "Exposed", value }) => Some(Ident(value))
-    IdentList({ identifier: "Exposed", identifier_list }) =>
+    Ident({ identifier: "Exposed", value, }) => Some(Ident(value))
+    IdentList({ identifier: "Exposed", identifier_list, }) =>
       Some(IdentList(identifier_list.iter().collect()))
-    Wildcard({ identifier: "Exposed" }) => Some(Wildcard)
+    Wildcard({ identifier: "Exposed", }) => Some(Wildcard)
     _ => None
   }
 }

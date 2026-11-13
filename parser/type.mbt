@@ -36,7 +36,7 @@ pub fn TypeWithExtendedAttributes::parse(
     return None
   }
 
-  Some((TypeWithExtendedAttributes::{ extended_attribute_list, type_ }, rest))
+  Some((TypeWithExtendedAttributes::{ extended_attribute_list, type_, }, rest))
 }
 
 ///|
@@ -80,7 +80,7 @@ pub fn RecordType::parse(input : Tokens) -> (RecordType, Tokens)? {
 
   return Some(
     (
-      RecordType::{ string_type, type_with_extended_attributes },
+      RecordType::{ string_type, type_with_extended_attributes, },
       after_record_end,
     ),
   )
@@ -669,7 +669,7 @@ pub fn Typedef::parse(input : Tokens) -> (Typedef, Tokens)? {
         ],
       )
     ) {
-    return Some((Typedef::{ type_with_extended_attributes, identifier }, rest))
+    return Some((Typedef::{ type_with_extended_attributes, identifier, }, rest))
   }
 
   None

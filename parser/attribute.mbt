@@ -51,7 +51,7 @@ pub fn AttributeRest::parse(input : Tokens) -> (AttributeRest, Tokens)? {
     AttributeName::parse(after_type_with_extended_attributes)
     is Some((attribute_name, [(@lexer.TokenType::Punctuation, ";"), .. rest])) {
     return Some(
-      (AttributeRest::{ type_with_extended_attributes, attribute_name }, rest),
+      (AttributeRest::{ type_with_extended_attributes, attribute_name, }, rest),
     )
   }
 

@@ -32,7 +32,7 @@ fn Operation::from_partial_interface_member(
   match partial_interface_member {
     Operation(
       RegularOperation(
-        { type_, operation_rest: { optional_operation_name, argument_list } }
+        { type_, operation_rest: { optional_operation_name, argument_list, }, }
       )
     ) =>
       Some(Operation::{
@@ -49,7 +49,7 @@ fn Operation::from_partial_interface_member(
         {
           regular_operation: {
             type_,
-            operation_rest: { optional_operation_name, argument_list },
+            operation_rest: { optional_operation_name, argument_list, },
           },
           special,
         }
@@ -71,7 +71,10 @@ fn Operation::from_partial_interface_member(
     StaticMember(
       {
         static_member_rest: RegularOperation(
-          { type_, operation_rest: { optional_operation_name, argument_list } }
+          {
+            type_,
+            operation_rest: { optional_operation_name, argument_list, },
+          }
         ),
       }
     ) =>
@@ -94,7 +97,7 @@ fn Operation::from_interface_mixin_member(
 ) -> Operation? {
   match interface_mixin_member {
     RegularOperation(
-      { type_, operation_rest: { optional_operation_name, argument_list } }
+      { type_, operation_rest: { optional_operation_name, argument_list, }, }
     ) =>
       Some(Operation::{
         type_,
@@ -115,7 +118,7 @@ fn Operation::from_namespace_member(
 ) -> Operation? {
   match namespace_member {
     RegularOperation(
-      { type_, operation_rest: { optional_operation_name, argument_list } }
+      { type_, operation_rest: { optional_operation_name, argument_list, }, }
     ) =>
       Some(Operation::{
         type_,
@@ -136,7 +139,7 @@ fn Operation::from_callback_interface_member(
 ) -> Operation? {
   match callback_interface_member {
     RegularOperation(
-      { type_, operation_rest: { optional_operation_name, argument_list } }
+      { type_, operation_rest: { optional_operation_name, argument_list, }, }
     ) =>
       Some(Operation::{
         type_,

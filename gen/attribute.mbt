@@ -33,14 +33,14 @@ fn Attribute::from_partial_interface_member(
   match interface_member {
     InheritAttribute(
       {
-        attribute_rest: { type_with_extended_attributes, attribute_name: name },
+        attribute_rest: { type_with_extended_attributes, attribute_name: name, },
       }
-    ) => Some(Attribute::{ name, type_with_extended_attributes, tag: Inherit })
+    ) => Some(Attribute::{ name, type_with_extended_attributes, tag: Inherit, })
     StaticMember(
       {
         static_member_rest: Attribute(
           optional_read_only,
-          { type_with_extended_attributes, attribute_name: name }
+          { type_with_extended_attributes, attribute_name: name, }
         ),
       }
     ) =>
@@ -56,7 +56,7 @@ fn Attribute::from_partial_interface_member(
       {
         stringifier_rest: Attribute(
           optional_read_only,
-          { type_with_extended_attributes, attribute_name: name }
+          { type_with_extended_attributes, attribute_name: name, }
         ),
       }
     ) =>
@@ -71,7 +71,7 @@ fn Attribute::from_partial_interface_member(
     ReadOnlyMember(
       {
         read_only_member_rest: Attribute(
-          { type_with_extended_attributes, attribute_name: name }
+          { type_with_extended_attributes, attribute_name: name, }
         ),
       }
     ) =>
@@ -82,7 +82,7 @@ fn Attribute::from_partial_interface_member(
       })
     ReadWriteAttribute(
       {
-        attribute_rest: { type_with_extended_attributes, attribute_name: name },
+        attribute_rest: { type_with_extended_attributes, attribute_name: name, },
       }
     ) =>
       Some(Attribute::{
@@ -99,7 +99,7 @@ fn Attribute::from_namespace_member(
   namespace_member : @parser.NamespaceMember,
 ) -> Attribute? {
   match namespace_member {
-    ReadOnlyAttribute({ type_with_extended_attributes, attribute_name: name }) =>
+    ReadOnlyAttribute({ type_with_extended_attributes, attribute_name: name, }) =>
       Some(Attribute::{
         type_with_extended_attributes,
         name,
@@ -116,7 +116,7 @@ fn Attribute::from_mixin_member(
   match mixin_member {
     Attribute(
       optional_read_only,
-      { type_with_extended_attributes, attribute_name: name }
+      { type_with_extended_attributes, attribute_name: name, }
     ) =>
       Some(Attribute::{
         type_with_extended_attributes,
@@ -130,7 +130,7 @@ fn Attribute::from_mixin_member(
       {
         stringifier_rest: Attribute(
           optional_read_only,
-          { type_with_extended_attributes, attribute_name: name }
+          { type_with_extended_attributes, attribute_name: name, }
         ),
       }
     ) =>

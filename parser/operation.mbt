@@ -75,7 +75,7 @@ pub fn OperationRest::parse(input : Tokens) -> (OperationRest, Tokens)? {
       ],
     ) {
     return Some(
-      (OperationRest::{ optional_operation_name, argument_list }, rest),
+      (OperationRest::{ optional_operation_name, argument_list, }, rest),
     )
   }
 
@@ -92,7 +92,7 @@ pub struct RegularOperation {
 pub fn RegularOperation::parse(input : Tokens) -> (RegularOperation, Tokens)? {
   if Type::parse(input) is Some((type_, after_type)) &&
     OperationRest::parse(after_type) is Some((operation_rest, rest)) {
-    return Some((RegularOperation::{ type_, operation_rest }, rest))
+    return Some((RegularOperation::{ type_, operation_rest, }, rest))
   }
 
   return None
@@ -129,7 +129,7 @@ pub struct SpecialOperation {
 pub fn SpecialOperation::parse(input : Tokens) -> (SpecialOperation, Tokens)? {
   if Special::parse(input) is Some((special, after_special)) &&
     RegularOperation::parse(after_special) is Some((regular_operation, rest)) {
-    return Some((SpecialOperation::{ special, regular_operation }, rest))
+    return Some((SpecialOperation::{ special, regular_operation, }, rest))
   }
 
   None

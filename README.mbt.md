@@ -16,6 +16,7 @@ moon add Areo-Joe/webidl
 Then import the root package in `moon.pkg`:
 
 ```moonbit nocheck
+///|
 import {
   "Areo-Joe/webidl",
 }

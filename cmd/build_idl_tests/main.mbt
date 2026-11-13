@@ -40,7 +40,7 @@ async fn fetch_wpt_idl_files() -> Array[WptFile] {
       continue
     }
     if !exclude_wpt_idl(name) {
-      files.push(WptFile::{ name: name.to_owned() })
+      files.push(WptFile::{ name: name.to_owned(), })
     }
     remaining = link.after()
   }

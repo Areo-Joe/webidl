@@ -167,7 +167,7 @@ pub fn IdentifierList::iter(self : Self) -> Iter[StringView] {
 pub fn IdentifierList::parse(input : Tokens) -> (IdentifierList, Tokens)? {
   if input is [(@lexer.TokenType::Identifier, identifier), .. after_identifier] &&
     Identifiers::parse(after_identifier) is (identifiers, rest) {
-    return Some((IdentifierList::{ identifier, identifiers }, rest))
+    return Some((IdentifierList::{ identifier, identifiers, }, rest))
   }
 
   None
@@ -225,7 +225,7 @@ pub fn IntegerList::iter(self : Self) -> Iter[StringView] {
 pub fn IntegerList::parse(input : Tokens) -> (IntegerList, Tokens)? {
   if input is [(@lexer.TokenType::Integer, integer), .. after_integer] &&
     Integers::parse(after_integer) is (integers, rest) {
-    return Some((IntegerList::{ integer, integers }, rest))
+    return Some((IntegerList::{ integer, integers, }, rest))
   }
 
   None
@@ -302,7 +302,9 @@ pub fn ExtendedAttributeArgList::parse(
     ] &&
     ArgumentList::parse(after_open_paren)
     is (argument_list, [(@lexer.TokenType::Punctuation, ")"), .. rest]) {
-    return Some((ExtendedAttributeArgList::{ identifier, argument_list }, rest))
+    return Some(
+      (ExtendedAttributeArgList::{ identifier, argument_list, }, rest),
+    )
   }
 
   None
@@ -325,7 +327,7 @@ pub fn ExtendedAttributeIdent::parse(
       (@lexer.TokenType::Identifier, value),
       .. rest,
     ] {
-    return Some((ExtendedAttributeIdent::{ identifier, value }, rest))
+    return Some((ExtendedAttributeIdent::{ identifier, value, }, rest))
   }
 
   None
@@ -348,7 +350,7 @@ pub fn ExtendedAttributeString::parse(
       (@lexer.TokenType::String, value),
       .. rest,
     ] {
-    return Some((ExtendedAttributeString::{ identifier, value }, rest))
+    return Some((ExtendedAttributeString::{ identifier, value, }, rest))
   }
 
   None
@@ -371,7 +373,7 @@ pub fn ExtendedAttributeInteger::parse(
       (@lexer.TokenType::Integer, value),
       .. rest,
     ] {
-    return Some((ExtendedAttributeInteger::{ identifier, value }, rest))
+    return Some((ExtendedAttributeInteger::{ identifier, value, }, rest))
   }
 
   None
@@ -394,7 +396,7 @@ pub fn ExtendedAttributeDecimal::parse(
       (@lexer.TokenType::Decimal, value),
       .. rest,
     ] {
-    return Some((ExtendedAttributeDecimal::{ identifier, value }, rest))
+    return Some((ExtendedAttributeDecimal::{ identifier, value, }, rest))
   }
 
   None
@@ -442,7 +444,7 @@ pub fn ExtendedAttributeIdentList::parse(
     IdentifierList::parse(after_open_paren)
     is Some((identifier_list, [(@lexer.TokenType::Punctuation, ")"), .. rest])) {
     return Some(
-      (ExtendedAttributeIdentList::{ identifier, identifier_list }, rest),
+      (ExtendedAttributeIdentList::{ identifier, identifier_list, }, rest),
     )
   }
 
@@ -469,7 +471,7 @@ pub fn ExtendedAttributeIntegerList::parse(
     IntegerList::parse(after_open_paren)
     is Some((integer_list, [(@lexer.TokenType::Punctuation, ")"), .. rest])) {
     return Some(
-      (ExtendedAttributeIntegerList::{ identifier, integer_list }, rest),
+      (ExtendedAttributeIntegerList::{ identifier, integer_list, }, rest),
     )
   }
 
@@ -499,7 +501,7 @@ pub fn ExtendedAttributeNamedArgList::parse(
     is (argument_list, [(@lexer.TokenType::Punctuation, ")"), .. rest]) {
     return Some(
       (
-        ExtendedAttributeNamedArgList::{ identifier, value, argument_list },
+        ExtendedAttributeNamedArgList::{ identifier, value, argument_list, },
         rest,
       ),
     )

@@ -52,7 +52,7 @@ pub fn Const::parse(input : Tokens) -> (Const, Tokens)? {
     ) &&
     ConstValue::parse(after_equal)
     is Some((const_value, [(@lexer.TokenType::Punctuation, ";"), .. rest])) {
-    return Some((Const::{ const_type, identifier, const_value }, rest))
+    return Some((Const::{ const_type, identifier, const_value, }, rest))
   }
 
   return None
@@ -155,7 +155,7 @@ pub fn Iterable::parse(input : Tokens) -> (Iterable, Tokens)? {
       ],
     ) {
     return Some(
-      (Iterable::{ type_with_extended_attributes, optional_type }, rest),
+      (Iterable::{ type_with_extended_attributes, optional_type, }, rest),
     )
   }
 
@@ -249,7 +249,7 @@ pub fn MaplikeRest::parse(input : Tokens) -> (MaplikeRest, Tokens)? {
         ],
       )
     ) {
-    return Some((MaplikeRest::{ key_type, value_type }, rest))
+    return Some((MaplikeRest::{ key_type, value_type, }, rest))
   }
 
   None
@@ -502,7 +502,7 @@ pub fn PartialInterfaceRest::parse(
       ],
     ) {
     return Some(
-      (PartialInterfaceRest::{ identifier, partial_interface_members }, rest),
+      (PartialInterfaceRest::{ identifier, partial_interface_members, }, rest),
     )
   }
 
@@ -607,7 +607,7 @@ pub fn MixinRest::parse(input : Tokens) -> (MixinRest, Tokens)? {
         .. rest,
       ],
     ) {
-    return Some((MixinRest::{ identifier, mixin_members }, rest))
+    return Some((MixinRest::{ identifier, mixin_members, }, rest))
   }
 
   None
@@ -721,7 +721,7 @@ pub fn DictionaryMember::parse(input : Tokens) -> (DictionaryMember, Tokens)? {
     is Some((dictionary_member_rest, rest)) {
     return Some(
       (
-        DictionaryMember::{ extended_attribute_list, dictionary_member_rest },
+        DictionaryMember::{ extended_attribute_list, dictionary_member_rest, },
         rest,
       ),
     )
@@ -797,7 +797,7 @@ pub fn Dictionary::parse(input : Tokens) -> (Dictionary, Tokens)? {
       ],
     ) {
     return Some(
-      (Dictionary::{ identifier, inheritance, dictionary_members }, rest),
+      (Dictionary::{ identifier, inheritance, dictionary_members, }, rest),
     )
   }
 
@@ -828,7 +828,7 @@ pub fn PartialDictionary::parse(input : Tokens) -> (PartialDictionary, Tokens)? 
         .. rest,
       ],
     ) {
-    return Some((PartialDictionary::{ identifier, dictionary_members }, rest))
+    return Some((PartialDictionary::{ identifier, dictionary_members, }, rest))
   }
 
   None
@@ -925,7 +925,7 @@ pub fn Namespace::parse(input : Tokens) -> (Namespace, Tokens)? {
         .. rest,
       ],
     ) {
-    return Some((Namespace::{ identifier, namespace_members }, rest))
+    return Some((Namespace::{ identifier, namespace_members, }, rest))
   }
 
   None
@@ -1063,7 +1063,7 @@ pub fn InterfaceRest::parse(input : Tokens) -> (InterfaceRest, Tokens)? {
       ],
     ) {
     return Some(
-      (InterfaceRest::{ identifier, inheritance, interface_members }, rest),
+      (InterfaceRest::{ identifier, inheritance, interface_members, }, rest),
     )
   }
 
@@ -1134,7 +1134,7 @@ pub fn IncludesStatement::parse(input : Tokens) -> (IncludesStatement, Tokens)? 
       .. rest,
     ] {
     return Some(
-      (IncludesStatement::{ interface_identifier, mixin_identifier }, rest),
+      (IncludesStatement::{ interface_identifier, mixin_identifier, }, rest),
     )
   }
 

@@ -168,7 +168,7 @@ fn Definition::from_parser(
       let (extended_attribute_list, definition) = definition
       match definition {
         CallbackOrInterfaceOrMixin(
-          Callback(CallbackRest({ identifier, type_, argument_list }))
+          Callback(CallbackRest({ identifier, type_, argument_list, }))
         ) =>
           Some(
             Callback(Callback::{
@@ -188,7 +188,7 @@ fn Definition::from_parser(
           )
         CallbackOrInterfaceOrMixin(Interface(InterfaceRest(_))) => None
         CallbackOrInterfaceOrMixin(
-          Interface(MixinRest({ identifier, mixin_members }))
+          Interface(MixinRest({ identifier, mixin_members, }))
         ) => {
           let interface_mixin = InterfaceMixin::{
             identifier,
@@ -295,7 +295,7 @@ fn Definition::from_parser(
 
       match partial {
         Interface(
-          PartialInterfaceRest({ identifier, partial_interface_members })
+          PartialInterfaceRest({ identifier, partial_interface_members, })
         ) => {
           let host = ret.filter_map(x => {
               if x is Interface(x) &&
@@ -325,7 +325,7 @@ fn Definition::from_parser(
 
           Some(PartialInterface(partial_interface))
         }
-        Interface(MixinRest({ identifier, mixin_members })) => {
+        Interface(MixinRest({ identifier, mixin_members, })) => {
           let host = ret.filter_map(x => {
               if x is InterfaceMixin(x) &&
                 name_of_interface_mixin(x) == strip_underscore(identifier) {
@@ -354,7 +354,7 @@ fn Definition::from_parser(
 
           Some(PartialInterfaceMixin(partial_interface_mixin))
         }
-        Dictionary({ identifier, dictionary_members }) => {
+        Dictionary({ identifier, dictionary_members, }) => {
           let host = ret.filter_map(x => {
               if x is Dictionary(inner) &&
                 name_of_definition(x) is Some(name) &&
@@ -384,7 +384,7 @@ fn Definition::from_parser(
 
           Some(PartialDictionary(partial_dictionary))
         }
-        Namespace({ identifier, namespace_members }) => {
+        Namespace({ identifier, namespace_members, }) => {
           let host = ret.filter_map(x => {
               if x is Namespace(inner) &&
                 name_of_definition(x) is Some(name) &&

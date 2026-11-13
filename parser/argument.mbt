@@ -237,7 +237,7 @@ pub fn Argument::parse(input : Tokens) -> (Argument, Tokens)? {
     is (extended_attribute_list, after_extended_attribute_list) &&
     ArgumentRest::parse(after_extended_attribute_list)
     is Some((argument_rest, rest)) {
-    return Some((Argument::{ extended_attribute_list, argument_rest }, rest))
+    return Some((Argument::{ extended_attribute_list, argument_rest, }, rest))
   }
 
   None

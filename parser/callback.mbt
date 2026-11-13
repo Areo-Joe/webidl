@@ -26,7 +26,7 @@ pub fn CallbackRest::parse(input : Tokens) -> (CallbackRest, Tokens)? {
         .. rest,
       ],
     ) {
-    return Some((CallbackRest::{ identifier, type_, argument_list }, rest))
+    return Some((CallbackRest::{ identifier, type_, argument_list, }, rest))
   }
 
   None

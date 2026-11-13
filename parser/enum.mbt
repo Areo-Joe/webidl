@@ -24,7 +24,7 @@ pub fn Enum::parse(input : Tokens) -> (Enum, Tokens)? {
         ],
       )
     ) {
-    return Some((Enum::{ identifier, enum_value_list }, rest))
+    return Some((Enum::{ identifier, enum_value_list, }, rest))
   }
 
   None
@@ -63,7 +63,7 @@ pub fn EnumValueList::iter(self : Self) -> Iter[StringView] {
 pub fn EnumValueList::parse(input : Tokens) -> (EnumValueList, Tokens)? {
   if input is [(@lexer.TokenType::String, string), .. after_string] &&
     EnumValueListComma::parse(after_string) is (enum_value_list_comma, rest) {
-    return Some((EnumValueList::{ string, enum_value_list_comma }, rest))
+    return Some((EnumValueList::{ string, enum_value_list_comma, }, rest))
   }
 
   None
