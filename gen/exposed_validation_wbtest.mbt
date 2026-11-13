@@ -209,3 +209,53 @@ test "Exposed partial subset validation checks every partial against its own ori
     ),
   )
 }
+
+///|
+test "Exposed partial member validation checks original interface subsets" {
+  let globals = "[Exposed=*, Global=Window] interface W {}; [Exposed=*, Global=Worker] interface G {};"
+  for
+    body in [
+      "undefined f();", "readonly attribute boolean value;", "const long value = 1;",
+      "static undefined f();",
+    ] {
+    for
+      (interface_attrs, member_attrs, valid) in [
+        ("[Exposed=(Window,Worker)]", "[Exposed=Window]", true),
+        ("[Exposed=(Window,Worker)]", "[Exposed=(Worker,Window)]", true),
+        ("[Exposed=Window]", "[Exposed=_Window]", true),
+        ("[Exposed=*]", "[Exposed=Worker]", true),
+        ("[Exposed=*]", "[Exposed=*]", true),
+        ("[Exposed=Window]", "[Exposed=Worker]", false),
+        ("[Exposed=Window]", "[Exposed=(Window,Worker)]", false),
+        ("[Exposed=Window]", "[Exposed=*]", false),
+        ("[Exposed=Window]", "", true),
+      ] {
+      for partial_first in [true, false] {
+        let original = interface_attrs + " interface A {};"
+        let partial = "partial interface A { " + member_attrs + body + " };"
+        let source = if partial_first {
+          globals + partial + original
+        } else {
+          globals + original + partial
+        }
+        assert_eq(check_exposed_source(source), valid)
+      }
+    }
+  }
+}
+
+///|
+test "Exposed partial member subset validation checks every member and partial" {
+  let globals = "[Exposed=*, Global=Window] interface W {}; [Exposed=*, Global=Worker] interface G {};"
+  let originals = "[Exposed=Window] interface A {}; [Exposed=Worker] interface B {};"
+  let valid_partials = "partial interface A { [Exposed=Window] undefined first(); }; partial interface B { [Exposed=Worker] undefined first(); };"
+  assert_true(check_exposed_source(globals + valid_partials + originals))
+  assert_false(
+    check_exposed_source(
+      globals +
+      valid_partials +
+      originals +
+      "partial interface A { [Exposed=Window] undefined second(); [Exposed=Worker] undefined third(); };",
+    ),
+  )
+}

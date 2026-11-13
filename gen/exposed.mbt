@@ -217,6 +217,21 @@ fn check_exposed_interface_member_is_subset_of_interface(
       ),
     )
   }
+  for partial in interface.partials {
+    for
+      partial_interface_member in partial.members.filter(x => {
+        x.extended_attribute_list
+        .iter()
+        .any(x => is_valid_exposed(x) is Some(_))
+      }) {
+      assert_true(
+        exposure_set(
+          ExposedSetStruct::PartialInterfaceMember(partial_interface_member),
+          None,
+        ).is_subset(exposure_set(ExposedSetStruct::Interface(interface), None)),
+      )
+    }
+  }
 }
 
 ///|
