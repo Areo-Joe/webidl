@@ -181,9 +181,44 @@ fn ExposeureSetIntersectionStruct::own_exposure_set(self : Self) -> ExposureSet 
 }
 
 ///|
+enum ExposureSetFinal {
+  Interface(Interface)
+  CallbackInterface(CallbackInterface)
+  Namespace(Namespace)
+}
+
+///|
+fn ExposureSetFinal::extended_attribute_list(
+  self : Self,
+) -> @parser.ExtendedAttributeList {
+  match self {
+    CallbackInterface(x) => x.extended_attribute_list
+    Interface(x) => x.extended_attribute_list
+    Namespace(x) => x.extended_attribute_list
+  }
+}
+
+///|
+fn ExposureSetFinal::to_exposed_able(self : Self) -> ExposedAble {
+  match self {
+    CallbackInterface(x) => CallbackInterface(x)
+    Interface(x) => Interface(x)
+    Namespace(x) => Namespace(x)
+  }
+}
+
+///|
+fn ExposureSetFinal::own_exposure_set(self : Self) -> ExposureSet {
+  match self.to_exposed_able().exposed_attribute() {
+    Some(x) => x.own_exposure_set()
+    None => ExposureSet::empty()
+  }
+}
+
+///|
 /// exposure set of a construct C
 /// Assert: C is an interface, callback interface, namespace, interface member, interface mixin member, or namespace member.
-fn exposure_set(c : ExposedSetStruct, host : Interface?) -> ExposureSet {
+fn exposure_set(c : ExposedSetStruct, host : Interface?) -> ExposureSet raise {
 
   // Let H be C’s host interface if C is an interface mixin member, or null otherwise.
   let h = match c {
@@ -192,7 +227,7 @@ fn exposure_set(c : ExposedSetStruct, host : Interface?) -> ExposureSet {
   }
 
   // If C is an interface member, interface mixin member, or namespace member, then:
-  match c {
+  let c = match c {
     InterfaceMember(interface_member) =>
       if c.to_exposed_able().exposed_attribute() is Some(_) {
         // If the [Exposed] extended attribute is specified on C, return the exposure set intersection of C and H.
@@ -202,7 +237,7 @@ fn exposure_set(c : ExposedSetStruct, host : Interface?) -> ExposureSet {
           h,
         )
       } else {
-        let c = interface_member.host
+        ExposureSetFinal::Interface(interface_member.host)
       }
     PartialInterfaceMember(partial_interface_member) =>
       if c.to_exposed_able().exposed_attribute() is Some(_) {
@@ -215,7 +250,20 @@ fn exposure_set(c : ExposedSetStruct, host : Interface?) -> ExposureSet {
           h,
         )
       } else {
+        // If C is a partial interface, partial interface mixin, or partial namespace, then:
         let c = partial_interface_member.host
+        if c.extended_attribute_list
+          .iter()
+          .any(x => is_valid_exposed(x) is Some(_)) {
+          // If the [Exposed] extended attribute is specified on C, return the exposure set intersection of C and H.
+          return exposure_set_intersection(
+            ExposeureSetIntersectionStruct::PartialInterface(c),
+            h,
+          )
+        } else {
+          // Set C to the original interface, interface mixin, or namespace definition of C.
+          ExposureSetFinal::Interface(c.host)
+        }
       }
     InterfaceMixinMember(interface_mixin_member) =>
       if c.to_exposed_able().exposed_attribute() is Some(_) {
@@ -228,7 +276,28 @@ fn exposure_set(c : ExposedSetStruct, host : Interface?) -> ExposureSet {
           h,
         )
       } else {
+        // Set C to the original interface, interface mixin, or namespace definition of C.
+
         let c = interface_mixin_member.host
+
+        // If C is an interface mixin, then:
+        // Assert: H is not null.
+
+        let h = h.unwrap()
+
+        if c.extended_attribute_list
+          .iter()
+          .any(x => is_valid_exposed(x) is Some(_)) {
+          // If the [Exposed] extended attribute is specified on C, return the exposure set intersection of C and H.
+
+          return exposure_set_intersection(
+            ExposeureSetIntersectionStruct::InterfaceMixin(c),
+            Some(h),
+          )
+        } else {
+          // Set C to H.
+          ExposureSetFinal::Interface(h)
+        }
       }
     PartialInterfaceMixinMember(partial_interface_mixin_member) =>
       if c.to_exposed_able().exposed_attribute() is Some(_) {
@@ -242,6 +311,42 @@ fn exposure_set(c : ExposedSetStruct, host : Interface?) -> ExposureSet {
         )
       } else {
         let c = partial_interface_mixin_member.host
+
+        // If C is a partial interface, partial interface mixin, or partial namespace, then:
+
+        if c.extended_attribute_list
+          .iter()
+          .any(x => is_valid_exposed(x) is Some(_)) {
+          // If the [Exposed] extended attribute is specified on C, return the exposure set intersection of C and H.
+
+          return exposure_set_intersection(
+            ExposeureSetIntersectionStruct::PartialInterfaceMixin(c),
+            h,
+          )
+        } else {
+          // Set C to the original interface, interface mixin, or namespace definition of C.
+
+          let c = c.host
+
+          // If C is an interface mixin, then:
+          // Assert: H is not null.
+
+          let h = h.unwrap()
+
+          if c.extended_attribute_list
+            .iter()
+            .any(x => is_valid_exposed(x) is Some(_)) {
+            // If the [Exposed] extended attribute is specified on C, return the exposure set intersection of C and H.
+
+            return exposure_set_intersection(
+              ExposeureSetIntersectionStruct::InterfaceMixin(c),
+              Some(h),
+            )
+          } else {
+            // Set C to H.
+            ExposureSetFinal::Interface(h)
+          }
+        }
       }
     NamespaceMember(namespace_member) =>
       if c.to_exposed_able().exposed_attribute() is Some(_) {
@@ -252,7 +357,7 @@ fn exposure_set(c : ExposedSetStruct, host : Interface?) -> ExposureSet {
           h,
         )
       } else {
-        let c = namespace_member.host
+        ExposureSetFinal::Namespace(namespace_member.host)
       }
     PartialNamespaceMember(partial_namespace_member) =>
       if c.to_exposed_able().exposed_attribute() is Some(_) {
@@ -265,12 +370,42 @@ fn exposure_set(c : ExposedSetStruct, host : Interface?) -> ExposureSet {
           h,
         )
       } else {
+        // Set C to the interface, partial interface, interface mixin, partial interface mixin, namespace, or partial namespace C is declared on.
         let c = partial_namespace_member.host
+
+        // If C is a partial interface, partial interface mixin, or partial namespace, then:
+
+        if c.extended_attribute_list
+          .iter()
+          .any(x => is_valid_exposed(x) is Some(_)) {
+          // If the [Exposed] extended attribute is specified on C, return the exposure set intersection of C and H.
+
+          return exposure_set_intersection(
+            ExposeureSetIntersectionStruct::PartialNamespace(c),
+            h,
+          )
+        } else {
+          // Set C to the original interface, interface mixin, or namespace definition of C.
+
+          let c = c.host
+          assert_true(
+            c.extended_attribute_list
+            .iter()
+            .any(x => is_valid_exposed(x) is Some(_)),
+          )
+
+          return ExposedAble::Namespace(c)
+            .exposed_attribute()
+            .unwrap()
+            .own_exposure_set()
+        }
       }
-    ...
+    Interface(x) => ExposureSetFinal::Interface(x)
+    CallbackInterface(x) => ExposureSetFinal::CallbackInterface(x)
+    Namespace(x) => ExposureSetFinal::Namespace(x)
   }
 
-  ...
+  c.own_exposure_set()
 }
 
 ///|
@@ -280,7 +415,7 @@ fn exposure_set(c : ExposedSetStruct, host : Interface?) -> ExposureSet {
 fn exposure_set_intersection(
   c : ExposeureSetIntersectionStruct,
   h : Interface?,
-) -> ExposureSet {
+) -> ExposureSet raise {
   // If H is null, return C’s own exposure set.
   guard h is Some(interface) else { c.own_exposure_set() }
 
