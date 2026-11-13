@@ -36,3 +36,11 @@ fn name_of_attribute(attribute : Attribute) -> StringView raise {
 
   name
 }
+
+///|
+fn name_of_dictionary_member(x : @parser.DictionaryMember) -> StringView {
+  match x.dictionary_member_rest {
+    Required(_, name) => name
+    Optional(_, name, _) => name
+  }
+}
