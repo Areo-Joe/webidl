@@ -323,6 +323,7 @@ fn Definition::from_parser(
             }),
           )
 
+          host.partials.push(partial_interface)
           Some(PartialInterface(partial_interface))
         }
         Interface(MixinRest({ identifier, mixin_members, })) => {
@@ -352,6 +353,7 @@ fn Definition::from_parser(
             }),
           )
 
+          host.partials.push(partial_interface_mixin)
           Some(PartialInterfaceMixin(partial_interface_mixin))
         }
         Dictionary({ identifier, dictionary_members, }) => {
@@ -382,6 +384,7 @@ fn Definition::from_parser(
             }),
           )
 
+          host.partials.push(partial_dictionary)
           Some(PartialDictionary(partial_dictionary))
         }
         Namespace({ identifier, namespace_members, }) => {
@@ -412,6 +415,7 @@ fn Definition::from_parser(
             }),
           )
 
+          host.partials.push(partial_namespace)
           Some(PartialNamespace(partial_namespace))
         }
       }
