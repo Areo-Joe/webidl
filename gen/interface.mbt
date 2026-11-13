@@ -88,7 +88,7 @@ fn check_includes_valid(
 ) -> Unit raise {
   assert_true(
     includes_statements.every(includes_statement => {
-      let { interface, mixin_, } = includes_statement
+      let { interface, mixin_, .. } = includes_statement
 
       let interface_identifier = strip_underscore(interface)
       let mixin_identifier = strip_underscore(mixin_)
