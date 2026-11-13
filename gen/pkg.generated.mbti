@@ -18,7 +18,11 @@ type Definition
 
 type DefinitionBody
 
+type Exposed
+
 type Interface
+
+type InterfaceMember
 
 type InterfaceMixin
 
@@ -29,6 +33,10 @@ type OperationTag
 type PartialInterface
 
 type PartialInterfaceMixin
+
+type WithExposed
+
+type WithExposedBody
 
 // Type aliases
 

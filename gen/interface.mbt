@@ -1,4 +1,18 @@
 ///|
+struct Interface {
+  identifier : StringView
+  inheritance : @parser.Inheritance
+  members : Array[InterfaceMember]
+}
+
+///|
+struct InterfaceMember {
+  extended_attribute_list : @parser.ExtendedAttributeList
+  body : @parser.InterfaceMember
+  host : Interface
+}
+
+///|
 fn check_interfaces(
   interfaces : Array[(@parser.ExtendedAttributeList, Interface)],
   includes_statements : Array[@parser.IncludesStatement],

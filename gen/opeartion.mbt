@@ -17,9 +17,9 @@ enum OperationTag {
 
 ///|
 fn Operation::from_interface_member(
-  interface_member : @parser.InterfaceMember,
+  interface_member : InterfaceMember,
 ) -> Operation? {
-  match interface_member {
+  match interface_member.body {
     PartialInterfaceMember(x) => Operation::from_partial_interface_member(x)
     _ => None
   }

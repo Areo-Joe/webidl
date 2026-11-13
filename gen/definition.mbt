@@ -44,12 +44,21 @@ fn DefinitionBody::from_parser_definition(
       CallbackInterface(CallbackInterface::{ identifier, members })
     CallbackOrInterfaceOrMixin(
       Interface(InterfaceRest({ identifier, inheritance, interface_members }))
-    ) =>
-      Interface(Interface::{
-        identifier,
-        inheritance,
-        members: interface_members,
-      })
+    ) => {
+      let interface = Interface::{ identifier, inheritance, members: [] }
+
+      let interface_members = interface_members
+        .iter()
+        .map(x => InterfaceMember::{
+          extended_attribute_list: x.0,
+          body: x.1,
+          host: interface,
+        })
+
+      interface.members.push_iter(interface_members)
+
+      Interface(interface)
+    }
     CallbackOrInterfaceOrMixin(
       Interface(MixinRest({ identifier, mixin_members }))
     ) => InterfaceMixin(InterfaceMixin::{ identifier, members: mixin_members })
@@ -94,13 +103,6 @@ struct Callback {
 struct CallbackInterface {
   identifier : StringView
   members : @parser.CallbackInterfaceMembers
-}
-
-///|
-struct Interface {
-  identifier : StringView
-  inheritance : @parser.Inheritance
-  members : @parser.InterfaceMembers
 }
 
 ///|

@@ -48,7 +48,7 @@ enum WithExposedBody {
   Interface(Interface)
   CallbackInterface(CallbackInterface)
   Namespace(@parser.Namespace)
-  InterfaceMember(@parser.InterfaceMember)
+  InterfaceMember(InterfaceMember)
   InterfaceMinxinMember(@parser.MixinMember)
   NamespaceMember(@parser.NamespaceMember)
 }

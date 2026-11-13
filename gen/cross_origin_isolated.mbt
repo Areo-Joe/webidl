@@ -13,7 +13,7 @@ fn check_is_valid_cross_origin_isolated_on_interface(
   interface : Interface,
 ) -> Unit raise {
   for x in interface.members.iter() {
-    let attrs = x.0
+    let attrs = x.extended_attribute_list
     for attr in attrs.iter() {
       assert_false(is_valid_cross_origin_isolated(attr))
     }

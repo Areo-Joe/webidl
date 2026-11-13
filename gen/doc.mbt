@@ -16,7 +16,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
         Interface(interface) =>
           interface.members
           .iter()
-          .filter_map(x => Attribute::from_interface_member(x.1))
+          .filter_map(x => Attribute::from_interface_member(x))
           .collect()
         InterfaceMixin(interface_mixin) =>
           interface_mixin.members
@@ -66,7 +66,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
             interface.members
             .iter()
             .filter_map(x => {
-              match x.1 {
+              match x.body {
                 PartialInterfaceMember(Const(c)) => Some(c)
                 _ => None
               }
@@ -131,7 +131,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
           Some(
             interface.members
             .iter()
-            .filter_map(x => Operation::from_interface_member(x.1)),
+            .filter_map(x => Operation::from_interface_member(x)),
           )
         PartialInterface(partial_interface) =>
           Some(
