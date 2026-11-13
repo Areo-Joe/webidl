@@ -124,6 +124,51 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
     .flatten()
 
   let constant_names = constants.map(x => x.identifier)
-  
-  
+
+  let operations = definitions
+    .filter_map(definition => {
+      match definition {
+        Interface(interface) =>
+          Some(
+            interface.members
+            .iter()
+            .filter_map(x => Operation::from_interface_member(x.1)),
+          )
+        PartialInterface(partial_interface) =>
+          Some(
+            partial_interface.members
+            .iter()
+            .filter_map(x => Operation::from_partial_interface_member(x.1)),
+          )
+        InterfaceMixin(interface_mixin) =>
+          Some(
+            interface_mixin.members
+            .iter()
+            .filter_map(x => Operation::from_interface_mixin_member(x.1)),
+          )
+        PartialInterfaceMixin(partial_interface_mixin) =>
+          Some(
+            partial_interface_mixin.members
+            .iter()
+            .filter_map(x => Operation::from_interface_mixin_member(x.1)),
+          )
+        Namespace(namespace_) | PartialNamespace(namespace_) =>
+          Some(
+            namespace_.namespace_members
+            .iter()
+            .filter_map(x => Operation::from_namespace_member(x.1)),
+          )
+        CallbackInterface(callback_interface) =>
+          Some(
+            callback_interface.members
+            .iter()
+            .filter_map(x => Operation::from_callback_interface_member(x.1)),
+          )
+        _ => None
+      }
+    })
+    .map(x => x.collect())
+    .flatten()
+
+  let operation_names = operations.filter_map(name_of_operation)
 }
