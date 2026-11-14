@@ -1,4 +1,61 @@
 ///|
+test "CrossOriginIsolated mixin members must not duplicate their containing definition annotation" {
+  for
+    member_ in [
+      "const long value = 1;", "attribute long value;", "undefined run();", "stringifier;",
+    ] {
+    for
+      (container_attribute, member_attribute, expected) in [
+        ("", "", true),
+        ("[CrossOriginIsolated]", "", true),
+        ("", "[CrossOriginIsolated]", true),
+        ("[CrossOriginIsolated]", "[CrossOriginIsolated]", false),
+        ("[CrossOriginIsolated()]", "[CrossOriginIsolated]", true),
+        ("[CrossOriginIsolated]", "[CrossOriginIsolated=Name]", true),
+      ] {
+      let body = " { " + member_attribute + member_ + " };"
+      assert_eq(
+        check_cross_origin_isolated_source(
+          container_attribute + " interface mixin M" + body,
+        ),
+        expected,
+      )
+      let original = "interface mixin M {};"
+      let partial = container_attribute + " partial interface mixin M" + body
+      assert_eq(
+        check_cross_origin_isolated_source(original + partial),
+        expected,
+      )
+      assert_eq(
+        check_cross_origin_isolated_source(partial + original),
+        expected,
+      )
+      assert_eq(
+        check_cross_origin_isolated_source(
+          container_attribute +
+          " interface mixin M {}; partial interface mixin M" +
+          body,
+        ),
+        expected,
+      )
+    }
+  }
+}
+
+///|
+test "CrossOriginIsolated partial mixin annotations do not affect other parts or including interfaces" {
+  for
+    source in [
+      "interface mixin M { [CrossOriginIsolated] undefined original(); }; [CrossOriginIsolated] partial interface mixin M { undefined first(); }; partial interface mixin M { [CrossOriginIsolated] undefined second(); };",
+      "[CrossOriginIsolated] interface mixin M {}; [CrossOriginIsolated] partial interface mixin M { undefined run(); };",
+      "[Exposed=*, CrossOriginIsolated] interface A {}; interface mixin M { [CrossOriginIsolated] undefined run(); }; A includes M;",
+      "[CrossOriginIsolated] interface mixin M {}; interface mixin N { [CrossOriginIsolated] undefined run(); };",
+    ] {
+    assert_true(check_cross_origin_isolated_source(source))
+  }
+}
+
+///|
 test "CrossOriginIsolated requires consistent marking on mixin operation overloads" {
   for
     (members, expected) in [

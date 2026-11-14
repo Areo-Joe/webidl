@@ -3,6 +3,13 @@ fn check_interface_mixins(
   interface_mixins : Array[InterfaceMixin],
 ) -> Unit raise {
   for mixin_ in interface_mixins {
+    let has_cross_origin_isolated = mixin_.extended_attribute_list
+      .iter()
+      .any(is_valid_cross_origin_isolated)
+    check_is_valid_cross_origin_isolated_on_interface_mixin(
+      mixin_,
+      mixin_marked=has_cross_origin_isolated,
+    )
     check_cross_origin_isolated_overloads_on_interface_mixin(mixin_)
   }
 }

@@ -58,6 +58,36 @@ fn check_is_valid_cross_origin_isolated_on_interface(
 }
 
 ///|
+/// The [CrossOriginIsolated] extended attribute must not be specified both on
+/// an interface mixin member and its interface mixin or partial interface mixin;
+fn check_is_valid_cross_origin_isolated_on_interface_mixin(
+  mixin_ : InterfaceMixin,
+  mixin_marked~ : Bool,
+) -> Unit raise {
+  if mixin_marked {
+    for member_ in mixin_.members {
+      assert_false(
+        member_.extended_attribute_list
+        .iter()
+        .any(is_valid_cross_origin_isolated),
+      )
+    }
+  }
+  for partial in mixin_.partials {
+    if mixin_marked ||
+      partial.extended_attribute_list.iter().any(is_valid_cross_origin_isolated) {
+      for member_ in partial.members {
+        assert_false(
+          member_.extended_attribute_list
+          .iter()
+          .any(is_valid_cross_origin_isolated),
+        )
+      }
+    }
+  }
+}
+
+///|
 /// An interface without the [CrossOriginIsolated] extended attribute must not inherit from another interface that does specify [CrossOriginIsolated].
 fn check_interface_inheritance_no_cross_origin_isolated(
   interfaces : Array[Interface],
