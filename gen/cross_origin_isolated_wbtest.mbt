@@ -1,4 +1,126 @@
 ///|
+test "CrossOriginIsolated requires consistent marking on mixin operation overloads" {
+  for
+    (members, expected) in [
+      ("undefined run(long value); undefined run(DOMString value);", true),
+      (
+        "[CrossOriginIsolated] undefined run(long value); undefined run(DOMString value);",
+        false,
+      ),
+      (
+        "undefined run(long value); [CrossOriginIsolated] undefined run(DOMString value);",
+        false,
+      ),
+      (
+        "[CrossOriginIsolated] undefined run(long value); [CrossOriginIsolated] undefined _run(DOMString value);",
+        true,
+      ),
+      ("[CrossOriginIsolated] undefined first(); undefined second();", true),
+      (
+        "[CrossOriginIsolated] undefined run(optional long value); undefined run(DOMString first, long... rest);",
+        false,
+      ),
+      (
+        "[CrossOriginIsolated()] undefined run(long value); undefined run(DOMString value);",
+        true,
+      ),
+      (
+        "[CrossOriginIsolated] undefined run(long value); [CrossOriginIsolated()] undefined run(DOMString value);",
+        false,
+      ),
+      (
+        "[CrossOriginIsolated=Name] undefined run(long value); undefined run(DOMString value);",
+        true,
+      ),
+      (
+        "[CrossOriginIsolated] attribute long value; undefined run(long value); undefined run(DOMString value);",
+        true,
+      ),
+      (
+        "[CrossOriginIsolated] undefined run(long value); [SecureContext] undefined run(DOMString value);",
+        false,
+      ),
+    ] {
+    assert_eq(
+      check_cross_origin_isolated_source(
+        "interface mixin M { " + members + " };",
+      ),
+      expected,
+    )
+    let original = "interface mixin M {};"
+    let partial = "partial interface mixin M { " + members + " };"
+    assert_eq(check_cross_origin_isolated_source(original + partial), expected)
+    assert_eq(check_cross_origin_isolated_source(partial + original), expected)
+  }
+}
+
+///|
+test "CrossOriginIsolated mixin overload groups include every partial and use explicit member annotations" {
+  for
+    (source, expected) in [
+      (
+        "interface mixin M { [CrossOriginIsolated] undefined run(long value); }; partial interface mixin M { undefined run(DOMString value); };",
+        false,
+      ),
+      (
+        "partial interface mixin M { [CrossOriginIsolated] undefined run(long value); }; interface mixin M { undefined run(DOMString value); };",
+        false,
+      ),
+      (
+        "interface mixin M {}; partial interface mixin M { [CrossOriginIsolated] undefined run(long value); }; partial interface mixin M { undefined run(DOMString value); };",
+        false,
+      ),
+      (
+        "interface mixin M { [CrossOriginIsolated] undefined run(long value); }; partial interface mixin M { [CrossOriginIsolated] undefined run(DOMString value); };",
+        true,
+      ),
+      (
+        "[CrossOriginIsolated] interface mixin M { undefined run(long value); undefined run(DOMString value); };",
+        true,
+      ),
+      (
+        "[CrossOriginIsolated] interface mixin M {}; partial interface mixin M { undefined run(long value); undefined run(DOMString value); };",
+        true,
+      ),
+      (
+        "interface mixin M {}; [CrossOriginIsolated] partial interface mixin M { undefined run(long value); undefined run(DOMString value); };",
+        true,
+      ),
+      (
+        "interface mixin M { undefined run(long value); }; [CrossOriginIsolated] partial interface mixin M { undefined run(DOMString value); };",
+        true,
+      ),
+      (
+        "interface mixin M { undefined first(); }; partial interface mixin M { [CrossOriginIsolated] undefined second(); };",
+        true,
+      ),
+    ] {
+    assert_eq(check_cross_origin_isolated_source(source), expected)
+  }
+}
+
+///|
+test "CrossOriginIsolated mixin overload groups are independent of other mixins and including interfaces" {
+  let mixin_source = "interface mixin M { [CrossOriginIsolated] undefined run(long value); [CrossOriginIsolated] undefined run(DOMString value); };"
+  assert_true(
+    check_cross_origin_isolated_source(
+      mixin_source +
+      "[Exposed=*] interface A {}; [Exposed=*] interface B {}; A includes M; B includes M;",
+    ),
+  )
+  assert_true(
+    check_cross_origin_isolated_source(
+      "interface mixin M { [CrossOriginIsolated] undefined run(); }; interface mixin N { undefined run(); }; [Exposed=*] interface A {}; [Exposed=*] interface B {}; A includes M; B includes N;",
+    ),
+  )
+  assert_false(
+    check_cross_origin_isolated_source(
+      "[Exposed=*, CrossOriginIsolated] interface A {}; interface mixin M { [CrossOriginIsolated] undefined run(long value); undefined run(DOMString value); }; A includes M;",
+    ),
+  )
+}
+
+///|
 test "CrossOriginIsolated requires consistent marking in each operation overload group" {
   for
     (body, expected) in [

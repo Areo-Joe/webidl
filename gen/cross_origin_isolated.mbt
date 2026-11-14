@@ -17,6 +17,16 @@ fn check_cross_origin_isolated_overloads_on_interface(
 }
 
 ///|
+/// If [CrossOriginIsolated] appears on an overloaded operation, then it must appear on all overloads.
+fn check_cross_origin_isolated_overloads_on_interface_mixin(
+  mixin_ : InterfaceMixin,
+) -> Unit raise {
+  check_overload_extended_attribute_on_interface_mixin(mixin_, attributes => {
+    attributes.iter().any(is_valid_cross_origin_isolated)
+  })
+}
+
+///|
 /// The [CrossOriginIsolated] extended attribute must not be specified both on
 /// an interface member and its interface or partial interface;
 fn check_is_valid_cross_origin_isolated_on_interface(
