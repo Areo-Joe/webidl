@@ -148,6 +148,10 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
       is PrimitiveType(UnsignedIntegerType(IntegerType(Long(None)))) {
       check_long_constant_value(constant.const_value)
     }
+    if constant.const_type
+      is PrimitiveType(UnsignedIntegerType(UnsignedIntegerType(Long(None)))) {
+      check_unsigned_long_constant_value(constant.const_value)
+    }
   }
 
   let operations = definitions

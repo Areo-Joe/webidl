@@ -1,5 +1,5 @@
 ///|
-fn integer_constant_value(value : @parser.ConstValue) -> Int32 raise {
+fn integer_constant_value(value : @parser.ConstValue) -> Int64 raise {
   guard value is Integer(token) else { fail("Expected an integer token") }
   let negative = token.has_prefix("-")
   let digits = if negative { token[1:] } else { token }
@@ -15,5 +15,5 @@ fn integer_constant_value(value : @parser.ConstValue) -> Int32 raise {
   } else {
     digits.to_owned()
   }
-  @string.parse_int(number, base~)
+  @string.parse_int64(number, base~)
 }
