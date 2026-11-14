@@ -189,6 +189,16 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
     check_nullable_type_no_observable_array(operation.type_)
   }
 
+  let callbacks = definitions.filter_map(definition => {
+    match definition {
+      Callback(callback) => Some(callback)
+      _ => None
+    }
+  })
+  for callback in callbacks {
+    check_nullable_type_no_observable_array(callback.type_)
+  }
+
   let operations_not_regular = operations.filter_map(x => {
     match x.tag {
       Regular => None

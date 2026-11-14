@@ -260,3 +260,56 @@ test "Nullable observable array checks inspect every operation return type" {
     ),
   )
 }
+
+///|
+test "Callback return checks visit nested types and distinguish element nullability" {
+  for
+    (type_, valid) in [
+      ("ObservableArray<long>?", false),
+      ("sequence<ObservableArray<long>?>", false),
+      ("async_sequence<ObservableArray<long>?>", false),
+      ("FrozenArray<ObservableArray<long>?>", false),
+      ("record<DOMString, ObservableArray<long>?>", false),
+      ("Promise<ObservableArray<long>?>", false),
+      ("(DOMString or ObservableArray<long>?)", false),
+      ("((long or ObservableArray<long>?) or DOMString)", false),
+      ("sequence<Promise<record<DOMString, ObservableArray<long>?>>>", false),
+      ("ObservableArray<long>", true),
+      ("ObservableArray<long?>", true),
+      ("Promise<ObservableArray<long?>>", true),
+      ("DOMString?", true),
+      ("undefined", true),
+    ] {
+    assert_eq(
+      check_nullable_source("callback GetItems = " + type_ + " ();"),
+      valid,
+    )
+  }
+}
+
+///|
+test "Nullable observable array checks inspect every callback return type" {
+  assert_false(
+    check_nullable_source(
+      "callback First = long (); callback Last = ObservableArray<long>? ();",
+    ),
+  )
+  assert_false(
+    check_nullable_source(
+      "callback First = ObservableArray<long>? (); callback Last = long ();",
+    ),
+  )
+  assert_false(
+    check_nullable_source("callback _GetItems = ObservableArray<long>? ();"),
+  )
+  assert_false(
+    check_nullable_source(
+      "[Example] callback GetItems = ObservableArray<long>? (long count);",
+    ),
+  )
+  assert_true(
+    check_nullable_source(
+      "callback First = long (); callback Last = ObservableArray<long?> (optional long count = 0);",
+    ),
+  )
+}
