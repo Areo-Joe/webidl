@@ -75,13 +75,16 @@ test "Nullable constraints cover every declaration entry and typedef order" {
         ("typedef any Anything;", "sequence<Anything?>", false),
         ("typedef Promise<long> ResultType;", "FrozenArray<ResultType?>", false),
         ("typedef long? Maybe;", "record<DOMString, Maybe?>", false),
-        ("typedef any Anything;", "FrozenArray<Anything>?", true),
-        ("typedef long? Maybe;", "FrozenArray<Maybe>?", true),
-        ("", "(FrozenArray<long?> or DOMString)?", true),
-        ("", "(FrozenArray<record<DOMString, long?>> or boolean)?", true),
-        ("dictionary Options {};", "(FrozenArray<Options> or DOMString)?", true),
+        ("typedef any Anything;", "Promise<sequence<Anything>?>", true),
+        ("typedef long? Maybe;", "Promise<sequence<Maybe>?>", true),
+        ("", "Promise<(sequence<long?> or DOMString)?>", true),
+        ("", "Promise<(sequence<record<DOMString, long?>> or boolean)?>", true),
         (
-          "dictionary Options {}; typedef FrozenArray<Options> Configs;", "(Configs or DOMString)?",
+          "dictionary Options {};", "Promise<(sequence<Options> or DOMString)?>",
+          true,
+        ),
+        (
+          "dictionary Options {}; typedef sequence<Options> Configs;", "Promise<(Configs or DOMString)?>",
           true,
         ),
       ] {
@@ -132,7 +135,7 @@ test "Argument types reject nullable dictionaries across all argument list entry
         ("Config", true),
         ("sequence<Options?>", true),
         ("sequence<MaybeConfig>", true),
-        ("FrozenArray<Options?>", true),
+        ("async_sequence<Options?>", true),
         ("record<DOMString, Options?>", true),
         ("(Options or DOMString)", true),
       ] {
@@ -194,7 +197,7 @@ test "Dictionary member types reject nullable dictionaries including partials an
         ("required Config value;", true),
         ("sequence<Options?> value;", true),
         ("sequence<MaybeConfig> value;", true),
-        ("FrozenArray<Options?> value;", true),
+        ("async_sequence<Options?> value;", true),
         ("record<DOMString, Options?> value;", true),
         ("(Options or DOMString) value;", true),
       ] {
@@ -255,7 +258,7 @@ test "Nullable observable array checks resolve typedefs at every declaration ent
         ("sequence<Items?>", false),
         ("(Items or Items?)", false),
         ("(Items? or Items)", false),
-        ("FrozenArray<Items>?", true),
+        ("Promise<sequence<Items>?>", true),
         ("Items", true),
       ] {
       if prefix == "typedef " && type_ == "Items" {
@@ -285,7 +288,7 @@ test "Nullable checks follow compound typedef references without propagating nul
   for
     source in [
       "typedef ObservableArray<long> Items; typedef sequence<Items>? MaybeSequence;",
-      "typedef ObservableArray<long> Items; typedef (FrozenArray<Items> or DOMString)? MaybeUnion;",
+      "typedef ObservableArray<long> Items; typedef (sequence<Items> or DOMString)? MaybeUnion;",
       "typedef ObservableArray<long?> Items; typedef sequence<Items> Nested;", "typedef sequence<A> A;",
       "typedef sequence<B> A; typedef sequence<A> B;",
     ] {
@@ -362,7 +365,7 @@ test "Nullable observable array checks distinguish array and element nullability
       "ObservableArray<long>", "ObservableArray<long?>", "ObservableArray<DOMString?>",
       "sequence<ObservableArray<long>>?", "FrozenArray<ObservableArray<long?>>",
       "record<DOMString, ObservableArray<long?>>", "Promise<ObservableArray<long?>>",
-      "(FrozenArray<ObservableArray<long>> or DOMString)", "long?", "DOMString?",
+      "(sequence<ObservableArray<long>> or DOMString)", "long?", "DOMString?",
     ] {
     assert_true(check_nullable_source("typedef " + type_ + " Target;"))
   }

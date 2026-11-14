@@ -72,8 +72,8 @@ test "Attribute async sequence checks cover every declaration and attribute form
           ("_Values?", false),
           ("MaybeValues", false),
           ("DOMString", true),
-          ("FrozenArray<async_sequence<long>>", true),
-          ("FrozenArray<Values>", true),
+          ("Promise<async_sequence<long>>", true),
+          ("Promise<Values>", true),
           ("(async_sequence<long> or boolean)", true),
           ("(Values or boolean)?", true),
           ("(MaybeValues or boolean)", true),
@@ -96,7 +96,7 @@ test "Async sequence attribute checks stop at union and container boundaries" {
   for
     source in [
       "typedef (Value or async_sequence<long>) Value; [Exposed=*] interface A { attribute Value value; };",
-      "typedef FrozenArray<Value> Value; [Exposed=*] interface A { attribute Value value; };",
+      "typedef Promise<Value> Value; [Exposed=*] interface A { attribute Value value; };",
       "typedef async_sequence<long> Values; [Exposed=*] interface A { readonly attribute Promise<Values> values; };",
     ] {
     assert_true(check_async_sequence_source(source))

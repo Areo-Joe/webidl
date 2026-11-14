@@ -14,6 +14,7 @@ enum AttributeTag {
   StringifierReadWrite
   PlainReadOnly
   PlainReadWrite
+  NamespaceReadOnly
 }
 
 ///|
@@ -103,7 +104,7 @@ fn Attribute::from_namespace_member(
       Some(Attribute::{
         type_with_extended_attributes,
         name,
-        tag: PlainReadOnly,
+        tag: NamespaceReadOnly,
       })
     _ => None
   }

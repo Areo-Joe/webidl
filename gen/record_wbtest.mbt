@@ -80,8 +80,8 @@ test "Attribute record checks cover every declaration and attribute form" {
           ("(DOMString or (boolean or Values)?)", false),
           ("([Example] Values or DOMString)", false),
           ("DOMString", true),
-          ("FrozenArray<record<DOMString, long>>", true),
-          ("(FrozenArray<Values> or DOMString)?", true),
+          ("Promise<record<DOMString, long>>", true),
+          ("Promise<(sequence<Values> or DOMString)?>", true),
         ] {
         let declaration = prefix + form + " " + type_ + " value; " + suffix
         let definitions = "typedef record<DOMString, long> _Values; typedef record<DOMString, long>? MaybeValues; typedef (Values or DOMString) ValueUnion;"

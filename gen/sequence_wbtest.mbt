@@ -78,8 +78,8 @@ test "Attribute sequence checks cover every declaration and attribute form" {
           ("(DOMString or (boolean or Values)?)", false),
           ("([Example] Values or DOMString)", false),
           ("DOMString", true),
-          ("FrozenArray<sequence<long>>", true),
-          ("(FrozenArray<Values> or DOMString)?", true),
+          ("Promise<sequence<long>>", true),
+          ("Promise<(sequence<Values> or DOMString)?>", true),
         ] {
         let declaration = prefix + form + " " + type_ + " value; " + suffix
         let definitions = "typedef sequence<long> _Values; typedef sequence<long>? MaybeValues; typedef (Values or DOMString) ValueUnion;"

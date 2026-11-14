@@ -102,6 +102,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
       typedef_index,
       dictionary_names,
       type_definitions,
+      allow_frozen_array=!(attribute.tag is NamespaceReadOnly),
       extended_attributes=attribute.type_with_extended_attributes.extended_attribute_list
         .iter()
         .collect(),
@@ -411,6 +412,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
       typedef_index,
       dictionary_names,
       type_definitions,
+      allow_frozen_array=true,
       extended_attributes=typedef_.type_with_extended_attributes.extended_attribute_list
         .iter()
         .collect(),

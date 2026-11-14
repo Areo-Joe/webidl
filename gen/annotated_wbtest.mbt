@@ -217,14 +217,12 @@ test "Annotated type validation covers every type entry" {
   for (prefix, suffix) in nullable_declaration_forms() {
     for
       (type_, valid) in [
-        ("FrozenArray<sequence<[SecureContext] long>>", false),
-        ("FrozenArray<record<DOMString, [Global=Window] long>>", false),
-        ("FrozenArray<([Exposed=*] long or DOMString)>", false),
-        ("FrozenArray<Promise<sequence<[Example] long>>>", false),
-        ("FrozenArray<sequence<[Clamp] long>>", true),
-        (
-          "FrozenArray<([Clamp] long or [LegacyNullToEmptyString] DOMString)>", true,
-        ),
+        ("Promise<sequence<[SecureContext] long>>", false),
+        ("Promise<record<DOMString, [Global=Window] long>>", false),
+        ("Promise<([Exposed=*] long or DOMString)>", false),
+        ("Promise<Promise<sequence<[Example] long>>>", false),
+        ("Promise<sequence<[Clamp] long>>", true),
+        ("Promise<([Clamp] long or [LegacyNullToEmptyString] DOMString)>", true),
       ] {
       assert_eq(check_annotated_source(prefix + type_ + suffix), valid)
     }

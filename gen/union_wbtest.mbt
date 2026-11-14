@@ -45,7 +45,7 @@ test "Union constraints cover every type entry and typedef order" {
           "dictionary Options {}; typedef long? Maybe;", "(sequence<Maybe> or Options)",
           true,
         ),
-        ("dictionary Options {};", "(FrozenArray<Options> or long?)", true),
+        ("dictionary Options {};", "(sequence<Options> or long?)", true),
         (
           "dictionary Options {};", "(record<DOMString, Options> or long?)", true,
         ),
@@ -53,7 +53,7 @@ test "Union constraints cover every type entry and typedef order" {
         ("", "([Clamp] long? or DOMString)", true),
         ("", "([Clamp] long? or [Clamp] DOMString?)", false),
       ] {
-      let declaration = prefix + "FrozenArray<" + type_ + ">" + suffix
+      let declaration = prefix + "Promise<" + type_ + ">" + suffix
       for source in [definitions + declaration, declaration + definitions] {
         assert_eq(check_union_source(source), valid)
       }

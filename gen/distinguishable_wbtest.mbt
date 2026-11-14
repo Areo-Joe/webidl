@@ -164,7 +164,7 @@ test "Union distinguishability covers every declaration entry and typedef order"
         ("", "(sequence<long> or boolean)", true),
         ("", "((long or DOMString) or double)", false),
       ] {
-      let declaration = prefix + "FrozenArray<" + type_ + ">" + suffix
+      let declaration = prefix + "Promise<" + type_ + ">" + suffix
       for source in [definitions + declaration, declaration + definitions] {
         assert_eq(check_union_source(source), valid)
       }
@@ -205,13 +205,19 @@ test "Numeric and string types retain their identities within shared categories"
 
 ///|
 test "Flattened member sets deduplicate types independently of nullable occurrence counts" {
+  let frozen_array_union = parse_distinguishable_type(
+    "(FrozenArray<(long or DOMString)> or FrozenArray<(DOMString or long)>)",
+  )
+  guard frozen_array_union is UnionType(union_type, _) else {
+    fail("Expected a union type")
+  }
+  assert_eq(flattened_member_types(union_type, Map([])).length(), 1)
   for
     source in [
       "typedef (long or long) Value;", "typedef long Number; typedef (long or Number) Value;",
       "typedef (long or DOMString) Inner; typedef (Inner or Inner) Value;", "typedef (long? or long) Value;",
       "typedef (sequence<long> or sequence<long>) Value;", "typedef (sequence<(long or (boolean or DOMString))> or sequence<(DOMString or long or boolean)>) Value;",
       "typedef long Number; typedef (sequence<Number> or sequence<long>) Value;",
-      "typedef (FrozenArray<(long or DOMString)> or FrozenArray<(DOMString or long)>) Value;",
       "typedef ([Clamp] long or long) Value;", "typedef (A or long) A;", "typedef (B or long) A; typedef (A or DOMString) B;",
       "typedef sequence<A> A; typedef sequence<B> B; typedef (A or B) Value;", "typedef (A or sequence<long>) A;",
     ] {
@@ -278,21 +284,42 @@ test "Container type identity preserves annotations on nested union members" {
           false,
         ),
       ] {
-      assert_eq(
-        check_union_source(
-          definitions +
-          "typedef " +
-          prefix +
-          left +
-          suffix +
-          " Left; typedef " +
-          prefix +
-          right +
-          suffix +
-          " Right; typedef (Left or Right) Value;",
-        ),
-        same,
-      )
+      if prefix == "FrozenArray<" {
+        let (parsed_definitions, rest) = @parser.parse(
+          @lexer.tokenize(definitions).exact_view(),
+        )
+        assert_true(rest is [])
+        let typedefs = Map([])
+        for definition in Definition::from_parser(parsed_definitions) {
+          if definition is Typedef(typedef_) {
+            typedefs.set(strip_underscore(typedef_.identifier), typedef_)
+          }
+        }
+        assert_eq(
+          same_flattened_member_type(
+            parse_distinguishable_type(prefix + left + suffix),
+            parse_distinguishable_type(prefix + right + suffix),
+            typedefs,
+          ),
+          same,
+        )
+      } else {
+        assert_eq(
+          check_union_source(
+            definitions +
+            "typedef " +
+            prefix +
+            left +
+            suffix +
+            " Left; typedef " +
+            prefix +
+            right +
+            suffix +
+            " Right; typedef (Left or Right) Value;",
+          ),
+          same,
+        )
+      }
     }
   }
   for

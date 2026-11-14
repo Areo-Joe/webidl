@@ -61,6 +61,7 @@ fn check_type(
   dictionary_names : Set[StringView],
   definitions : Map[StringView, Definition],
   extended_attributes~ : Array[@parser.ExtendedAttribute] = [],
+  allow_frozen_array~ : Bool = false,
 ) -> Unit raise {
   check_annotated_type(type_, extended_attributes, typedefs)
   check_nullable_type(type_, typedefs, dictionary_names)
@@ -69,6 +70,7 @@ fn check_type(
       check_union_type(union_type, typedefs, dictionary_names, definitions)
     }
   }
+  check_frozen_array_type(type_, typedefs, allow_frozen_array~)
 }
 
 ///|
