@@ -237,6 +237,11 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
     }
   })
   check_typedef_type_not_typedef(typedefs)
+  for typedef_ in typedefs {
+    check_nullable_type_no_observable_array(
+      typedef_.type_with_extended_attributes.type_,
+    )
+  }
   for constant in constants {
     let primitive_type = primitive_type_of_constant(
       constant.const_type,
