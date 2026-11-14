@@ -10,6 +10,7 @@ fn check_interface_mixins(
     check_exposed_global_names_on_interface_mixin(
       mixin_, available_global_names,
     )
+    check_exposed_overloads_on_interface_mixin(mixin_)
     let has_cross_origin_isolated = mixin_.extended_attribute_list
       .iter()
       .any(is_valid_cross_origin_isolated)

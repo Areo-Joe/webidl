@@ -72,6 +72,90 @@ test "Mixin Exposed names are checked without includes and against all global in
 }
 
 ///|
+test "Mixin Exposed must appear identically on every overload" {
+  let globals = "[Exposed=*, Global=(Window,Worker)] interface G {};"
+  for
+    (first, second, expected) in [
+      ("", "", true),
+      ("[Exposed=*]", "", false),
+      ("", "[Exposed=*]", false),
+      ("[Exposed=*]", "[Exposed=*]", true),
+      ("[Exposed=Window]", "[Exposed=Window]", true),
+      ("[Exposed=_Window]", "[Exposed=Window]", true),
+      ("[Exposed=Window]", "[Exposed=Worker]", false),
+      ("[Exposed=Window]", "[Exposed=(Window)]", false),
+      ("[Exposed=(Window,Worker)]", "[Exposed=(Window,Worker)]", true),
+      ("[Exposed=(Window,Worker)]", "[Exposed=(_Window,Worker)]", true),
+      ("[Exposed=(Window,Worker)]", "[Exposed=(Worker,Window)]", false),
+      ("[Exposed=*]", "[Exposed=(Window,Worker)]", false),
+      ("[Exposed()]", "", true),
+      ("[Exposed=*]", "[Exposed()]", false),
+    ] {
+    let members = first +
+      " undefined run(long value); " +
+      second +
+      " undefined _run(DOMString value);"
+    for
+      source in [
+        "interface mixin M { " + members + " };",
+        "interface mixin M {}; partial interface mixin M { " + members + " };",
+        "partial interface mixin M { " + members + " }; interface mixin M {};",
+      ] {
+      assert_eq(check_exposed_source(globals + source), expected)
+    }
+  }
+}
+
+///|
+test "Mixin Exposed overload groups use explicit member annotations and remain independent" {
+  for
+    (source, expected) in [
+      (
+        "[Exposed=*] interface mixin M { [Exposed=*] undefined run(long value); undefined run(DOMString value); };",
+        false,
+      ),
+      (
+        "[Exposed=*] interface mixin M { undefined run(long value); undefined run(DOMString value); };",
+        true,
+      ),
+      (
+        "interface mixin M {}; [Exposed=*] partial interface mixin M { [Exposed=*] undefined run(long value); undefined run(DOMString value); };",
+        false,
+      ),
+      (
+        "interface mixin M {}; [Exposed=*] partial interface mixin M { undefined run(long value); undefined run(DOMString value); };",
+        true,
+      ),
+      (
+        "interface mixin M { [Exposed=*] undefined first(); undefined second(); };",
+        true,
+      ),
+      (
+        "interface mixin M { [Exposed=*] attribute long value; undefined run(long value); undefined run(DOMString value); };",
+        true,
+      ),
+      (
+        "interface mixin M { [Exposed=*] undefined run(); }; interface mixin N { undefined run(); };",
+        true,
+      ),
+      (
+        "[Exposed=*] interface A {}; interface mixin M { [Exposed=*] undefined run(long value); undefined run(DOMString value); }; A includes M;",
+        false,
+      ),
+      (
+        "interface mixin M { [Exposed=*] undefined run(long value); }; partial interface mixin M { undefined run(DOMString value); };",
+        false,
+      ),
+      (
+        "interface mixin M {}; partial interface mixin M { undefined run(long value); }; partial interface mixin M { [Exposed=*] undefined run(DOMString value); };",
+        false,
+      ),
+    ] {
+    assert_eq(check_exposed_source(source), expected)
+  }
+}
+
+///|
 test "Exposed must appear identically on every overload" {
   let globals = "[Exposed=*, Global=(Window,Worker)] interface G {};"
   for

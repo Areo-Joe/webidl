@@ -9,19 +9,36 @@ enum Exposed {
 ///|
 /// If [Exposed] appears on an overloaded operation, then it must appear identically on all overloads.
 fn check_exposed_overloads_on_interface(interface : Interface) -> Unit raise {
-  check_overload_extended_attribute_on_interface(interface, attributes => {
-    for attr in attributes.iter() {
-      if is_valid_exposed(attr) is Some(exposed) {
-        let value : Exposed = match exposed {
-          Ident(name) => Ident(strip_underscore(name))
-          IdentList(names) => IdentList(names.map(strip_underscore))
-          Wildcard => Wildcard
-        }
-        return Some(value)
+  check_overload_extended_attribute_on_interface(
+    interface, exposed_overload_attribute_value,
+  )
+}
+
+///|
+/// If [Exposed] appears on an overloaded operation, then it must appear identically on all overloads.
+fn check_exposed_overloads_on_interface_mixin(
+  mixin_ : InterfaceMixin,
+) -> Unit raise {
+  check_overload_extended_attribute_on_interface_mixin(
+    mixin_, exposed_overload_attribute_value,
+  )
+}
+
+///|
+fn exposed_overload_attribute_value(
+  attributes : @parser.ExtendedAttributeList,
+) -> Exposed? {
+  for attr in attributes.iter() {
+    if is_valid_exposed(attr) is Some(exposed) {
+      let value : Exposed = match exposed {
+        Ident(name) => Ident(strip_underscore(name))
+        IdentList(names) => IdentList(names.map(strip_underscore))
+        Wildcard => Wildcard
       }
+      return Some(value)
     }
-    None
-  })
+  }
+  None
 }
 
 ///|
