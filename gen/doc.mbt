@@ -211,6 +211,38 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
     check_nullable_argument_types_no_observable_array(callback.argument_list)
   }
 
+  for definition in definitions {
+    match definition {
+      Interface(interface) => {
+        for attr in interface.extended_attribute_list.iter() {
+          if attr
+            is NamedArgList(
+              { identifier: "LegacyFactoryFunction", argument_list, .. }
+            ) {
+            check_nullable_argument_types_no_observable_array(argument_list)
+          }
+        }
+        for interface_member in interface.members {
+          match interface_member.body {
+            Constructor(constructor_) =>
+              check_nullable_argument_types_no_observable_array(
+                constructor_.argument_list,
+              )
+            PartialInterfaceMember(body) =>
+              check_nullable_collection_types_no_observable_array(body)
+          }
+        }
+      }
+      PartialInterface(partial) =>
+        for interface_member in partial.members {
+          check_nullable_collection_types_no_observable_array(
+            interface_member.body,
+          )
+        }
+      _ => ()
+    }
+  }
+
   let operations_not_regular = operations.filter_map(x => {
     match x.tag {
       Regular => None

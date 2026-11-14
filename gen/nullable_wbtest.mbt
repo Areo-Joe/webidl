@@ -10,6 +10,48 @@ fn check_nullable_source(source : String) -> Bool raise {
 }
 
 ///|
+test "Legacy factory function arguments reject nullable observable arrays" {
+  for
+    arguments in [
+      "ObservableArray<long>? items", "optional ObservableArray<long>? items", "optional ObservableArray<long>? items = null",
+      "ObservableArray<long>?... items", "[Example] ObservableArray<long>? items",
+      "optional [Example] ObservableArray<long>? items", "sequence<Promise<ObservableArray<long>?>> items",
+      "long first, ObservableArray<long>? last",
+    ] {
+    assert_false(
+      check_nullable_source(
+        "[Exposed=*, LegacyFactoryFunction=Create(" +
+        arguments +
+        ")] interface A {};",
+      ),
+    )
+  }
+  for arguments in ["", "long value", "optional DOMString? text = null"] {
+    assert_true(
+      check_nullable_source(
+        "[Exposed=*, LegacyFactoryFunction=Create(" +
+        arguments +
+        ")] interface A {};",
+      ),
+    )
+  }
+}
+
+///|
+test "Nullable checks inspect every legacy factory function" {
+  assert_false(
+    check_nullable_source(
+      "[Exposed=*, LegacyFactoryFunction=First(long value), LegacyFactoryFunction=Last(ObservableArray<long>? items)] interface A {};",
+    ),
+  )
+  assert_false(
+    check_nullable_source(
+      "[Exposed=*] interface A {}; [Exposed=*, LegacyFactoryFunction=Create(ObservableArray<long>? items)] interface B {};",
+    ),
+  )
+}
+
+///|
 test "Typedef targets reject nullable observable arrays at every nesting level" {
   for
     type_ in [
@@ -488,5 +530,157 @@ test "Argument checks inspect every argument and every operation or callback" {
       "callback Use = undefined (ObservableArray<long>? _items);",
     ] {
     assert_false(check_nullable_source(source))
+  }
+}
+
+///|
+test "Constructor argument checks cover argument forms and nested types" {
+  for
+    (arguments, valid) in [
+      ("ObservableArray<long>? items", false),
+      ("optional ObservableArray<long>? items", false),
+      ("optional ObservableArray<long>? items = null", false),
+      ("ObservableArray<long>?... items", false),
+      ("[Example] ObservableArray<long>? items", false),
+      ("optional [Example] ObservableArray<long>? items", false),
+      ("sequence<ObservableArray<long>?> items", false),
+      ("Promise<record<DOMString, ObservableArray<long>?>> items", false),
+      ("long first, ObservableArray<long>? last", false),
+      ("ObservableArray<long> items", true),
+      ("ObservableArray<long?> items", true),
+      ("optional DOMString? text = null", true),
+      ("long... values", true),
+      ("", true),
+    ] {
+    assert_eq(
+      check_nullable_source(
+        "[Exposed=*] interface A { constructor(" + arguments + "); };",
+      ),
+      valid,
+    )
+  }
+  assert_false(
+    check_nullable_source(
+      "[Exposed=*] interface A { constructor(); constructor(ObservableArray<long>? items); };",
+    ),
+  )
+  assert_false(
+    check_nullable_source(
+      "[Exposed=*] interface A {}; [Exposed=*] interface B { constructor(ObservableArray<long>? items); };",
+    ),
+  )
+}
+
+///|
+test "Collection type checks cover every type slot and partial declaration" {
+  for
+    (prefix, suffix) in [
+      ("[Exposed=*] interface A {", "};"),
+      ("[Exposed=*] interface A {}; partial interface A {", "};"),
+      ("partial interface A {", "}; [Exposed=*] interface A {};"),
+    ] {
+    for
+      (start, end) in [
+        ("iterable<", ">;"),
+        ("iterable<", ", DOMString>;"),
+        ("iterable<DOMString, ", ">;"),
+        ("async_iterable<", ">;"),
+        ("async_iterable<", ", DOMString>;"),
+        ("async_iterable<DOMString, ", ">;"),
+        ("maplike<", ", DOMString>;"),
+        ("maplike<DOMString, ", ">;"),
+        ("readonly maplike<", ", DOMString>;"),
+        ("readonly maplike<DOMString, ", ">;"),
+        ("setlike<", ">;"),
+        ("readonly setlike<", ">;"),
+      ] {
+      for
+        (type_, valid) in [
+          ("ObservableArray<long>?", false),
+          ("[Example] ObservableArray<long>?", false),
+          ("sequence<ObservableArray<long>?>", false),
+          ("async_sequence<ObservableArray<long>?>", false),
+          ("FrozenArray<ObservableArray<long>?>", false),
+          ("record<DOMString, ObservableArray<long>?>", false),
+          ("Promise<ObservableArray<long>?>", false),
+          ("(DOMString or ObservableArray<long>?)", false),
+          ("ObservableArray<long>", true),
+          ("ObservableArray<long?>", true),
+          ("DOMString", true),
+        ] {
+        assert_eq(
+          check_nullable_source(
+            prefix + " " + start + type_ + end + " " + suffix,
+          ),
+          valid,
+        )
+      }
+    }
+  }
+}
+
+///|
+test "Async iterable argument checks cover both iterable forms and partial declarations" {
+  for
+    (prefix, suffix) in [
+      ("[Exposed=*] interface A {", "};"),
+      ("[Exposed=*] interface A {}; partial interface A {", "};"),
+      ("partial interface A {", "}; [Exposed=*] interface A {};"),
+    ] {
+    for iterable in ["async_iterable<long>", "async_iterable<DOMString, long>"] {
+      for
+        (arguments, valid) in [
+          ("ObservableArray<long>? items", false),
+          ("optional ObservableArray<long>? items", false),
+          ("optional ObservableArray<long>? items = null", false),
+          ("ObservableArray<long>?... items", false),
+          ("[Example] ObservableArray<long>? items", false),
+          ("optional [Example] ObservableArray<long>? items", false),
+          ("sequence<ObservableArray<long>?> items", false),
+          ("Promise<record<DOMString, ObservableArray<long>?>> items", false),
+          ("long first, ObservableArray<long>? last", false),
+          ("ObservableArray<long> items", true),
+          ("ObservableArray<long?> items", true),
+          ("optional DOMString? text = null", true),
+          ("long... values", true),
+          ("", true),
+        ] {
+        assert_eq(
+          check_nullable_source(
+            prefix + " " + iterable + "(" + arguments + "); " + suffix,
+          ),
+          valid,
+        )
+      }
+    }
+  }
+}
+
+///|
+test "Remaining interface member checks inspect every definition and member" {
+  for
+    body in [
+      "iterable<ObservableArray<long>?>;", "async_iterable<ObservableArray<long>?>;",
+      "async_iterable<long>(ObservableArray<long>? items);", "maplike<DOMString, ObservableArray<long>?>;",
+      "readonly maplike<ObservableArray<long>?, DOMString>;", "setlike<ObservableArray<long>?>;",
+      "readonly setlike<ObservableArray<long>?>;",
+    ] {
+    assert_false(
+      check_nullable_source(
+        "[Exposed=*] interface A { attribute long first; " + body + " };",
+      ),
+    )
+    assert_false(
+      check_nullable_source(
+        "[Exposed=*] interface A {}; [Exposed=*] interface B { " + body + " };",
+      ),
+    )
+    assert_false(
+      check_nullable_source(
+        "[Exposed=*] interface A {}; partial interface A { attribute long first; " +
+        body +
+        " };",
+      ),
+    )
   }
 }
