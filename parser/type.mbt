@@ -500,6 +500,20 @@ pub fn UnionType::iter(self : Self) -> Iter[UnionMemberType] {
 }
 
 ///|
+/// The types which comprise the union type are known as the union's member types.
+pub fn UnionType::iter_member_types(self : Self) -> Iter[Type] {
+  self
+  .iter()
+  .map(union_member => {
+    match union_member {
+      UnionType(union_type, null) => Type::UnionType(union_type, null)
+      DistinguishableTypeWithExtendedAttributeList(type_, _) =>
+        Type::SingleType(SingleType::DistinguishableType(type_))
+    }
+  })
+}
+
+///|
 pub enum UnionMemberType {
   UnionType(UnionType, Null)
   DistinguishableTypeWithExtendedAttributeList(

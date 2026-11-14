@@ -1,4 +1,24 @@
 ///|
+test "Union member type iteration preserves direct member order and nullable markers" {
+  let (type_, rest) = Type::parse(
+    @lexer.tokenize(
+      "([Example] long? or (DOMString or boolean)? or sequence<long?>)",
+    ).exact_view(),
+  ).unwrap()
+  assert_true(rest is [])
+  guard type_ is UnionType(union_type, None) else {
+    fail("Expected a union type")
+  }
+  let types = union_type.iter_member_types().collect()
+  assert_eq(types.length(), 3)
+  assert_true(
+    types[0] is SingleType(DistinguishableType(PrimitiveType(_, Some))),
+  )
+  assert_true(types[1] is UnionType(_, Some))
+  assert_true(types[2] is SingleType(DistinguishableType(Sequence(_, None))))
+}
+
+///|
 fn type_iteration_label(type_ : Type) -> String {
   fn nullable_label(label : String, null : Null) -> String {
     match null {

@@ -40,6 +40,15 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
     typedef_index.set(strip_underscore(typedef_.identifier), typedef_)
   }
 
+  let dictionary_names = Set(
+    definitions.filter_map(definition => {
+      match definition {
+        Dictionary(dictionary) => Some(strip_underscore(dictionary.identifier))
+        _ => None
+      }
+    }),
+  )
+
   let attributes = definitions
     .map(definition => {
       match definition {
@@ -81,9 +90,10 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
   let attribute_names = attributes.map(name_of_attribute)
 
   for attribute in attributes {
-    check_nullable_type_no_observable_array(
+    check_nullable_type(
       attribute.type_with_extended_attributes.type_,
       typedef_index,
+      dictionary_names,
     )
   }
 
@@ -107,7 +117,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
         type_with_extended_attributes.type_
       Optional(type_, _, _) => type_
     }
-    check_nullable_type_no_observable_array(type_, typedef_index)
+    check_nullable_type(type_, typedef_index, dictionary_names)
   }
 
   let constants = definitions
@@ -230,10 +240,11 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
   let operation_names = operations.filter_map(name_of_operation)
 
   for operation in operations {
-    check_nullable_type_no_observable_array(operation.type_, typedef_index)
-    check_nullable_argument_types_no_observable_array(
+    check_nullable_type(operation.type_, typedef_index, dictionary_names)
+    check_nullable_argument_types(
       operation.argument_list,
       typedef_index,
+      dictionary_names,
     )
   }
 
@@ -244,10 +255,11 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
     }
   })
   for callback in callbacks {
-    check_nullable_type_no_observable_array(callback.type_, typedef_index)
-    check_nullable_argument_types_no_observable_array(
+    check_nullable_type(callback.type_, typedef_index, dictionary_names)
+    check_nullable_argument_types(
       callback.argument_list,
       typedef_index,
+      dictionary_names,
     )
   }
 
@@ -259,30 +271,32 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
             is NamedArgList(
               { identifier: "LegacyFactoryFunction", argument_list, .. }
             ) {
-            check_nullable_argument_types_no_observable_array(
-              argument_list, typedef_index,
+            check_nullable_argument_types(
+              argument_list, typedef_index, dictionary_names,
             )
           }
         }
         for interface_member in interface.members {
           match interface_member.body {
             Constructor(constructor_) =>
-              check_nullable_argument_types_no_observable_array(
+              check_nullable_argument_types(
                 constructor_.argument_list,
                 typedef_index,
+                dictionary_names,
               )
             PartialInterfaceMember(body) =>
-              check_nullable_collection_types_no_observable_array(
-                body, typedef_index,
+              check_nullable_collection_types(
+                body, typedef_index, dictionary_names,
               )
           }
         }
       }
       PartialInterface(partial) =>
         for interface_member in partial.members {
-          check_nullable_collection_types_no_observable_array(
+          check_nullable_collection_types(
             interface_member.body,
             typedef_index,
+            dictionary_names,
           )
         }
       _ => ()
@@ -321,9 +335,10 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
   )
 
   for typedef_ in typedefs {
-    check_nullable_type_no_observable_array(
+    check_nullable_type(
       typedef_.type_with_extended_attributes.type_,
       typedef_index,
+      dictionary_names,
     )
   }
   for constant in constants {

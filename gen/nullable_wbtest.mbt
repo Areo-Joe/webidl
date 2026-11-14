@@ -10,44 +10,115 @@ fn check_nullable_source(source : String) -> Bool raise {
 }
 
 ///|
-test "Nullable observable array checks resolve typedefs at every declaration entry" {
+fn nullable_declaration_forms() -> Array[(String, String)] {
+  [
+    ("typedef ", " Result;"),
+    ("[Exposed=*] interface A { attribute ", " value; };"),
+    (
+      "[Exposed=*] interface A {}; partial interface A { attribute ", " value; };",
+    ),
+    ("interface mixin M { attribute ", " value; };"),
+    (
+      "interface mixin M {}; partial interface mixin M { attribute ", " value; };",
+    ),
+    ("namespace N { readonly attribute ", " value; };"),
+    ("namespace N {}; partial namespace N { readonly attribute ", " value; };"),
+    ("[Exposed=*] interface A { ", " get(); };"),
+    ("[Exposed=*] interface A { undefined use(", " value); };"),
+    ("callback C = ", " ();"),
+    ("callback C = undefined (", " value);"),
+    ("callback interface C { ", " get(); };"),
+    ("callback interface C { undefined use(", " value); };"),
+    ("dictionary D { ", " value; };"),
+    ("dictionary D { required ", " value; };"),
+    ("dictionary D {}; partial dictionary D { ", " value; };"),
+    ("[Exposed=*] interface A { constructor(", " value); };"),
+    ("[Exposed=*, LegacyFactoryFunction=Create(", " value)] interface A {};"),
+    ("[Exposed=*] interface A { iterable<", ">; };"),
+    ("[Exposed=*] interface A { iterable<", ", DOMString>; };"),
+    ("[Exposed=*] interface A { iterable<DOMString, ", ">; };"),
+    ("[Exposed=*] interface A { async_iterable<", ">; };"),
+    ("[Exposed=*] interface A { async_iterable<DOMString, ", ">; };"),
+    ("[Exposed=*] interface A { async_iterable<long>(", " value); };"),
+    ("[Exposed=*] interface A { maplike<", ", DOMString>; };"),
+    ("[Exposed=*] interface A { readonly maplike<DOMString, ", ">; };"),
+    ("[Exposed=*] interface A { setlike<", ">; };"),
+    ("[Exposed=*] interface A { readonly setlike<", ">; };"),
+  ]
+}
+
+///|
+test "Nullable constraints cover every declaration entry and typedef order" {
+  for (prefix, suffix) in nullable_declaration_forms() {
+    for
+      (definitions, type_, valid) in [
+        ("typedef any Anything;", "Anything?", false),
+        ("typedef Promise<long> ResultType;", "ResultType?", false),
+        ("typedef long? Maybe;", "Maybe?", false),
+        ("typedef sequence<long>? Maybe;", "Maybe?", false),
+        ("typedef (long or DOMString)? Maybe;", "Maybe?", false),
+        ("", "(DOMString? or long)?", false),
+        ("", "((DOMString? or long) or boolean)?", false),
+        ("", "((long or boolean)? or DOMString)?", false),
+        ("", "([Example] long? or DOMString)?", false),
+        ("typedef long? Maybe;", "(_Maybe or DOMString)?", false),
+        ("typedef (long? or DOMString) Value;", "Value?", false),
+        ("dictionary Options {};", "(Options or DOMString)?", false),
+        ("dictionary _Options {};", "((Options or long) or DOMString)?", false),
+        (
+          "dictionary Options {}; typedef Options Config;", "(_Config or DOMString)?",
+          false,
+        ),
+        (
+          "dictionary Options {}; typedef (Options or long) Value;", "Value?", false,
+        ),
+        ("typedef any Anything;", "sequence<Anything?>", false),
+        ("typedef Promise<long> ResultType;", "FrozenArray<ResultType?>", false),
+        ("typedef long? Maybe;", "record<DOMString, Maybe?>", false),
+        ("typedef any Anything;", "sequence<Anything>?", true),
+        ("typedef long? Maybe;", "sequence<Maybe>?", true),
+        ("", "(sequence<long?> or DOMString)?", true),
+        ("", "(record<DOMString, long?> or boolean)?", true),
+        ("dictionary Options {};", "(sequence<Options> or DOMString)?", true),
+        (
+          "dictionary Options {}; typedef sequence<Options> Configs;", "(Configs or DOMString)?",
+          true,
+        ),
+        ("dictionary Options {};", "Options?", true),
+      ] {
+      let declaration = prefix + type_ + suffix
+      for source in [definitions + declaration, declaration + definitions] {
+        assert_eq(check_nullable_source(source), valid)
+      }
+    }
+  }
+}
+
+///|
+test "Nullable constraints follow aliases through repeated states and cycles" {
   for
-    (prefix, suffix) in [
-      ("typedef ", " Result;"),
-      ("[Exposed=*] interface A { attribute ", " value; };"),
-      (
-        "[Exposed=*] interface A {}; partial interface A { attribute ", " value; };",
-      ),
-      ("interface mixin M { attribute ", " value; };"),
-      (
-        "interface mixin M {}; partial interface mixin M { attribute ", " value; };",
-      ),
-      ("namespace N { readonly attribute ", " value; };"),
-      (
-        "namespace N {}; partial namespace N { readonly attribute ", " value; };",
-      ),
-      ("[Exposed=*] interface A { ", " get(); };"),
-      ("[Exposed=*] interface A { undefined use(", " value); };"),
-      ("callback C = ", " ();"),
-      ("callback C = undefined (", " value);"),
-      ("callback interface C { ", " get(); };"),
-      ("callback interface C { undefined use(", " value); };"),
-      ("dictionary D { ", " value; };"),
-      ("dictionary D { required ", " value; };"),
-      ("dictionary D {}; partial dictionary D { ", " value; };"),
-      ("[Exposed=*] interface A { constructor(", " value); };"),
-      ("[Exposed=*, LegacyFactoryFunction=Create(", " value)] interface A {};"),
-      ("[Exposed=*] interface A { iterable<", ">; };"),
-      ("[Exposed=*] interface A { iterable<", ", DOMString>; };"),
-      ("[Exposed=*] interface A { iterable<DOMString, ", ">; };"),
-      ("[Exposed=*] interface A { async_iterable<", ">; };"),
-      ("[Exposed=*] interface A { async_iterable<DOMString, ", ">; };"),
-      ("[Exposed=*] interface A { async_iterable<long>(", " value); };"),
-      ("[Exposed=*] interface A { maplike<", ", DOMString>; };"),
-      ("[Exposed=*] interface A { readonly maplike<DOMString, ", ">; };"),
-      ("[Exposed=*] interface A { setlike<", ">; };"),
-      ("[Exposed=*] interface A { readonly setlike<", ">; };"),
+    source in [
+      "typedef A? A;", "typedef B? A; typedef long B; typedef (B? or A?) Value;",
+      "typedef B? A; typedef long B; typedef (A? or B?) Value;", "typedef (sequence<A> or long?) A; typedef A? Bad;",
+      "typedef (A or long?) A; typedef A? Bad;", "dictionary Options {}; typedef (A or Options) A; typedef A? Bad;",
+      "typedef (B or long) A; typedef (A or DOMString?) B; typedef A? Bad;",
     ] {
+    assert_false(check_nullable_source(source))
+  }
+  for
+    source in [
+      "typedef sequence<A> A; typedef A? Maybe;", "typedef (A or long) A; typedef A? Maybe;",
+      "dictionary Options {}; typedef (sequence<A> or sequence<Options>) A; typedef A? Maybe;",
+      "typedef long? Maybe; typedef (Maybe or DOMString) Value;", "typedef sequence<long?> Values; typedef (Values or DOMString)? Maybe;",
+      "dictionary Options {}; typedef Options Config; typedef (Config or DOMString) Value;",
+    ] {
+    assert_true(check_nullable_source(source))
+  }
+}
+
+///|
+test "Nullable observable array checks resolve typedefs at every declaration entry" {
+  for (prefix, suffix) in nullable_declaration_forms() {
     for
       (type_, valid) in [
         ("Items?", false),
@@ -87,7 +158,7 @@ test "Nullable checks follow compound typedef references without propagating nul
       "typedef ObservableArray<long> Items; typedef sequence<Items>? MaybeSequence;",
       "typedef ObservableArray<long> Items; typedef (Items or DOMString)? MaybeUnion;",
       "typedef ObservableArray<long?> Items; typedef sequence<Items> Nested;", "typedef sequence<A> A;",
-      "typedef sequence<B> A; typedef sequence<A> B;", "typedef A? A;",
+      "typedef sequence<B> A; typedef sequence<A> B;",
     ] {
     assert_true(check_nullable_source(source))
   }

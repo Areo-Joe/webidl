@@ -37,19 +37,18 @@ fn iter_types_resolving_typedefs(
         let name = strip_underscore(identifier)
         if typedefs.get(name) is Some(typedef_) {
           let state = (name, nullable)
-          if visited.contains(state) {
-            continue
+          if !visited.contains(state) {
+            visited.add(state)
+            pending.push(
+              (
+                typedef_.type_with_extended_attributes.type_.iter_types(),
+                nullable,
+              ),
+            )
           }
-          visited.add(state)
-          pending.push(
-            (
-              typedef_.type_with_extended_attributes.type_.iter_types(),
-              nullable,
-            ),
-          )
         }
       }
-      return Some((type_, nullable))
+      return Some((type_, inherited_nullable))
     }
     None
   })

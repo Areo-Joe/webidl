@@ -43,6 +43,26 @@ test "Typedef traversal distinguishes nullable reference states" {
 }
 
 ///|
+test "Typedef traversal preserves nullable layers even when expansion is deduplicated" {
+  let states = resolved_type_states(
+    "typedef B? A; typedef long B;", "(B? or A?)",
+  )
+  assert_true(
+    states.any(state => {
+      state.0 is SingleType(DistinguishableType(Identifier("B", Some))) &&
+      state.1
+    }),
+  )
+  let states = resolved_type_states("typedef long? Maybe;", "Maybe")
+  assert_true(
+    states.any(state => {
+      state.0 is SingleType(DistinguishableType(PrimitiveType(_, Some))) &&
+      !state.1
+    }),
+  )
+}
+
+///|
 test "Typedef traversal terminates on cycles and still visits other branches" {
   for
     source in [
@@ -59,7 +79,11 @@ test "Typedef traversal terminates on cycles and still visits other branches" {
     )
   }
   let states = resolved_type_states("typedef sequence<A> A;", "A?")
-  assert_eq(states.length(), 4)
+  assert_true(
+    states.any(state => {
+      state.0 is SingleType(DistinguishableType(Sequence(_, None))) && state.1
+    }),
+  )
 }
 
 ///|
@@ -73,11 +97,11 @@ test "Typedef traversal retains original type annotations and unresolved names" 
     inner.extended_attribute_list.iter().count() == 1,
   )
   assert_true(states[1].1)
-  assert_true(states[2].1)
+  assert_false(states[2].1)
   let states = resolved_type_states("", "External?")
   assert_eq(states.length(), 1)
   assert_true(
     states[0].0 is SingleType(DistinguishableType(Identifier("External", Some))),
   )
-  assert_true(states[0].1)
+  assert_false(states[0].1)
 }

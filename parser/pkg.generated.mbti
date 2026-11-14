@@ -783,6 +783,7 @@ pub struct UnionType {
   union_member_types : UnionMemberTypes
 }
 pub fn UnionType::iter(Self) -> Iter[UnionMemberType]
+pub fn UnionType::iter_member_types(Self) -> Iter[Type]
 pub fn UnionType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
 pub enum UnrestrictedFloatType {
