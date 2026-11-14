@@ -5,6 +5,7 @@ struct Interface {
   inheritance : Interface?
   members : Array[InterfaceMember]
   partials : Array[PartialInterface]
+  mixins : Array[InterfaceMixin]
 }
 
 ///|
@@ -434,6 +435,41 @@ fn Definition::from_parser(
     .iter(),
   )
 
+  let interfaces = ret.filter_map(definition => {
+    if definition is Interface(interface) {
+      Some(interface)
+    } else {
+      None
+    }
+  })
+  let mixins = ret.filter_map(definition => {
+    if definition is InterfaceMixin(mixin_) {
+      Some(mixin_)
+    } else {
+      None
+    }
+  })
+  for definition in ret {
+    if definition is IncludesStatement(statement) {
+      guard interfaces.search_by(interface => {
+          name_of_interface(interface) == strip_underscore(statement.interface)
+        })
+        is Some(interface_index) else {
+        fail("The first identifier must reference an interface I.")
+      }
+      guard mixins.search_by(mixin_ => {
+          name_of_interface_mixin(mixin_) == strip_underscore(statement.mixin_)
+        })
+        is Some(mixin_index) else {
+        fail("The second identifier must reference an interface mixin M.")
+      }
+      let interface = interfaces[interface_index]
+      let mixin_ = mixins[mixin_index]
+      if !interface.mixins.any(existing => physical_equal(existing, mixin_)) {
+        interface.mixins.push(mixin_)
+      }
+    }
+  }
   ret
 }
 
@@ -525,6 +561,7 @@ fn build_interface(
           None => None
         },
         partials: [],
+        mixins: [],
         members: [],
       }
 

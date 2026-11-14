@@ -467,15 +467,6 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
       _ => None
     }
   })
-  let includes_statements = definitions.filter_map(x => {
-    match x {
-      IncludesStatement(i) => Some(i)
-      _ => None
-    }
-  })
-
-  check_interfaces(
-    interfaces, includes_statements, interface_mixins, partial_interfaces, typedef_index,
-  )
-  check_interface_mixins(interface_mixins, interfaces, includes_statements)
+  check_interfaces(interfaces, partial_interfaces, typedef_index)
+  check_interface_mixins(interface_mixins, interfaces)
 }

@@ -1,4 +1,61 @@
 ///|
+test "Interfaces link included mixins in includes order without merging members" {
+  for
+    source in [
+      "interface A { undefined own(); }; interface B {}; interface mixin M { undefined mixed(); }; interface mixin N {}; partial interface mixin M { undefined partialMember(); }; A includes N; A includes _M; B includes M; A includes M;",
+      "A includes N; A includes _M; B includes M; A includes M; partial interface mixin M { undefined partialMember(); }; interface mixin N {}; interface mixin M { undefined mixed(); }; interface B {}; interface A { undefined own(); };",
+    ] {
+    let definitions = parse_linked_definitions(source)
+    let interfaces = definitions.filter_map(definition => {
+      if definition is Interface(interface) {
+        Some(interface)
+      } else {
+        None
+      }
+    })
+    let mixins = definitions.filter_map(definition => {
+      if definition is InterfaceMixin(mixin_) {
+        Some(mixin_)
+      } else {
+        None
+      }
+    })
+    let a = interfaces[interfaces
+      .search_by(interface => name_of_interface(interface) == "A")
+      .unwrap()]
+    let b = interfaces[interfaces
+      .search_by(interface => name_of_interface(interface) == "B")
+      .unwrap()]
+    let m = mixins[mixins
+      .search_by(mixin_ => name_of_interface_mixin(mixin_) == "M")
+      .unwrap()]
+    assert_eq(a.members.length(), 1)
+    assert_eq(a.mixins.map(name_of_interface_mixin), ["N", "M"])
+    assert_true(physical_equal(a.mixins[1], m))
+    assert_true(physical_equal(b.mixins[0], m))
+    assert_eq(m.members.length(), 1)
+    assert_eq(m.partials.length(), 1)
+    assert_eq(m.partials[0].members.length(), 1)
+  }
+}
+
+///|
+test "Includes references must identify interfaces and mixins during linking" {
+  for
+    source in [
+      "interface A {}; A includes Missing;", "interface mixin M {}; Missing includes M;",
+      "interface A {}; interface M {}; A includes M;", "interface mixin A {}; interface mixin M {}; A includes M;",
+    ] {
+    let accepted = try parse_linked_definitions(source) catch {
+      _ => false
+    } noraise {
+      _ => true
+    }
+    assert_false(accepted)
+  }
+}
+
+///|
 test "Partial mixins require an original interface mixin definition" {
   for
     source in [

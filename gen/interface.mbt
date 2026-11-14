@@ -1,14 +1,11 @@
 ///|
 fn check_interfaces(
   interfaces : Array[Interface],
-  includes_statements : Array[IncludesStatement],
-  interface_mixins : Array[InterfaceMixin],
   partial_interfaces : Array[PartialInterface],
   typedefs : Map[StringView, TypeDef],
 ) -> Unit raise {
   check_inheritance_exists(interfaces)
   check_inheritance_no_circle(interfaces)
-  check_includes_valid(includes_statements, interfaces, interface_mixins)
   check_partial_interface_name(partial_interfaces, interfaces)
   check_legacy_factory_function_names(interfaces)
   check_legacy_window_alias_names(interfaces)
@@ -173,32 +170,6 @@ fn check_inheritance_no_circle(interfaces : Array[Interface]) -> Unit raise {
   for interface in interfaces {
     visit_interface(interface)
   }
-}
-
-///|
-/// In addition, an includes statement can be used to define that objects implementing an interface A will always also include the members of the interface mixins A includes.
-fn check_includes_valid(
-  includes_statements : Array[IncludesStatement],
-  interfaces : Array[Interface],
-  interface_mixins : Array[InterfaceMixin],
-) -> Unit raise {
-  assert_true(
-    includes_statements.every(includes_statement => {
-      let { interface, mixin_, .. } = includes_statement
-
-      let interface_identifier = strip_underscore(interface)
-      let mixin_identifier = strip_underscore(mixin_)
-
-      interfaces.search_by(interface => {
-        name_of_interface(interface) == interface_identifier
-      })
-      is Some(_) &&
-      interface_mixins.search_by(interface_mixin => {
-        name_of_interface_mixin(interface_mixin) == mixin_identifier
-      })
-      is Some(_)
-    }),
-  )
 }
 
 ///|

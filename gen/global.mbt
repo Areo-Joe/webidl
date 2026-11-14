@@ -84,6 +84,33 @@ fn check_global_interface_members_unique(interface : Interface) -> Unit raise {
       _ => ()
     }
   }
+  let mixin_members = []
+  for mixin_ in interface.mixins {
+    mixin_members.push_iter(mixin_.members.iter().map(member_ => member_.body))
+    for partial in mixin_.partials {
+      mixin_members.push_iter(
+        partial.members.iter().map(member_ => member_.body),
+      )
+    }
+  }
+  for member_ in mixin_members {
+    let name = if member_ is Const(constant) {
+      Some(strip_underscore(constant.identifier))
+    } else if Attribute::from_mixin_member(member_) is Some(attribute) {
+      Some(name_of_attribute(attribute))
+    } else if Operation::from_interface_mixin_member(member_) is Some(operation) {
+      name_of_operation(operation)
+    } else {
+      None
+    }
+    if name is Some(name) {
+      assert_false(names.contains(name))
+      names.add(name)
+    }
+    if member_ is Stringifier(_) {
+      stringifiers = stringifiers + 1
+    }
+  }
   assert_true(stringifiers <= 1)
   assert_true(collections <= 1)
 }

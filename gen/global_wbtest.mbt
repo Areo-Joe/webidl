@@ -1,4 +1,93 @@
 ///|
+test "Global member uniqueness includes mixins and their partial members" {
+  for
+    (first, second) in [
+      ("attribute long value;", "readonly attribute long _value;"),
+      ("const long value = 1;", "attribute long value;"),
+      ("undefined run(long value);", "undefined _run(DOMString value);"),
+      ("attribute long value;", "undefined value();"),
+      ("stringifier attribute DOMString value;", "const long value = 1;"),
+    ] {
+    let global = "[Exposed=*, Global=Window] interface A"
+    for
+      source in [
+        global +
+        " { " +
+        first +
+        " }; interface mixin M { " +
+        second +
+        " }; A includes M;",
+        global +
+        " {}; partial interface A { " +
+        first +
+        " }; interface mixin M {}; partial interface mixin M { " +
+        second +
+        " }; A includes M;",
+        global +
+        " {}; interface mixin M { " +
+        first +
+        " }; interface mixin N { " +
+        second +
+        " }; A includes M; A includes N;",
+        global +
+        " {}; interface mixin M { " +
+        first +
+        " }; partial interface mixin M { " +
+        second +
+        " }; A includes M;",
+      ] {
+      assert_false(check_global_source(source))
+    }
+  }
+}
+
+///|
+test "Global stringifier counts include original and partial mixin declarations" {
+  for first in ["stringifier;", "stringifier attribute DOMString first;"] {
+    for
+      second in [
+        "stringifier;", "stringifier readonly attribute DOMString second;",
+      ] {
+      for
+        source in [
+          "[Exposed=*, Global=Window] interface A { " +
+          first +
+          " }; interface mixin M { " +
+          second +
+          " }; A includes M;",
+          "[Exposed=*, Global=Window] interface A {}; interface mixin M { " +
+          first +
+          " }; partial interface mixin M { " +
+          second +
+          " }; A includes M;",
+          "[Exposed=*, Global=Window] interface A {}; interface mixin M { " +
+          first +
+          " }; interface mixin N {}; partial interface mixin N { " +
+          second +
+          " }; A includes M; A includes N;",
+        ] {
+        assert_false(check_global_source(source))
+      }
+    }
+  }
+}
+
+///|
+test "Global included member checks preserve separate hosts inherited members and single inclusions" {
+  for
+    source in [
+      "[Exposed=*, Global=Window] interface A { attribute long own; }; interface mixin M { attribute long mixed; }; partial interface mixin M { const long other = 1; }; A includes M;",
+      "[Exposed=*, Global=Window] interface A {}; [Exposed=*, Global=Worker] interface B {}; interface mixin M { undefined run(); }; A includes M; B includes M;",
+      "[Exposed=*, Global=Window] interface A { attribute long value; }; interface mixin M { attribute long value; };",
+      "[Exposed=*] interface Parent {}; interface mixin M { undefined run(); }; Parent includes M; [Exposed=*, Global=Window] interface A : Parent { undefined run(); };",
+      "[Exposed=*, Global=Window] interface A {}; interface mixin M { stringifier; }; A includes M; A includes _M;",
+      "[Exposed=*] interface A { undefined run(long value); }; interface mixin M { undefined run(DOMString value); }; A includes M;",
+    ] {
+    assert_true(check_global_source(source))
+  }
+}
+
+///|
 test "Global interfaces require unique member identifiers across original and partial definitions" {
   for
     (first, second) in [
