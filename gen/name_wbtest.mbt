@@ -4,7 +4,7 @@ test "constant names are unescaped before validation" {
     source in [
       "[Exposed=*] interface A { const long _value = 1; };", "[Exposed=*] interface A {}; partial interface A { const long _value = 1; };",
       "interface mixin M { const long _value = 1; };", "interface mixin M {}; partial interface mixin M { const long _value = 1; };",
-      "callback interface C { const long _value = 1; };",
+      "callback interface C { const long _value = 1; undefined run(); };",
     ] {
     let (definitions, rest) = @parser.parse(
       @lexer.tokenize(source).exact_view(),

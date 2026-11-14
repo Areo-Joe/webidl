@@ -19,7 +19,7 @@ test "Constant type identifiers must reference typedefs of non nullable primitiv
       ("interface mixin M {", "};"),
       ("interface mixin M {}; partial interface mixin M {", "};"),
       ("partial interface mixin M {", "}; interface mixin M {};"),
-      ("callback interface C {", "};"),
+      ("callback interface C { undefined run();", "};"),
       ("[Exposed=*] namespace N {", "};"),
       ("[Exposed=*] namespace N {}; partial namespace N {", "};"),
       ("partial namespace N {", "}; [Exposed=*] namespace N {};"),
@@ -160,7 +160,7 @@ test "Typedef constants use the same primitive value checks as direct constants"
       ("interface mixin M {", "};"),
       ("interface mixin M {}; partial interface mixin M {", "};"),
       ("partial interface mixin M {", "}; interface mixin M {};"),
-      ("callback interface C {", "};"),
+      ("callback interface C { undefined run();", "};"),
     ] {
     for
       (type_, value, valid) in [

@@ -19,7 +19,7 @@ test "Long constants require integer tokens within signed thirty two bit range" 
       ("interface mixin M {", "};"),
       ("interface mixin M {}; partial interface mixin M {", "};"),
       ("partial interface mixin M {", "}; interface mixin M {};"),
-      ("callback interface C {", "};"),
+      ("callback interface C { undefined run();", "};"),
     ] {
     for
       (value, valid) in [

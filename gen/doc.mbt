@@ -467,6 +467,13 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
       _ => None
     }
   })
+  let callback_interfaces = definitions.filter_map(x => {
+    match x {
+      CallbackInterface(i) => Some(i)
+      _ => None
+    }
+  })
   check_interfaces(interfaces, partial_interfaces, typedef_index)
   check_interface_mixins(interface_mixins, interfaces)
+  check_callback_interfaces(callback_interfaces)
 }

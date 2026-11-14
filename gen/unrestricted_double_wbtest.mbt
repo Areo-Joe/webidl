@@ -19,7 +19,7 @@ test "Unrestricted double constants require floating point literals" {
       ("interface mixin M {", "};"),
       ("interface mixin M {}; partial interface mixin M {", "};"),
       ("partial interface mixin M {", "}; interface mixin M {};"),
-      ("callback interface C {", "};"),
+      ("callback interface C { undefined run();", "};"),
     ] {
     for
       (value, valid) in [
