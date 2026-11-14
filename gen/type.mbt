@@ -64,6 +64,7 @@ fn check_type(
   allow_frozen_array~ : Bool = false,
   allow_observable_array~ : Bool = false,
 ) -> Unit raise {
+  check_type_not_interface_mixin(type_, typedefs, definitions)
   check_annotated_type(type_, extended_attributes, typedefs)
   check_nullable_type(type_, typedefs, dictionary_names)
   for state in iter_types_resolving_typedefs(type_, typedefs) {

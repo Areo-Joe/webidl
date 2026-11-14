@@ -49,10 +49,26 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
     }),
   )
 
-  let type_definitions = Map([])
+  let definition_index = Map([])
   for definition in no_name_conflict_definitions {
     if name_of_definition(definition) is Some(name) {
-      type_definitions.set(name, definition)
+      definition_index.set(name, definition)
+    }
+  }
+  for definition in definitions {
+    if definition is InterfaceMixin(mixin_) {
+      let name = name_of_interface_mixin(mixin_)
+      match definition_index.get(name) {
+        Some(
+          Interface(_)
+          | Dictionary(_)
+          | Enum(_)
+          | Callback(_)
+          | CallbackInterface(_)
+          | Typedef(_)
+        ) => ()
+        _ => definition_index.set(name, definition)
+      }
     }
   }
 
@@ -101,7 +117,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
       attribute.type_with_extended_attributes.type_,
       typedef_index,
       dictionary_names,
-      type_definitions,
+      definition_index,
       allow_frozen_array=!(attribute.tag is NamespaceReadOnly),
       allow_observable_array=!(attribute.tag
         is (NamespaceReadOnly | StaticReadOnly | StaticReadWrite)),
@@ -152,7 +168,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
       type_,
       typedef_index,
       dictionary_names,
-      type_definitions,
+      definition_index,
       extended_attributes~,
     )
     check_type_not_nullable_dictionary(type_, typedef_index, dictionary_names)
@@ -305,13 +321,13 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
       operation.type_,
       typedef_index,
       dictionary_names,
-      type_definitions,
+      definition_index,
     )
     check_argument_types(
       operation.argument_list,
       typedef_index,
       dictionary_names,
-      type_definitions,
+      definition_index,
     )
   }
 
@@ -326,13 +342,13 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
       callback.type_,
       typedef_index,
       dictionary_names,
-      type_definitions,
+      definition_index,
     )
     check_argument_types(
       callback.argument_list,
       typedef_index,
       dictionary_names,
-      type_definitions,
+      definition_index,
     )
   }
 
@@ -340,7 +356,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
     match definition {
       Interface(interface) => {
         check_legacy_factory_function_overloads(
-          interface, typedef_index, type_definitions,
+          interface, typedef_index, definition_index,
         )
         for attr in interface.extended_attribute_list.iter() {
           if is_valid_legacy_factory_function(attr) is Some(factory) {
@@ -348,7 +364,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
               factory.argument_list,
               typedef_index,
               dictionary_names,
-              type_definitions,
+              definition_index,
             )
           }
         }
@@ -359,11 +375,11 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
                 constructor_.argument_list,
                 typedef_index,
                 dictionary_names,
-                type_definitions,
+                definition_index,
               )
             PartialInterfaceMember(body) =>
               check_collection_types(
-                body, typedef_index, dictionary_names, type_definitions,
+                body, typedef_index, dictionary_names, definition_index,
               )
           }
         }
@@ -374,7 +390,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
             interface_member.body,
             typedef_index,
             dictionary_names,
-            type_definitions,
+            definition_index,
           )
         }
       _ => ()
@@ -417,7 +433,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
       typedef_.type_with_extended_attributes.type_,
       typedef_index,
       dictionary_names,
-      type_definitions,
+      definition_index,
       allow_frozen_array=true,
       allow_observable_array=true,
       extended_attributes=typedef_.type_with_extended_attributes.extended_attribute_list
