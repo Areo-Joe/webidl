@@ -313,3 +313,84 @@ test "Nullable observable array checks inspect every callback return type" {
     ),
   )
 }
+
+///|
+test "Dictionary member checks cover required optional and partial declarations" {
+  for
+    (prefix, suffix) in [
+      ("dictionary Options {", "};"),
+      ("dictionary Options {}; partial dictionary Options {", "};"),
+      ("partial dictionary Options {", "}; dictionary Options {};"),
+    ] {
+    for required in ["", "required "] {
+      for
+        (type_, valid) in [
+          ("ObservableArray<long>?", false),
+          ("sequence<ObservableArray<long>?>", false),
+          ("async_sequence<ObservableArray<long>?>", false),
+          ("FrozenArray<ObservableArray<long>?>", false),
+          ("record<DOMString, ObservableArray<long>?>", false),
+          ("Promise<ObservableArray<long>?>", false),
+          ("(DOMString or ObservableArray<long>?)", false),
+          ("((long or ObservableArray<long>?) or DOMString)", false),
+          ("ObservableArray<long>", true),
+          ("ObservableArray<long?>", true),
+          ("DOMString?", true),
+        ] {
+        assert_eq(
+          check_nullable_source(
+            prefix + " " + required + type_ + " items; " + suffix,
+          ),
+          valid,
+        )
+      }
+      assert_false(
+        check_nullable_source(
+          prefix +
+          " [Example] " +
+          required +
+          "ObservableArray<long>? items; " +
+          suffix,
+        ),
+      )
+    }
+  }
+}
+
+///|
+test "Dictionary member checks retain default values and type extended attributes" {
+  assert_false(
+    check_nullable_source(
+      "dictionary Options { ObservableArray<long>? items = null; };",
+    ),
+  )
+  assert_false(
+    check_nullable_source(
+      "dictionary Options { required [Example] ObservableArray<long>? items; };",
+    ),
+  )
+  assert_true(
+    check_nullable_source(
+      "dictionary Options { DOMString? text = null; required [Example] ObservableArray<long?> items; };",
+    ),
+  )
+}
+
+///|
+test "Nullable observable array checks inspect every dictionary member" {
+  assert_false(
+    check_nullable_source(
+      "dictionary Options { long first; ObservableArray<long>? last; };",
+    ),
+  )
+  assert_false(
+    check_nullable_source(
+      "dictionary Options { long first; }; partial dictionary Options { ObservableArray<long>? last; };",
+    ),
+  )
+  assert_false(
+    check_nullable_source(
+      "dictionary Options { ObservableArray<long>? _items; };",
+    ),
+  )
+}

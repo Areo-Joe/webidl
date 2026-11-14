@@ -53,7 +53,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
     )
   }
 
-  let dictionary_member_names = definitions
+  let dictionary_members = definitions
     .filter_map(x => {
       match x {
         Dictionary(x) => Some(x.members.map(x => x.body))
@@ -61,10 +61,20 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
         _ => None
       }
     })
-    .map(dictionary_members => {
-      dictionary_members.iter().map(name_of_dictionary_member).collect()
-    })
     .flatten()
+
+  let dictionary_member_names = dictionary_members.map(
+    name_of_dictionary_member,
+  )
+
+  for dictionary_member in dictionary_members {
+    let type_ = match dictionary_member {
+      Required(type_with_extended_attributes, _) =>
+        type_with_extended_attributes.type_
+      Optional(type_, _, _) => type_
+    }
+    check_nullable_type_no_observable_array(type_)
+  }
 
   let constants = definitions
     .filter_map(x => {
