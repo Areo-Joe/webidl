@@ -161,6 +161,35 @@ fn check_exposed_on_interface(interface : Interface) -> Unit raise {
 }
 
 ///|
+fn check_exposed_global_names_on_interface_mixin(
+  mixin_ : InterfaceMixin,
+  available_global_names : Array[StringView],
+) -> Unit raise {
+  check_exposed_attributes(
+    mixin_.extended_attribute_list,
+    available_global_names,
+  )
+  for member_ in mixin_.members {
+    check_exposed_attributes(
+      member_.extended_attribute_list,
+      available_global_names,
+    )
+  }
+  for partial in mixin_.partials {
+    check_exposed_attributes(
+      partial.extended_attribute_list,
+      available_global_names,
+    )
+    for member_ in partial.members {
+      check_exposed_attributes(
+        member_.extended_attribute_list,
+        available_global_names,
+      )
+    }
+  }
+}
+
+///|
 fn check_exposed_global_names_on_interface(
   interface : Interface,
   available_global_names : Array[StringView],

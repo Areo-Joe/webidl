@@ -10,6 +10,68 @@ fn check_exposed_source(source : String) -> Bool raise {
 }
 
 ///|
+test "Mixin Exposed identifiers must be unique global names in every declaration part" {
+  let globals = "[Exposed=*, Global=(_Window,Worker)] interface G {};"
+  for
+    (attribute, expected) in [
+      ("", true),
+      ("[Exposed=*]", true),
+      ("[Exposed=Window]", true),
+      ("[Exposed=_Window]", true),
+      ("[Exposed=(Window,_Worker)]", true),
+      ("[Exposed=Missing]", false),
+      ("[Exposed=G]", false),
+      ("[Exposed=(Window,Missing)]", false),
+      ("[Exposed=(Window,Window)]", false),
+      ("[Exposed=(Window,_Window)]", false),
+      ("[Exposed()]", true),
+      ("[Exposed]", true),
+    ] {
+    for
+      source in [
+        attribute + " interface mixin M {};",
+        "interface mixin M {}; " + attribute + " partial interface mixin M {};",
+        attribute + " partial interface mixin M {}; interface mixin M {};",
+      ] {
+      assert_eq(check_exposed_source(globals + source), expected)
+    }
+    for
+      member_ in [
+        "const long value = 1;", "attribute long value;", "undefined run();", "stringifier;",
+      ] {
+      let body = " { " + attribute + member_ + " };"
+      assert_eq(
+        check_exposed_source(globals + "interface mixin M" + body),
+        expected,
+      )
+      assert_eq(
+        check_exposed_source(
+          globals + "interface mixin M {}; partial interface mixin M" + body,
+        ),
+        expected,
+      )
+      assert_eq(
+        check_exposed_source(
+          globals + "partial interface mixin M" + body + "interface mixin M {};",
+        ),
+        expected,
+      )
+    }
+  }
+}
+
+///|
+test "Mixin Exposed names are checked without includes and against all global interfaces" {
+  assert_false(check_exposed_source("[Exposed=Window] interface mixin M {};"))
+  assert_true(check_exposed_source("[Exposed=*] interface mixin M {};"))
+  assert_true(
+    check_exposed_source(
+      "[Exposed=(Window,Worker)] interface mixin M {}; [Exposed=*, Global=Window] interface W {}; [Exposed=*, Global=Worker] interface G {};",
+    ),
+  )
+}
+
+///|
 test "Exposed must appear identically on every overload" {
   let globals = "[Exposed=*, Global=(Window,Worker)] interface G {};"
   for
