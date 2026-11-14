@@ -242,3 +242,80 @@ test "Global interfaces may inherit ordinary interfaces and coexist with unrelat
     assert_true(check_global_source(source))
   }
 }
+
+///|
+test "Global interface cannot define named setters on the original or partials" {
+  for
+    attrs in [
+      "[Exposed=*, Global=Window]", "[Exposed=*, Global=(Window,Worker)]",
+    ] {
+    for
+      setter_source in [
+        "setter undefined (DOMString name, any value);", "setter undefined setItem(DOMString name, any value);",
+      ] {
+      let body = "getter any (DOMString name); " + setter_source
+      assert_false(
+        check_global_source(attrs + " interface A { " + body + " };"),
+      )
+      let original = attrs + " interface A {};"
+      let partial = "partial interface A { " + body + " };"
+      assert_false(check_global_source(original + partial))
+      assert_false(check_global_source(partial + original))
+      assert_false(
+        check_global_source(
+          original + "partial interface A { undefined first(); };" + partial,
+        ),
+      )
+      assert_true(
+        check_global_source("[Exposed=*] interface A { " + body + " };"),
+      )
+    }
+  }
+  assert_true(
+    check_global_source(
+      "[Exposed=*, Global=Window] interface A { getter any (DOMString name); undefined setItem(DOMString name, any value); };",
+    ),
+  )
+  assert_true(
+    check_global_source(
+      "[Exposed=*, Global=Window] interface A {}; [Exposed=*] interface B { getter any (DOMString name); setter undefined (DOMString name, any value); };",
+    ),
+  )
+}
+
+///|
+test "Global named setter check uses only setter argument count and first argument type" {
+  for
+    (body, valid) in [
+      ("setter undefined (DOMString name, long value);", false),
+      ("setter undefined ();", true),
+      ("setter undefined (DOMString name);", true),
+      ("setter undefined (DOMString name, any value, any extra);", true),
+      ("setter undefined (unsigned long index, any value);", true),
+      ("setter undefined (USVString name, any value);", true),
+      ("setter undefined (ByteString name, any value);", true),
+      ("setter undefined (DOMString? name, any value);", true),
+      ("setter undefined ((DOMString or long) name, any value);", true),
+      ("getter any (DOMString name, any value);", true),
+      ("deleter boolean (DOMString name, any value);", true),
+      ("static undefined setItem(DOMString name, any value);", true),
+      ("setter undefined (optional DOMString name, any value);", false),
+      ("setter undefined (DOMString name, optional any value);", false),
+      ("setter undefined (DOMString... name, any value);", false),
+      ("setter undefined (DOMString name, any... value);", false),
+    ] {
+    let (definitions, rest) = @parser.parse(
+      @lexer.tokenize("[Global=Window] interface A { " + body + " };").exact_view(),
+    )
+    assert_true(rest is [])
+    guard Definition::from_parser(definitions)[0] is Interface(interface) else {
+      fail("expected interface")
+    }
+    let accepted = try check_global_interface_no_named_setter(interface) catch {
+      _ => false
+    } noraise {
+      _ => true
+    }
+    assert_eq(accepted, valid)
+  }
+}

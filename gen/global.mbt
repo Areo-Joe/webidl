@@ -91,3 +91,37 @@ fn check_interface_inheritance_no_global(interface : Interface) -> Unit raise {
   )
   check_interface_inheritance_no_global(inheritance)
 }
+
+///|
+/// If the [Global] extended attributes is used on an interface, then:
+/// The interface must not define a named property setter.
+fn check_global_interface_no_named_setter(interface : Interface) -> Unit raise {
+  let operations = interface.members.filter_map(
+    Operation::from_interface_member,
+  )
+  for partial in interface.partials {
+    operations.push_iter(
+      partial.members
+      .iter()
+      .filter_map(interface_member => {
+        Operation::from_partial_interface_member(interface_member.body)
+      }),
+    )
+  }
+  assert_false(
+    operations
+    .iter()
+    .any(operation => {
+      guard operation.tag is Setter else { return false }
+      guard operation.argument_list
+        is Some({ argument_rest, .. }, Some(_, None)) else {
+        return false
+      }
+      let type_ = match argument_rest {
+        Ellipsisable(type_, _, _) => type_
+        Optional({ type_, .. }, _, _) => type_
+      }
+      type_ is SingleType(DistinguishableType(StringType(DOMString, None)))
+    }),
+  )
+}

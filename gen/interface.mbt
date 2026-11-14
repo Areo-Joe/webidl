@@ -20,6 +20,7 @@ fn check_interfaces(
       .iter()
       .any(attr => is_valid_global(attr) is Some(_)) {
       check_global_interface_no_constructor(interface)
+      check_global_interface_no_named_setter(interface)
       check_global_interface_no_legacy_override_built_ins(interface)
       check_global_interface_inheritance_no_legacy_override_built_ins(interface)
     }
