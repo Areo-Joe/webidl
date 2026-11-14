@@ -15,6 +15,58 @@ priv enum TypeCategory {
 }
 
 ///|
+/// Two types are distinguishable if the following algorithm returns true.
+fn are_types_distinguishable(
+  left : @parser.Type,
+  right : @parser.Type,
+  typedefs : Map[StringView, TypeDef],
+  definitions : Map[StringView, Definition],
+) -> Bool {
+  fn flatten(type_ : @parser.Type) -> (Array[@parser.Type], Bool, Bool) {
+    let pending = [type_]
+    let visited : Set[StringView] = Set([])
+    let members = []
+    let mut includes_nullable = false
+    let mut has_dictionary = false
+    while pending.pop() is Some(type_) {
+      includes_nullable = includes_nullable || is_nullable_type(type_)
+      match type_ {
+        UnionType(union_type, _) =>
+          pending.push_iter(union_type.iter_member_types())
+        SingleType(DistinguishableType(Identifier(identifier, _))) => {
+          let name = strip_underscore(identifier)
+          if typedefs.get(name) is Some(typedef_) {
+            if !visited.contains(name) {
+              visited.add(name)
+              pending.push(typedef_.type_with_extended_attributes.type_)
+            }
+          } else {
+            if definitions.get(name) is Some(Dictionary(_)) {
+              has_dictionary = true
+            }
+            members.push(type_)
+          }
+        }
+        _ => members.push(type_)
+      }
+    }
+    (members, includes_nullable, has_dictionary)
+  }
+
+  let (left_members, left_nullable, left_dictionary) = flatten(left)
+  let (right_members, right_nullable, right_dictionary) = flatten(right)
+  if (left_nullable && (right_nullable || right_dictionary)) ||
+    (right_nullable && left_dictionary) {
+    return false
+  }
+  left_members.all(left => {
+    right_members.all(right => {
+      are_flattened_member_types_distinguishable(left, right, definitions)
+    })
+  })
+}
+
+///|
 fn type_category(
   type_ : @parser.Type,
   definitions : Map[StringView, Definition],

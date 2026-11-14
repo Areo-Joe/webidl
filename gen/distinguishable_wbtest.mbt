@@ -48,6 +48,10 @@ test "Distinguishable types follow every cell of the symmetric category table" {
   for i in 0..<types.length() {
     for j in 0..<types.length() {
       assert_eq(
+        are_types_distinguishable(types[i], types[j], Map([]), definitions),
+        expected[i][j],
+      )
+      assert_eq(
         are_flattened_member_types_distinguishable(
           types[i],
           types[j],

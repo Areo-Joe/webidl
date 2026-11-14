@@ -133,11 +133,7 @@ fn check_union_member_types_distinguishable(
   for i in 0..<members.length() {
     for j in 0..<i {
       assert_true(
-        are_flattened_member_types_distinguishable(
-          members[i],
-          members[j],
-          definitions,
-        ),
+        are_types_distinguishable(members[i], members[j], typedefs, definitions),
       )
     }
   }
