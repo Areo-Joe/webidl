@@ -51,7 +51,9 @@ test "Observable array types are permitted on interface attributes including par
           "ObservableArray<([Clamp] long or DOMString)>",
         ] {
         let definitions = "typedef ObservableArray<long> _Values;"
-        let declaration = prefix + form + " " + type_ + " value;" + suffix
+        let declaration = attribute_declaration_source(
+          prefix, suffix, form, type_,
+        )
         for source in [definitions + declaration, declaration + definitions] {
           assert_true(check_observable_array_source(source))
         }

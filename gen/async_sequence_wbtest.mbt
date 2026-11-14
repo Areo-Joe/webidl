@@ -89,7 +89,9 @@ test "Attribute async sequence checks cover every declaration and attribute form
             | "static readonly attribute"
             | "stringifier readonly attribute")
           )
-        let declaration = prefix + form + " " + type_ + " value; " + suffix
+        let declaration = attribute_declaration_source(
+          prefix, suffix, form, type_,
+        )
         let definitions = "typedef async_sequence<long> _Values; typedef async_sequence<long>? MaybeValues; typedef (Values or boolean) ValueUnion;"
         for source in [definitions + declaration, declaration + definitions] {
           assert_eq(check_async_sequence_source(source), valid)

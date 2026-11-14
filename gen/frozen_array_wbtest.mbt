@@ -60,7 +60,9 @@ test "Frozen array types are permitted on interface attributes including partial
           "FrozenArray<Options>", "FrozenArray<([Clamp] long or DOMString)>",
         ] {
         let definitions = "dictionary Options {}; typedef FrozenArray<long> _Values; typedef FrozenArray<long>? MaybeValues;"
-        let declaration = prefix + form + " " + type_ + " value;" + suffix
+        let declaration = attribute_declaration_source(
+          prefix, suffix, form, type_,
+        )
         for source in [definitions + declaration, declaration + definitions] {
           assert_true(check_frozen_array_source(source))
         }

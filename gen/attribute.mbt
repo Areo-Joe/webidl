@@ -1,4 +1,88 @@
 ///|
+fn Interface::attributes(self : Self) -> Array[Attribute] {
+  let attributes = self.members.filter_map(member_ => {
+    Attribute::from_interface_member(member_.body)
+  })
+  for partial in self.partials {
+    attributes.push_iter(
+      partial.members
+      .iter()
+      .filter_map(member_ => {
+        Attribute::from_partial_interface_member(member_.body)
+      }),
+    )
+  }
+  for mixin_ in self.mixins {
+    attributes.push_iter(
+      mixin_.members
+      .iter()
+      .filter_map(member_ => Attribute::from_mixin_member(member_.body)),
+    )
+    for partial in mixin_.partials {
+      attributes.push_iter(
+        partial.members
+        .iter()
+        .filter_map(member_ => Attribute::from_mixin_member(member_.body)),
+      )
+    }
+  }
+  attributes
+}
+
+///|
+/// The read only attribute from which the attribute inherits its getter is the
+/// attribute with the same identifier on the closest ancestor interface of the
+/// one on which the inheriting attribute is defined.
+/// The attribute whose getter is being inherited must be of the same type as
+/// the inheriting attribute.
+fn check_inherit_attribute_on_interface(
+  interface : Interface,
+  typedefs : Map[StringView, TypeDef],
+) -> Unit raise {
+  for attribute in interface.attributes() {
+    if attribute.tag is Inherit {
+      let name = name_of_attribute(attribute)
+      let mut ancestor = interface.inheritance
+      let mut inherited_attribute = None
+      while ancestor is Some(current) {
+        for candidate in current.attributes() {
+          if name_of_attribute(candidate) == name {
+            inherited_attribute = Some(candidate)
+            break
+          }
+        }
+        if inherited_attribute is Some(_) {
+          break
+        }
+        ancestor = current.inheritance
+      }
+      guard inherited_attribute is Some(inherited_attribute) else {
+        fail(
+          "The read only attribute from which the attribute inherits its getter is the attribute with the same identifier on the closest ancestor interface of the one on which the inheriting attribute is defined.",
+        )
+      }
+      assert_true(
+        inherited_attribute.tag
+        is (PlainReadOnly | StaticReadOnly | StringifierReadOnly),
+      )
+      let type_ = attribute.type_with_extended_attributes
+      let inherited_type = inherited_attribute.type_with_extended_attributes
+      assert_true(
+        same_type(
+          type_.type_,
+          inherited_type.type_,
+          typedefs,
+          left_attributes=type_.extended_attribute_list.iter().collect(),
+          right_attributes=inherited_type.extended_attribute_list
+            .iter()
+            .collect(),
+        ),
+      )
+    }
+  }
+}
+
+///|
 /// If the Type is an identifier or an identifier followed by ?, then the identifier
 /// must identify an interface, enumeration, callback function, callback interface or typedef.
 fn check_attribute_type_identifier(

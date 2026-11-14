@@ -18,6 +18,7 @@ fn check_interfaces(
     check_exposed_on_interface(interface)
     check_constant_names_on_interface(interface)
     check_attribute_names_on_interface(interface)
+    check_inherit_attribute_on_interface(interface, typedefs)
     if interface.has_legacy_override_built_ins() {
       check_legacy_override_built_ins_interface_has_named_getter(
         interface, typedefs,

@@ -91,7 +91,9 @@ test "Attribute record checks cover every declaration and attribute form" {
             | "static readonly attribute"
             | "stringifier readonly attribute")
           )
-        let declaration = prefix + form + " " + type_ + " value; " + suffix
+        let declaration = attribute_declaration_source(
+          prefix, suffix, form, type_,
+        )
         let definitions = "typedef record<DOMString, long> _Values; typedef record<DOMString, long>? MaybeValues; typedef (Values or DOMString) ValueUnion;"
         for source in [definitions + declaration, declaration + definitions] {
           assert_eq(check_record_source(source), valid)

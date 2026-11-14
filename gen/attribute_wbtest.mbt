@@ -1,4 +1,115 @@
 ///|
+test "Inherited getters require the closest same-name ancestor attribute to be read only" {
+  for
+    (parent, expected) in [
+      ("readonly attribute long value;", true),
+      ("attribute long value;", false),
+      ("static readonly attribute long value;", true),
+      ("static attribute long value;", false),
+      ("readonly attribute DOMString value;", false),
+      ("readonly attribute long other;", false),
+      ("", false),
+    ] {
+    let base = "[Exposed=*] interface Parent { " + parent + " };"
+    for
+      declaration in [
+        "[Exposed=*] interface A : Parent { inherit attribute long _value; };", "[Exposed=*] interface A : Parent {}; partial interface A { inherit attribute long _value; };",
+      ] {
+      assert_eq(check_attribute_source(base + declaration), expected)
+      assert_eq(check_attribute_source(declaration + base), expected)
+    }
+  }
+  assert_false(
+    check_attribute_source(
+      "[Exposed=*] interface A { inherit attribute long value; };",
+    ),
+  )
+  let grandparent = "[Exposed=*] interface Grandparent { readonly attribute long value; };"
+  for
+    (parent, expected) in [
+      ("", true),
+      ("readonly attribute long value;", true),
+      ("readonly attribute DOMString value;", false),
+      ("attribute long value;", false),
+      ("static readonly attribute long value;", true),
+      ("static readonly attribute DOMString value;", false),
+      ("static attribute long value;", false),
+      ("inherit attribute long value;", false),
+    ] {
+    assert_eq(
+      check_attribute_source(
+        grandparent +
+        "[Exposed=*] interface Parent : Grandparent {" +
+        parent +
+        "}; [Exposed=*] interface A : Parent { inherit attribute long value; };",
+      ),
+      expected,
+    )
+  }
+}
+
+///|
+test "Inherited getters include ancestor partials and included mixin members" {
+  for
+    members in [
+      "[Exposed=*] interface Parent {}; partial interface Parent { readonly attribute DOMString value; };",
+      "[Exposed=*] interface Parent {}; interface mixin M { readonly attribute DOMString value; }; Parent includes M;",
+      "[Exposed=*] interface Parent {}; interface mixin M {}; partial interface mixin M { readonly attribute DOMString value; }; Parent includes M;",
+      "[Exposed=*] interface Parent { stringifier readonly attribute DOMString value; };",
+    ] {
+    assert_true(
+      check_attribute_source(
+        members +
+        "[Exposed=*] interface A : Parent { inherit attribute DOMString value; };",
+      ),
+    )
+    assert_true(
+      check_attribute_source(
+        "[Exposed=*] interface A : Parent {}; partial interface A { inherit attribute DOMString value; };" +
+        members,
+      ),
+    )
+  }
+  for
+    source in [
+      "[Exposed=*] interface Parent {}; interface mixin M { readonly attribute long value; }; [Exposed=*] interface A : Parent { inherit attribute long value; };",
+      "[Exposed=*] interface Other { readonly attribute long value; }; [Exposed=*] interface Parent {}; [Exposed=*] interface A : Parent { inherit attribute long value; };",
+      "[Exposed=*] interface Parent {}; [Exposed=*] interface A : Parent { readonly attribute long own; inherit attribute long value; };",
+    ] {
+    assert_false(check_attribute_source(source))
+  }
+}
+
+///|
+test "Inherited getter types resolve typedefs and compare annotations and nullability" {
+  for
+    (parent_type, child_type, expected) in [
+      ("Value", "long", true),
+      ("long", "_Value", true),
+      ("long?", "Value?", true),
+      ("long?", "Value", false),
+      ("long", "Value?", false),
+      ("[Clamp] long", "Clamped", true),
+      ("Clamped", "[Clamp] long", true),
+      ("[Clamp] long", "long", false),
+      ("long", "[Clamp] long", false),
+      ("(long or DOMString)", "(DOMString or long)", true),
+      ("(long or DOMString)", "(boolean or DOMString)", false),
+    ] {
+    assert_eq(
+      check_attribute_source(
+        "typedef long Value; typedef [Clamp] long Clamped; [Exposed=*] interface Parent { readonly attribute " +
+        parent_type +
+        " _value; }; [Exposed=*] interface A : Parent { inherit attribute " +
+        child_type +
+        " value; };",
+      ),
+      expected,
+    )
+  }
+}
+
+///|
 test "Attribute dictionary checks resolve typedefs and flattened union members" {
   let definitions = "dictionary _D {}; typedef D Value; typedef D? MaybeValue; typedef (D or DOMString) ValueUnion;"
   for
@@ -70,6 +181,38 @@ test "Attribute dictionary checks preserve nested types and other type uses" {
       "dictionary D {}; typedef D Value; [Exposed=*] interface A {}; [Exposed=*] interface B { attribute Value value; };",
     ] {
     assert_false(check_attribute_source(source))
+  }
+}
+
+///|
+fn attribute_declaration_source(
+  prefix : String,
+  suffix : String,
+  form : String,
+  type_ : String,
+  name~ : String = "value",
+) -> String {
+  let declaration = prefix +
+    " " +
+    form +
+    " " +
+    type_ +
+    " " +
+    name +
+    "; " +
+    suffix
+  if form == "inherit attribute" {
+    "[Exposed=*] interface AttributeParent { readonly attribute " +
+    type_ +
+    " " +
+    name +
+    "; };" +
+    declaration.replace(
+      old="[Exposed=*] interface A",
+      new="[Exposed=*] interface A : AttributeParent",
+    )
+  } else {
+    declaration
   }
 }
 

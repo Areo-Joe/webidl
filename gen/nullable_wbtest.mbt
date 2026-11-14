@@ -466,12 +466,24 @@ test "Attribute nullable observable array checks cover every declaration and att
     for form in forms {
       assert_false(
         check_nullable_source(
-          prefix + " " + form + " ObservableArray<long>? items; " + suffix,
+          attribute_declaration_source(
+            prefix,
+            suffix,
+            form,
+            "ObservableArray<long>?",
+            name="items",
+          ),
         ),
       )
       assert_true(
         check_nullable_source(
-          prefix + " " + form + " DOMString text; " + suffix,
+          attribute_declaration_source(
+            prefix,
+            suffix,
+            form,
+            "DOMString",
+            name="text",
+          ),
         ),
       )
     }
