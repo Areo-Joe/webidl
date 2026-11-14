@@ -1,4 +1,148 @@
 ///|
+test "CrossOriginIsolated requires consistent marking in each operation overload group" {
+  for
+    (body, expected) in [
+      ("undefined run(long value); undefined run(DOMString value);", true),
+      (
+        "[CrossOriginIsolated] undefined run(long value); undefined run(DOMString value);",
+        false,
+      ),
+      (
+        "undefined run(long value); [CrossOriginIsolated] undefined run(DOMString value);",
+        false,
+      ),
+      (
+        "[CrossOriginIsolated] undefined run(long value); [CrossOriginIsolated] undefined _run(DOMString value);",
+        true,
+      ),
+      (
+        "[CrossOriginIsolated] static undefined run(long value); static undefined run(DOMString value);",
+        false,
+      ),
+      (
+        "[CrossOriginIsolated] static undefined run(long value); [CrossOriginIsolated] static undefined run(DOMString value);",
+        true,
+      ),
+      (
+        "[CrossOriginIsolated] undefined run(long value); static undefined run(DOMString value);",
+        true,
+      ),
+      (
+        "undefined run(long value); [CrossOriginIsolated] static undefined run(DOMString value);",
+        true,
+      ),
+      ("[CrossOriginIsolated] undefined first(); undefined second();", true),
+      (
+        "[CrossOriginIsolated] undefined run(optional long value); undefined run(DOMString first, long... rest);",
+        false,
+      ),
+    ] {
+    assert_eq(
+      check_cross_origin_isolated_source("interface A { " + body + " };"),
+      expected,
+    )
+  }
+}
+
+///|
+test "CrossOriginIsolated overload marking includes constructors and named special operations" {
+  for
+    (body, expected) in [
+      (
+        "[CrossOriginIsolated] constructor(long value); constructor(DOMString value);",
+        false,
+      ),
+      (
+        "[CrossOriginIsolated] constructor(long value); [CrossOriginIsolated] constructor(DOMString value);",
+        true,
+      ),
+      ("[CrossOriginIsolated] constructor(); undefined run();", true),
+      (
+        "[CrossOriginIsolated] getter any lookup(DOMString key); any lookup(long index);",
+        false,
+      ),
+      (
+        "[CrossOriginIsolated] getter any lookup(DOMString key); [CrossOriginIsolated] any lookup(long index);",
+        true,
+      ),
+      (
+        "[CrossOriginIsolated] getter any (DOMString key); any lookup(long index);",
+        true,
+      ),
+    ] {
+    assert_eq(
+      check_cross_origin_isolated_source("interface A { " + body + " };"),
+      expected,
+    )
+  }
+}
+
+///|
+test "CrossOriginIsolated overload marking checks partials and excludes inherited operations" {
+  for
+    (source, expected) in [
+      (
+        "interface A {}; partial interface A { [CrossOriginIsolated] undefined run(long value); undefined run(DOMString value); };",
+        false,
+      ),
+      (
+        "interface A {}; partial interface A { [CrossOriginIsolated] undefined run(long value); [CrossOriginIsolated] undefined run(DOMString value); };",
+        true,
+      ),
+      (
+        "[CrossOriginIsolated] interface A {}; partial interface A { undefined run(long value); undefined run(DOMString value); };",
+        true,
+      ),
+      (
+        "interface A {}; [CrossOriginIsolated] partial interface A { undefined run(long value); undefined run(DOMString value); };",
+        true,
+      ),
+      (
+        "interface A { [CrossOriginIsolated] undefined run(long value); }; partial interface A { undefined run(DOMString value); };",
+        false,
+      ),
+      (
+        "interface A {}; partial interface A { undefined run(long value); }; partial interface A { [CrossOriginIsolated] undefined run(DOMString value); };",
+        false,
+      ),
+      (
+        "interface Parent { [CrossOriginIsolated] undefined run(long value); }; interface Child : Parent { undefined run(DOMString value); };",
+        true,
+      ),
+    ] {
+    assert_eq(check_cross_origin_isolated_source(source), expected)
+  }
+}
+
+///|
+test "CrossOriginIsolated overload marking ignores malformed forms and other attributes" {
+  for
+    (body, expected) in [
+      (
+        "[CrossOriginIsolated()] undefined run(long value); undefined run(DOMString value);",
+        true,
+      ),
+      (
+        "[CrossOriginIsolated] undefined run(long value); [CrossOriginIsolated()] undefined run(DOMString value);",
+        false,
+      ),
+      (
+        "[CrossOriginIsolated=Name] undefined run(long value); undefined run(DOMString value);",
+        true,
+      ),
+      (
+        "[CrossOriginIsolated] undefined run(long value); [SecureContext] undefined run(DOMString value);",
+        false,
+      ),
+    ] {
+    assert_eq(
+      check_cross_origin_isolated_source("interface A { " + body + " };"),
+      expected,
+    )
+  }
+}
+
+///|
 fn check_cross_origin_isolated_source(source : String) -> Bool raise {
   let (definitions, rest) = @parser.parse(@lexer.tokenize(source).exact_view())
   assert_true(rest is [])

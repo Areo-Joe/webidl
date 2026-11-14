@@ -114,6 +114,7 @@ fn check_interfaces(
       interface,
       interface_marked=has_cross_origin_isolated,
     )
+    check_cross_origin_isolated_overloads_on_interface(interface)
 
     if !has_cross_origin_isolated {
       check_interface_inheritance_no_cross_origin_isolated(
