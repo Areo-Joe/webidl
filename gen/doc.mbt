@@ -230,6 +230,14 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
 
   assert_eq(no_conflict_names.length(), Set(no_conflict_names).length())
 
+  let typedefs = definitions.filter_map(x => {
+    match x {
+      Typedef(typedef_) => Some(typedef_)
+      _ => None
+    }
+  })
+  check_typedef_type_not_typedef(typedefs)
+
   let interfaces = definitions.filter_map(x => {
     match x {
       Interface(interface) => Some(interface)
