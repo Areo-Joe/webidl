@@ -75,13 +75,13 @@ test "Nullable constraints cover every declaration entry and typedef order" {
         ("typedef any Anything;", "sequence<Anything?>", false),
         ("typedef Promise<long> ResultType;", "FrozenArray<ResultType?>", false),
         ("typedef long? Maybe;", "record<DOMString, Maybe?>", false),
-        ("typedef any Anything;", "sequence<Anything>?", true),
-        ("typedef long? Maybe;", "sequence<Maybe>?", true),
-        ("", "(sequence<long?> or DOMString)?", true),
+        ("typedef any Anything;", "FrozenArray<Anything>?", true),
+        ("typedef long? Maybe;", "FrozenArray<Maybe>?", true),
+        ("", "(FrozenArray<long?> or DOMString)?", true),
         ("", "(record<DOMString, long?> or boolean)?", true),
-        ("dictionary Options {};", "(sequence<Options> or DOMString)?", true),
+        ("dictionary Options {};", "(FrozenArray<Options> or DOMString)?", true),
         (
-          "dictionary Options {}; typedef sequence<Options> Configs;", "(Configs or DOMString)?",
+          "dictionary Options {}; typedef FrozenArray<Options> Configs;", "(Configs or DOMString)?",
           true,
         ),
       ] {
@@ -255,7 +255,7 @@ test "Nullable observable array checks resolve typedefs at every declaration ent
         ("sequence<Items?>", false),
         ("(Items or Items?)", false),
         ("(Items? or Items)", false),
-        ("sequence<Items>?", true),
+        ("FrozenArray<Items>?", true),
         ("Items", true),
       ] {
       if prefix == "typedef " && type_ == "Items" {

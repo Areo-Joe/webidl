@@ -95,6 +95,10 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
       typedef_index,
       dictionary_names,
     )
+    check_attribute_type_no_sequence(
+      attribute.type_with_extended_attributes.type_,
+      typedef_index,
+    )
   }
 
   let dictionary_members = definitions
@@ -160,6 +164,28 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
         PartialInterfaceMixin(partial_interface_mixin) =>
           Some(
             partial_interface_mixin.members
+            .iter()
+            .filter_map(x => {
+              match x.body {
+                Const(c) => Some(c)
+                _ => None
+              }
+            }),
+          )
+        Namespace(namespace_) =>
+          Some(
+            namespace_.members
+            .iter()
+            .filter_map(x => {
+              match x.body {
+                Const(c) => Some(c)
+                _ => None
+              }
+            }),
+          )
+        PartialNamespace(partial_namespace) =>
+          Some(
+            partial_namespace.members
             .iter()
             .filter_map(x => {
               match x.body {

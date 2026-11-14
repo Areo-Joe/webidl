@@ -20,6 +20,9 @@ test "Constant type identifiers must reference typedefs of non nullable primitiv
       ("interface mixin M {}; partial interface mixin M {", "};"),
       ("partial interface mixin M {", "}; interface mixin M {};"),
       ("callback interface C {", "};"),
+      ("[Exposed=*] namespace N {", "};"),
+      ("[Exposed=*] namespace N {}; partial namespace N {", "};"),
+      ("partial namespace N {", "}; [Exposed=*] namespace N {};"),
     ] {
     for
       (type_, valid) in [
@@ -69,6 +72,35 @@ test "Constant type identifiers must reference typedefs of non nullable primitiv
       check_constant_source(prefix + " const Missing VALUE = 0; " + suffix),
     )
   }
+}
+
+///|
+test "Namespace constants use existing value checks and inspect every member" {
+  for
+    (prefix, suffix) in [
+      ("[Exposed=*] namespace N {", "};"),
+      ("[Exposed=*] namespace N {}; partial namespace N {", "};"),
+      ("partial namespace N {", "}; [Exposed=*] namespace N {};"),
+    ] {
+    for
+      (body, valid) in [
+        ("const boolean FLAG = true;", true),
+        ("const boolean FLAG = 1;", false),
+        ("const byte VALUE = 127;", true),
+        ("const byte VALUE = 128;", false),
+        ("const long FIRST = 1; const byte LAST = 128;", false),
+        ("readonly attribute DOMString text; const byte VALUE = 128;", false),
+        ("const long _constructor = 1;", false),
+        ("const long _VALUE = 1;", true),
+      ] {
+      assert_eq(check_constant_source(prefix + body + suffix), valid)
+    }
+  }
+  assert_false(
+    check_constant_source(
+      "[Exposed=*] namespace First { const long VALUE = 1; }; [Exposed=*] namespace Last { const byte VALUE = 128; };",
+    ),
+  )
 }
 
 ///|
