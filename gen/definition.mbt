@@ -286,7 +286,8 @@ fn Definition::from_parser(
   ret.push_iter(
     definitions
     .iter()
-    .filter_map(definition => {
+    .collect()
+    .filter_map(fn(definition) -> Definition? raise {
       let (extended_attribute_list, definition) = definition
 
       guard definition is Partial(partial) else { None }
@@ -297,14 +298,19 @@ fn Definition::from_parser(
         Interface(
           PartialInterfaceRest({ identifier, partial_interface_members, })
         ) => {
-          let host = ret.filter_map(x => {
-              if x is Interface(x) &&
-                name_of_interface(x) == strip_underscore(identifier) {
-                Some(x)
-              } else {
-                None
-              }
-            })[0]
+          let hosts = ret.filter_map(x => {
+            if x is Interface(x) &&
+              name_of_interface(x) == strip_underscore(identifier) {
+              Some(x)
+            } else {
+              None
+            }
+          })
+          guard hosts is [host, ..] else {
+            fail(
+              "The identifier of a partial interface definition must be the same as the identifier of an interface definition.",
+            )
+          }
 
           let partial_interface = PartialInterface::{
             identifier,
@@ -419,7 +425,8 @@ fn Definition::from_parser(
           Some(PartialNamespace(partial_namespace))
         }
       }
-    }),
+    })
+    .iter(),
   )
 
   ret
@@ -484,9 +491,13 @@ fn build_interface(
   ],
 ) -> (Map[StringView, Interface], Set[StringView], Interface) raise {
   let name = strip_underscore(name)
-  let parser_interface = parser_interfaces[parser_interfaces
-    .search_by(x => strip_underscore(x.1.identifier) == name)
-    .unwrap()]
+  guard parser_interfaces.search_by(x => {
+      strip_underscore(x.1.identifier) == name
+    })
+    is Some(index) else {
+    fail("The inherited interface must identify an interface definition.")
+  }
+  let parser_interface = parser_interfaces[index]
 
   assert_false(visiting.contains(name))
 

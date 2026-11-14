@@ -87,7 +87,10 @@ fn check_interface_inheritance_no_global(interface : Interface) -> Unit raise {
 ///|
 /// If the [Global] extended attributes is used on an interface, then:
 /// The interface must not define a named property setter.
-fn check_global_interface_no_named_setter(interface : Interface) -> Unit raise {
+fn check_global_interface_no_named_setter(
+  interface : Interface,
+  typedefs : Map[StringView, TypeDef],
+) -> Unit raise {
   let operations = interface.members.filter_map(
     Operation::from_interface_member,
   )
@@ -113,7 +116,13 @@ fn check_global_interface_no_named_setter(interface : Interface) -> Unit raise {
         Ellipsisable(type_, _, _) => type_
         Optional({ type_, .. }, _, _) => type_
       }
-      type_ is SingleType(DistinguishableType(StringType(DOMString, None)))
+      let (type_, nullable, _) = resolve_type_with_extended_attributes(
+        type_,
+        [],
+        typedefs,
+      )
+      !nullable &&
+      type_ is SingleType(DistinguishableType(StringType(DOMString, _)))
     }),
   )
 }
@@ -123,6 +132,7 @@ fn check_global_interface_no_named_setter(interface : Interface) -> Unit raise {
 /// The interface must not define indexed property getters or setters.
 fn check_global_interface_no_indexed_getter_or_setter(
   interface : Interface,
+  typedefs : Map[StringView, TypeDef],
 ) -> Unit raise {
   let operations = interface.members.filter_map(
     Operation::from_interface_member,
@@ -149,13 +159,16 @@ fn check_global_interface_no_indexed_getter_or_setter(
         Ellipsisable(type_, _, _) => type_
         Optional({ type_, .. }, _, _) => type_
       }
+      let (type_, nullable, _) = resolve_type_with_extended_attributes(
+        type_,
+        [],
+        typedefs,
+      )
+      !nullable &&
       type_
       is SingleType(
         DistinguishableType(
-          PrimitiveType(
-            UnsignedIntegerType(UnsignedIntegerType(Long(None))),
-            None
-          )
+          PrimitiveType(UnsignedIntegerType(UnsignedIntegerType(Long(None))), _)
         )
       )
     }),

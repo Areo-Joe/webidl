@@ -10,6 +10,106 @@ fn check_exposed_source(source : String) -> Bool raise {
 }
 
 ///|
+test "Exposed must appear identically on every overload" {
+  let globals = "[Exposed=*, Global=(Window,Worker)] interface G {};"
+  for
+    (first, second, expected) in [
+      ("", "", true),
+      ("[Exposed=*]", "", false),
+      ("", "[Exposed=*]", false),
+      ("[Exposed=*]", "[Exposed=*]", true),
+      ("[Exposed=Window]", "[Exposed=Window]", true),
+      ("[Exposed=_Window]", "[Exposed=Window]", true),
+      ("[Exposed=Window]", "[Exposed=Worker]", false),
+      ("[Exposed=Window]", "[Exposed=(Window)]", false),
+      ("[Exposed=(Window,Worker)]", "[Exposed=(Window,Worker)]", true),
+      ("[Exposed=(Window,Worker)]", "[Exposed=(_Window,Worker)]", true),
+      ("[Exposed=(Window,Worker)]", "[Exposed=(Worker,Window)]", false),
+      ("[Exposed=*]", "[Exposed=(Window,Worker)]", false),
+      ("[Exposed()]", "", true),
+      ("[Exposed=*]", "[Exposed()]", false),
+    ] {
+    for prefix in ["", "static "] {
+      let members = first +
+        " " +
+        prefix +
+        "undefined run(long value); " +
+        second +
+        " " +
+        prefix +
+        "undefined run(DOMString value);"
+      assert_eq(
+        check_exposed_source(
+          globals + "[Exposed=*] interface A { " + members + " };",
+        ),
+        expected,
+      )
+      assert_eq(
+        check_exposed_source(
+          globals +
+          "[Exposed=*] interface A {}; partial interface A { " +
+          members +
+          " };",
+        ),
+        expected,
+      )
+    }
+    assert_eq(
+      check_exposed_source(
+        globals +
+        "[Exposed=*] interface A { " +
+        first +
+        " constructor(long value); " +
+        second +
+        " constructor(DOMString value); };",
+      ),
+      expected,
+    )
+  }
+}
+
+///|
+test "Exposed overload groups distinguish static names inheritance and unnamed operations" {
+  for
+    (source, expected) in [
+      (
+        "[Exposed=*] interface A { [Exposed=*] undefined run(long value); static undefined run(DOMString value); };",
+        true,
+      ),
+      (
+        "[Exposed=*] interface A { [Exposed=*] undefined first(); undefined second(); };",
+        true,
+      ),
+      (
+        "[Exposed=*] interface A { [Exposed=*] getter any (DOMString key); any lookup(long key); };",
+        true,
+      ),
+      (
+        "[Exposed=*] interface A { [Exposed=*] getter any lookup(DOMString key); any lookup(long key); };",
+        false,
+      ),
+      (
+        "[Exposed=*] interface Parent { [Exposed=*] undefined run(long value); }; [Exposed=*] interface A : Parent { undefined run(DOMString value); };",
+        true,
+      ),
+      (
+        "[Exposed=*] interface A { [Exposed=*] undefined run(long value); }; partial interface A { undefined run(DOMString value); };",
+        false,
+      ),
+      (
+        "[Exposed=*] interface A {}; partial interface A { [Exposed=*] undefined run(long value); }; partial interface A { undefined run(DOMString value); };",
+        false,
+      ),
+      (
+        "[Exposed=*] interface A {}; [Exposed=*] partial interface A { undefined run(long value); undefined run(DOMString value); };",
+        true,
+      ),
+    ] {
+    assert_eq(check_exposed_source(source), expected)
+  }
+}
+
+///|
 test "Interfaces require a recognized Exposed attribute on their original definition" {
   for
     (source, expected) in [

@@ -82,7 +82,7 @@ fn check_secure_context_interface_no_cross_origin_isolated(
 fn check_secure_context_overloads_on_interface(
   interface : Interface,
 ) -> Unit raise {
-  check_overload_extended_attribute_on_interface(
-    interface, is_valid_secure_context,
-  )
+  check_overload_extended_attribute_on_interface(interface, attributes => {
+    attributes.iter().any(is_valid_secure_context)
+  })
 }

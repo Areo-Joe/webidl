@@ -11,9 +11,9 @@ fn is_valid_cross_origin_isolated(attr : @parser.ExtendedAttribute) -> Bool {
 fn check_cross_origin_isolated_overloads_on_interface(
   interface : Interface,
 ) -> Unit raise {
-  check_overload_extended_attribute_on_interface(
-    interface, is_valid_cross_origin_isolated,
-  )
+  check_overload_extended_attribute_on_interface(interface, attributes => {
+    attributes.iter().any(is_valid_cross_origin_isolated)
+  })
 }
 
 ///|

@@ -43,12 +43,13 @@ fn check_interfaces(
       .iter()
       .any(attr => is_valid_global(attr) is Some(_)) {
       check_global_interface_no_constructor(interface)
-      check_global_interface_no_named_setter(interface)
-      check_global_interface_no_indexed_getter_or_setter(interface)
+      check_global_interface_no_named_setter(interface, typedefs)
+      check_global_interface_no_indexed_getter_or_setter(interface, typedefs)
       check_global_interface_no_legacy_override_built_ins(interface)
       check_global_interface_inheritance_no_legacy_override_built_ins(interface)
     }
     check_exposed_global_names_on_interface(interface, available_global_names)
+    check_exposed_overloads_on_interface(interface)
     let interface_exposure_set = exposure_set(
       ExposedSetStruct::Interface(interface),
       None,

@@ -1,4 +1,22 @@
 ///|
+test "Missing interface references raise validation errors during model construction" {
+  for
+    source in [
+      "interface A : Missing {};", "interface A : _Missing {};", "interface A : B {}; interface B : Missing {};",
+      "dictionary Missing {}; interface A : Missing {};", "callback interface Missing { undefined run(); }; interface A : Missing {};",
+      "partial interface Missing {};", "partial interface _Missing { undefined run(); };",
+      "dictionary Missing {}; partial interface Missing {};", "interface mixin Missing {}; partial interface Missing {};",
+    ] {
+    let accepted = try parse_linked_definitions(source) catch {
+      _ => false
+    } noraise {
+      _ => true
+    }
+    assert_false(accepted)
+  }
+}
+
+///|
 test "interface inheritance is resolved after definitions are created" {
   let (definitions, rest) = @parser.parse(
     (try! @lexer.tokenize("interface Child : Parent {}; interface Parent {};")).exact_view(),

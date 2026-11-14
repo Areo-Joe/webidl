@@ -1,4 +1,120 @@
 ///|
+test "Global indexed setter typedef checks are independent of getters" {
+  for
+    (typedef_source, argument_type, expected) in [
+      ("", "unsigned long", false),
+      ("typedef unsigned long Index;", "Index", false),
+      ("typedef unsigned long _Index;", "_Index", false),
+      ("typedef unsigned long Index;", "Index?", true),
+      ("typedef unsigned long? Index;", "Index", true),
+      ("typedef long Index;", "Index", true),
+      ("typedef DOMString Key;", "Key", true),
+    ] {
+    for name in ["", "setItem"] {
+      let setter = "setter undefined " +
+        name +
+        "(" +
+        argument_type +
+        " index, any value);"
+      let original = "[Exposed=*, Global=Window] interface A {};"
+      let partial = "partial interface A { " + setter + " };"
+      for
+        source in [
+          "[Exposed=*, Global=Window] interface A { " + setter + " };",
+          original + partial,
+          partial + original,
+        ] {
+        let (definitions, rest) = @parser.parse(
+          @lexer.tokenize(typedef_source + source).exact_view(),
+        )
+        assert_true(rest is [])
+        let definitions = Definition::from_parser(definitions)
+        let typedefs = Map([])
+        for definition in definitions {
+          if definition is Typedef(typedef_) {
+            typedefs.set(strip_underscore(typedef_.identifier), typedef_)
+          }
+        }
+        let interfaces = definitions.filter_map(definition => {
+          if definition is Interface(interface) {
+            Some(interface)
+          } else {
+            None
+          }
+        })
+        assert_eq(interfaces.length(), 1)
+        let accepted = try
+          check_global_interface_no_indexed_getter_or_setter(
+            interfaces[0],
+            typedefs,
+          )
+        catch {
+          _ => false
+        } noraise {
+          _ => true
+        }
+        assert_eq(accepted, expected)
+      }
+    }
+  }
+}
+
+///|
+test "Global property restrictions resolve typedefs on original and partial members" {
+  for
+    (typedef_source, members, expected) in [
+      (
+        "typedef DOMString Key;", "getter any (DOMString key); setter undefined (Key key, any value);",
+        false,
+      ),
+      (
+        "typedef DOMString _Key;", "getter any (DOMString key); setter undefined (_Key key, any value);",
+        false,
+      ),
+      (
+        "typedef unsigned long Index;", "attribute unsigned long length; getter any (Index index);",
+        false,
+      ),
+      (
+        "typedef unsigned long Index;", "attribute unsigned long length; getter any (Index index); setter undefined (Index index, any value);",
+        false,
+      ),
+      ("typedef USVString Key;", "setter undefined (Key key, any value);", true),
+      (
+        "typedef long Index;", "getter any (Index index); setter undefined (Index index, any value);",
+        true,
+      ),
+      (
+        "typedef DOMString? Key;", "setter undefined (Key key, any value);", true,
+      ),
+      (
+        "typedef unsigned long? Index;", "getter any (Index index); setter undefined (Index index, any value);",
+        true,
+      ),
+    ] {
+    assert_eq(
+      check_global_source(
+        typedef_source +
+        "[Exposed=*, Global=Window] interface A { " +
+        members +
+        " };",
+      ),
+      expected,
+    )
+    let original = "[Exposed=*, Global=Window] interface A {};"
+    let partial = "partial interface A { " + members + " };"
+    assert_eq(
+      check_global_source(typedef_source + original + partial),
+      expected,
+    )
+    assert_eq(
+      check_global_source(typedef_source + partial + original),
+      expected,
+    )
+  }
+}
+
+///|
 fn parse_global_attributes(
   source : String,
 ) -> @parser.ExtendedAttributeList raise {
@@ -316,7 +432,9 @@ test "Global named setter check uses only setter argument count and first argume
     guard Definition::from_parser(definitions)[0] is Interface(interface) else {
       fail("expected interface")
     }
-    let accepted = try check_global_interface_no_named_setter(interface) catch {
+    let accepted = try
+      check_global_interface_no_named_setter(interface, Map([]))
+    catch {
       _ => false
     } noraise {
       _ => true
@@ -398,7 +516,7 @@ test "Global indexed getter or setter check uses keyword argument count and unsi
       fail("expected interface")
     }
     let accepted = try
-      check_global_interface_no_indexed_getter_or_setter(interface)
+      check_global_interface_no_indexed_getter_or_setter(interface, Map([]))
     catch {
       _ => false
     } noraise {

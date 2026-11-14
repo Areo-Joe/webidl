@@ -1,7 +1,7 @@
 ///|
-fn check_overload_extended_attribute_on_interface(
+fn[T : Eq] check_overload_extended_attribute_on_interface(
   interface : Interface,
-  is_marked : (@parser.ExtendedAttribute) -> Bool,
+  attribute_value : (@parser.ExtendedAttributeList) -> T,
 ) -> Unit raise {
   let regular : Map[StringView, Array[@parser.ExtendedAttributeList]] = Map([])
   let static_operations : Map[StringView, Array[@parser.ExtendedAttributeList]] = Map([],
@@ -40,10 +40,8 @@ fn check_overload_extended_attribute_on_interface(
   }
   fn check_group(group : Array[@parser.ExtendedAttributeList]) raise {
     guard !group.is_empty() else { return }
-    let marked = group[0].iter().any(is_marked)
-    assert_true(
-      group.all(attributes => attributes.iter().any(is_marked) == marked),
-    )
+    let value = attribute_value(group[0])
+    assert_true(group.all(attributes => attribute_value(attributes) == value))
   }
   for group in regular.values() {
     check_group(group)

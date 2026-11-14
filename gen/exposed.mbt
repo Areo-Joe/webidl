@@ -1,8 +1,27 @@
 ///|
+#derive(Eq)
 enum Exposed {
   Ident(StringView)
   IdentList(Array[StringView])
   Wildcard
+}
+
+///|
+/// If [Exposed] appears on an overloaded operation, then it must appear identically on all overloads.
+fn check_exposed_overloads_on_interface(interface : Interface) -> Unit raise {
+  check_overload_extended_attribute_on_interface(interface, attributes => {
+    for attr in attributes.iter() {
+      if is_valid_exposed(attr) is Some(exposed) {
+        let value : Exposed = match exposed {
+          Ident(name) => Ident(strip_underscore(name))
+          IdentList(names) => IdentList(names.map(strip_underscore))
+          Wildcard => Wildcard
+        }
+        return Some(value)
+      }
+    }
+    None
+  })
 }
 
 ///|
