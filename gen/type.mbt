@@ -60,7 +60,9 @@ fn check_type(
   typedefs : Map[StringView, TypeDef],
   dictionary_names : Set[StringView],
   definitions : Map[StringView, Definition],
+  extended_attributes~ : Array[@parser.ExtendedAttribute] = [],
 ) -> Unit raise {
+  check_annotated_type(type_, extended_attributes, typedefs)
   check_nullable_type(type_, typedefs, dictionary_names)
   for state in iter_types_resolving_typedefs(type_, typedefs) {
     if state.0 is UnionType(union_type, _) {
@@ -82,7 +84,14 @@ fn check_argument_types(
         type_with_extended_attributes.type_
       Ellipsisable(type_, _, _) => type_
     }
-    check_type(type_, typedefs, dictionary_names, definitions)
+    let extended_attributes = argument_type_extended_attributes(argument)
+    check_type(
+      type_,
+      typedefs,
+      dictionary_names,
+      definitions,
+      extended_attributes~,
+    )
     check_type_not_nullable_dictionary(type_, typedefs, dictionary_names)
   }
 }
@@ -101,9 +110,20 @@ fn check_collection_types(
         typedefs,
         dictionary_names,
         definitions,
+        extended_attributes=type_with_extended_attributes.extended_attribute_list
+          .iter()
+          .collect(),
       )
       if optional_type is Some(second_type) {
-        check_type(second_type.type_, typedefs, dictionary_names, definitions)
+        check_type(
+          second_type.type_,
+          typedefs,
+          dictionary_names,
+          definitions,
+          extended_attributes=second_type.extended_attribute_list
+            .iter()
+            .collect(),
+        )
       }
     }
     AsyncIterable(
@@ -114,9 +134,20 @@ fn check_collection_types(
         typedefs,
         dictionary_names,
         definitions,
+        extended_attributes=type_with_extended_attributes.extended_attribute_list
+          .iter()
+          .collect(),
       )
       if optional_type is Some(second_type) {
-        check_type(second_type.type_, typedefs, dictionary_names, definitions)
+        check_type(
+          second_type.type_,
+          typedefs,
+          dictionary_names,
+          definitions,
+          extended_attributes=second_type.extended_attribute_list
+            .iter()
+            .collect(),
+        )
       }
       if optional_argument_list is Some(arguments) {
         check_argument_types(arguments, typedefs, dictionary_names, definitions)
@@ -129,12 +160,18 @@ fn check_collection_types(
         typedefs,
         dictionary_names,
         definitions,
+        extended_attributes=maplike_rest.key_type.extended_attribute_list
+          .iter()
+          .collect(),
       )
       check_type(
         maplike_rest.value_type.type_,
         typedefs,
         dictionary_names,
         definitions,
+        extended_attributes=maplike_rest.value_type.extended_attribute_list
+          .iter()
+          .collect(),
       )
     }
     ReadWriteSetlike({ setlike_rest, })
@@ -144,6 +181,9 @@ fn check_collection_types(
         typedefs,
         dictionary_names,
         definitions,
+        extended_attributes=setlike_rest.type_with_extended_attributes.extended_attribute_list
+          .iter()
+          .collect(),
       )
     Const(_)
     | Operation(_)

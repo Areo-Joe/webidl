@@ -102,6 +102,9 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
       typedef_index,
       dictionary_names,
       type_definitions,
+      extended_attributes=attribute.type_with_extended_attributes.extended_attribute_list
+        .iter()
+        .collect(),
     )
     check_attribute_type_no_sequence(
       attribute.type_with_extended_attributes.type_,
@@ -120,24 +123,35 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
   let dictionary_members = definitions
     .filter_map(x => {
       match x {
-        Dictionary(x) => Some(x.members.map(x => x.body))
-        PartialDictionary(x) => Some(x.members.map(x => x.body))
+        Dictionary(x) =>
+          Some(x.members.map(x => (x.body, x.extended_attribute_list)))
+        PartialDictionary(x) =>
+          Some(x.members.map(x => (x.body, x.extended_attribute_list)))
         _ => None
       }
     })
     .flatten()
 
-  let dictionary_member_names = dictionary_members.map(
-    name_of_dictionary_member,
-  )
+  let dictionary_member_names = dictionary_members.map(member_ => {
+    name_of_dictionary_member(member_.0)
+  })
 
-  for dictionary_member in dictionary_members {
+  for (dictionary_member, member_attributes) in dictionary_members {
     let type_ = match dictionary_member {
       Required(type_with_extended_attributes, _) =>
         type_with_extended_attributes.type_
       Optional(type_, _, _) => type_
     }
-    check_type(type_, typedef_index, dictionary_names, type_definitions)
+    let extended_attributes = dictionary_member_type_extended_attributes(
+      dictionary_member, member_attributes,
+    )
+    check_type(
+      type_,
+      typedef_index,
+      dictionary_names,
+      type_definitions,
+      extended_attributes~,
+    )
     check_type_not_nullable_dictionary(type_, typedef_index, dictionary_names)
   }
 
@@ -397,6 +411,9 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
       typedef_index,
       dictionary_names,
       type_definitions,
+      extended_attributes=typedef_.type_with_extended_attributes.extended_attribute_list
+        .iter()
+        .collect(),
     )
   }
   for constant in constants {

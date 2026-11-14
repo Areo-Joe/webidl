@@ -1,55 +1,10 @@
 ///|
-fn same_type_attributes(
-  left : Array[@parser.ExtendedAttribute],
-  right : Array[@parser.ExtendedAttribute],
-) -> Bool {
-  fn same_attribute(
-    left : @parser.ExtendedAttribute,
-    right : @parser.ExtendedAttribute,
-  ) -> Bool {
-    match (left, right) {
-      (NoArgs(left), NoArgs(right)) => left.identifier == right.identifier
-      _ => physical_equal(left, right)
-    }
-  }
-  left
-  .iter()
-  .all(left => right.iter().any(right => same_attribute(left, right))) &&
-  right
-  .iter()
-  .all(right => left.iter().any(left => same_attribute(left, right)))
-}
-
-///|
 fn same_flattened_member_type(
   left : @parser.Type,
   right : @parser.Type,
   typedefs : Map[StringView, TypeDef],
 ) -> Bool {
   let visiting : Array[(@parser.Type, @parser.Type)] = []
-
-  fn resolve(
-    type_ : @parser.Type,
-    attributes : Array[@parser.ExtendedAttribute],
-  ) -> (@parser.Type, Bool, Array[@parser.ExtendedAttribute]) {
-    let mut current = type_
-    let mut nullable = false
-    let attributes = attributes.copy()
-    let visited : Set[StringView] = Set([])
-    while current is SingleType(DistinguishableType(Identifier(name, _))) {
-      nullable = nullable || is_nullable_type(current)
-      let name = strip_underscore(name)
-      guard typedefs.get(name) is Some(target) && !visited.contains(name) else {
-        break
-      }
-      visited.add(name)
-      attributes.push_iter(
-        target.type_with_extended_attributes.extended_attribute_list.iter(),
-      )
-      current = target.type_with_extended_attributes.type_
-    }
-    (current, nullable || is_nullable_type(current), attributes)
-  }
 
   fn flatten_union(
     union_type : @parser.UnionType,
@@ -58,30 +13,14 @@ fn same_flattened_member_type(
     let visited : Array[(@parser.Type, Array[@parser.ExtendedAttribute])] = []
     let types : Array[(@parser.Type, Array[@parser.ExtendedAttribute])] = []
 
-    fn push_members(
-      union_type : @parser.UnionType,
-      inherited_attributes : Array[@parser.ExtendedAttribute],
-    ) -> Unit {
-      for
-        (type_, union_member) in union_type
-        .iter_member_types()
-        .zip(union_type.iter()) {
-        let attributes = inherited_attributes.copy()
-        if union_member
-          is DistinguishableTypeWithExtendedAttributeList(
-            _,
-            extended_attributes
-          ) {
-          attributes.push_iter(extended_attributes.iter())
-        }
-        pending.push((type_, attributes))
-      }
-    }
-
-    push_members(union_type, [])
+    pending.push_iter(
+      union_member_types_with_extended_attributes(union_type, []),
+    )
     let mut nullable = false
     while pending.pop() is Some((type_, attributes)) {
-      let (type_, type_nullable, attributes) = resolve(type_, attributes)
+      let (type_, type_nullable, attributes) = resolve_type_with_extended_attributes(
+        type_, attributes, typedefs,
+      )
       nullable = nullable || type_nullable
       match type_ {
         UnionType(union_type, _) =>
@@ -90,7 +29,11 @@ fn same_flattened_member_type(
               same_type_attributes(previous.1, attributes)
             }) {
             visited.push((type_, attributes))
-            push_members(union_type, attributes)
+            pending.push_iter(
+              union_member_types_with_extended_attributes(
+                union_type, attributes,
+              ),
+            )
           }
         _ => types.push((type_, attributes))
       }
@@ -118,9 +61,11 @@ fn same_flattened_member_type(
       )
     }
 
-    let (left, left_nullable, left_attributes) = resolve(left, left_attributes)
-    let (right, right_nullable, right_attributes) = resolve(
-      right, right_attributes,
+    let (left, left_nullable, left_attributes) = resolve_type_with_extended_attributes(
+      left, left_attributes, typedefs,
+    )
+    let (right, right_nullable, right_attributes) = resolve_type_with_extended_attributes(
+      right, right_attributes, typedefs,
     )
     if !ignore_outer &&
       (

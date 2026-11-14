@@ -702,7 +702,7 @@ test "Dictionary member checks retain default values and type extended attribute
   )
   assert_true(
     check_nullable_source(
-      "dictionary Options { DOMString? text = null; required [Example] ObservableArray<long?> items; };",
+      "dictionary Options { DOMString? text = null; required ObservableArray<[Clamp] long?> items; };",
     ),
   )
 }

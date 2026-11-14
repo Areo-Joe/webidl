@@ -50,8 +50,8 @@ test "Union constraints cover every type entry and typedef order" {
           "dictionary Options {};", "(record<DOMString, Options> or long?)", true,
         ),
         ("typedef any Anything;", "(sequence<Anything> or long)", true),
-        ("", "([Example] long? or DOMString)", true),
-        ("", "([Example] long? or [Example] DOMString?)", false),
+        ("", "([Clamp] long? or DOMString)", true),
+        ("", "([Clamp] long? or [Clamp] DOMString?)", false),
       ] {
       let declaration = prefix + "FrozenArray<" + type_ + ">" + suffix
       for source in [definitions + declaration, declaration + definitions] {
