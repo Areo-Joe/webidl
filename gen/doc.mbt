@@ -130,6 +130,9 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
     if constant.const_type is PrimitiveType(Boolean) {
       check_boolean_constant_value(constant.const_value)
     }
+    if constant.const_type is PrimitiveType(Byte) {
+      check_byte_constant_value(constant.const_value)
+    }
   }
 
   let operations = definitions

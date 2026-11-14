@@ -1,5 +1,6 @@
 import {
   "Areo-Joe/webidl/parser",
+  "moonbitlang/core/string",
 }
 
 import {
