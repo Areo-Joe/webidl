@@ -1,4 +1,44 @@
 ///|
+test "Partial mixins require an original interface mixin definition" {
+  for
+    source in [
+      "partial interface mixin M {};", "partial interface mixin _M { undefined run(); };",
+      "interface mixin Other {}; partial interface mixin M {};", "partial interface mixin M {}; partial interface mixin M {};",
+      "interface M {}; partial interface mixin M {};", "dictionary M {}; partial interface mixin M {};",
+      "namespace M {}; partial interface mixin M {};", "callback interface M { undefined run(); }; partial interface mixin M {};",
+      "typedef long M; partial interface mixin M {};",
+    ] {
+    let accepted = try parse_linked_definitions(source) catch {
+      _ => false
+    } noraise {
+      _ => true
+    }
+    assert_false(accepted)
+  }
+}
+
+///|
+test "Partial mixin identifiers match original definitions regardless of order and escaping" {
+  for original in ["interface mixin M {};", "interface mixin _M {};"] {
+    for
+      partial in [
+        "partial interface mixin M { undefined run(); };", "partial interface mixin _M { undefined run(); };",
+      ] {
+      for source in [original + partial, partial + original] {
+        guard parse_linked_definitions(source)
+          is [InterfaceMixin(mixin_), PartialInterfaceMixin(partial)] else {
+          fail("expected a mixin and its partial")
+        }
+        assert_eq(name_of_interface_mixin(mixin_), "M")
+        assert_true(physical_equal(partial.host, mixin_))
+        assert_eq(mixin_.partials.length(), 1)
+        assert_true(physical_equal(mixin_.partials[0], partial))
+      }
+    }
+  }
+}
+
+///|
 test "Missing interface references raise validation errors during model construction" {
   for
     source in [

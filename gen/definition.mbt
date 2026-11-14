@@ -333,14 +333,19 @@ fn Definition::from_parser(
           Some(PartialInterface(partial_interface))
         }
         Interface(MixinRest({ identifier, mixin_members, })) => {
-          let host = ret.filter_map(x => {
-              if x is InterfaceMixin(x) &&
-                name_of_interface_mixin(x) == strip_underscore(identifier) {
-                Some(x)
-              } else {
-                None
-              }
-            })[0]
+          let hosts = ret.filter_map(x => {
+            if x is InterfaceMixin(x) &&
+              name_of_interface_mixin(x) == strip_underscore(identifier) {
+              Some(x)
+            } else {
+              None
+            }
+          })
+          guard hosts is [host, ..] else {
+            fail(
+              "The identifier of a partial interface mixin definition must be the same as the identifier of an interface mixin definition.",
+            )
+          }
 
           let partial_interface_mixin = PartialInterfaceMixin::{
             identifier,
