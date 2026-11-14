@@ -169,3 +169,28 @@ fn check_global_interface_no_indexed_getter_or_setter(
     }),
   )
 }
+
+///|
+/// If [Global] is specified on a partial interface definition, then that partial interface definition must be the part of the interface definition that defines the named property getter.
+fn check_global_partial_interface_has_named_getter(
+  partial : PartialInterface,
+) -> Unit raise {
+  assert_true(
+    partial.members
+    .iter()
+    .filter_map(interface_member => {
+      Operation::from_partial_interface_member(interface_member.body)
+    })
+    .any(operation => {
+      guard operation.tag is Getter else { return false }
+      guard operation.argument_list is Some({ argument_rest, .. }, None) else {
+        return false
+      }
+      let type_ = match argument_rest {
+        Ellipsisable(type_, _, _) => type_
+        Optional({ type_, .. }, _, _) => type_
+      }
+      type_ is SingleType(DistinguishableType(StringType(DOMString, None)))
+    }),
+  )
+}

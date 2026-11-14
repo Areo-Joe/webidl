@@ -402,3 +402,53 @@ test "Global indexed getter or setter check uses keyword argument count and unsi
     assert_eq(accepted, valid)
   }
 }
+
+///|
+test "Global partial must define a named getter in that partial" {
+  for attrs in ["[Global=Window]", "[Global=(Window,Worker)]"] {
+    for
+      (body, valid) in [
+        ("getter any (DOMString name);", true),
+        ("getter any item(DOMString name);", true),
+        ("undefined f(); getter any (DOMString name);", true),
+        ("", false),
+        ("any item(DOMString name);", false),
+        ("static any item(DOMString name);", false),
+        ("setter undefined (DOMString name, any value);", false),
+        ("deleter boolean (DOMString name);", false),
+        ("getter any ();", false),
+        ("getter any (DOMString name, any extra);", false),
+        ("getter any (unsigned long index);", false),
+        ("getter any (DOMString? name);", false),
+        ("getter any (USVString name);", false),
+        ("getter any (ByteString name);", false),
+      ] {
+      let original = "[Exposed=*] interface A {};"
+      let partial = attrs + " partial interface A { " + body + " };"
+      assert_eq(check_global_source(original + partial), valid)
+      assert_eq(check_global_source(partial + original), valid)
+    }
+  }
+  assert_true(
+    check_global_source("[Exposed=*] interface A {}; partial interface A {};"),
+  )
+}
+
+///|
+test "Global partial cannot use a named getter declared elsewhere" {
+  for
+    source in [
+      "[Exposed=*] interface A { getter any (DOMString name); }; [Global=Window] partial interface A {};",
+      "[Exposed=*] interface A {}; partial interface A { getter any (DOMString name); }; [Global=Window] partial interface A {};",
+      "[Exposed=*] interface A {}; [Global=Window] partial interface A { getter any (DOMString name); }; [Global=Worker] partial interface A {};",
+      "[Exposed=*] interface A : Parent {}; [Exposed=*] interface Parent { getter any (DOMString name); }; [Global=Window] partial interface A {};",
+      "[Exposed=*] interface A {}; [Exposed=*] interface B { getter any (DOMString name); }; [Global=Window] partial interface A {};",
+    ] {
+    assert_false(check_global_source(source))
+  }
+  assert_true(
+    check_global_source(
+      "[Exposed=*] interface A {}; partial interface A {}; [Global=Window] partial interface A { getter any (DOMString name); }; partial interface A { undefined f(); };",
+    ),
+  )
+}

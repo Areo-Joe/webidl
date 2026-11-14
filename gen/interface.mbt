@@ -31,6 +31,11 @@ fn check_interfaces(
       None,
     )
     for partial in interface.partials {
+      if partial.extended_attribute_list
+        .iter()
+        .any(attr => is_valid_global(attr) is Some(_)) {
+        check_global_partial_interface_has_named_getter(partial)
+      }
       if ExposedAble::PartialInterface(partial).exposed_attribute()
         is Some(exposed) {
         check_exposed_partial_interface_member_no_duplicate(partial)
