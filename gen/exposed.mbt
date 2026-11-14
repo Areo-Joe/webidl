@@ -276,6 +276,16 @@ fn check_exposed_partial_interface_is_subset_of_interface(
 }
 
 ///|
+/// If [Exposed] appears both on a partial interface mixin and its original interface mixin,
+/// then the partial interface mixin’s own exposure set must be a subset of the interface mixin’s own exposure set.
+fn check_exposed_partial_interface_mixin_is_subset_of_interface_mixin(
+  exposed : Exposed,
+  mixin_own_exposure_set : ExposureSet,
+) -> Unit raise {
+  assert_true(exposed.own_exposure_set().is_subset(mixin_own_exposure_set))
+}
+
+///|
 /// If [Exposed] appears on an interface or namespace member, then the member’s exposure set must be a subset of the exposure set of the interface or namespace it is a member of.
 fn check_exposed_interface_member_is_subset_of_interface(
   interface : Interface,

@@ -11,10 +11,18 @@ fn check_interface_mixins(
       mixin_, available_global_names,
     )
     check_exposed_overloads_on_interface_mixin(mixin_)
+    let mixin_own_exposure_set = ExposedAble::InterfaceMixin(mixin_)
+      .exposed_attribute()
+      .map(exposed => exposed.own_exposure_set())
     for partial in mixin_.partials {
       if ExposedAble::PartialInterfaceMixin(partial).exposed_attribute()
-        is Some(_) {
+        is Some(exposed) {
         check_exposed_partial_interface_mixin_member_no_duplicate(partial)
+        if mixin_own_exposure_set is Some(mixin_own_exposure_set) {
+          check_exposed_partial_interface_mixin_is_subset_of_interface_mixin(
+            exposed, mixin_own_exposure_set,
+          )
+        }
       }
     }
     let has_cross_origin_isolated = mixin_.extended_attribute_list

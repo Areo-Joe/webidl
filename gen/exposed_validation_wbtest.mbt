@@ -10,6 +10,64 @@ fn check_exposed_source(source : String) -> Bool raise {
 }
 
 ///|
+test "Partial mixin own exposure sets must be subsets when both parts specify Exposed" {
+  let globals = "[Exposed=*, Global=(Window,Worker)] interface G {};"
+  for
+    (original_attribute, partial_attribute, expected) in [
+      ("[Exposed=(Window,Worker)]", "[Exposed=Window]", true),
+      ("[Exposed=(Window,Worker)]", "[Exposed=(Worker,Window)]", true),
+      ("[Exposed=Window]", "[Exposed=_Window]", true),
+      ("[Exposed=Window]", "[Exposed=(Window)]", true),
+      ("[Exposed=Window]", "[Exposed=Worker]", false),
+      ("[Exposed=Window]", "[Exposed=(Window,Worker)]", false),
+      ("[Exposed=Window]", "[Exposed=*]", false),
+      ("[Exposed=*]", "[Exposed=Window]", true),
+      ("[Exposed=*]", "[Exposed=*]", true),
+      ("", "[Exposed=Window]", true),
+      ("", "[Exposed=*]", true),
+      ("[Exposed=Window]", "", true),
+      ("[Exposed()]", "[Exposed=Worker]", true),
+      ("[Exposed=Window]", "[Exposed()]", true),
+    ] {
+    let original = original_attribute + " interface mixin M {};"
+    for body in ["", "undefined run();"] {
+      let partial = partial_attribute +
+        " partial interface mixin M { " +
+        body +
+        " };"
+      assert_eq(check_exposed_source(globals + original + partial), expected)
+      assert_eq(check_exposed_source(globals + partial + original), expected)
+    }
+  }
+}
+
+///|
+test "Partial mixin Exposed subsets are checked independently of hosts and other partials" {
+  let globals = "[Exposed=*, Global=(Window,Worker)] interface G {};"
+  for
+    (source, expected) in [
+      (
+        "[Exposed=Window] interface mixin M {}; [Exposed=Window] partial interface mixin M {}; [Exposed=Worker] partial interface mixin M {};",
+        false,
+      ),
+      (
+        "[Exposed=(Window,Worker)] interface mixin M {}; [Exposed=Window] partial interface mixin M {}; [Exposed=Worker] partial interface mixin M {};",
+        true,
+      ),
+      (
+        "[Exposed=Window] interface A {}; [Exposed=Worker] interface mixin M {}; [Exposed=Window] partial interface mixin M {}; A includes M;",
+        false,
+      ),
+      (
+        "[Exposed=Worker] interface A {}; [Exposed=Window] interface mixin M {}; [Exposed=Window] partial interface mixin M {}; A includes M;",
+        true,
+      ),
+    ] {
+    assert_eq(check_exposed_source(globals + source), expected)
+  }
+}
+
+///|
 test "Mixin Exposed identifiers must be unique global names in every declaration part" {
   let globals = "[Exposed=*, Global=(_Window,Worker)] interface G {};"
   for
