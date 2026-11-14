@@ -46,7 +46,7 @@ test "LegacyFactoryFunction cannot share an interface with Global" {
     ] {
     assert_eq(
       check_legacy_factory_function_source(
-        "[" + attributes + "] interface A {};",
+        "[Exposed=*, " + attributes + "] interface A {};",
       ),
       expected,
     )
@@ -66,7 +66,7 @@ test "LegacyFactoryFunction rejects normalized reserved identifiers" {
     ] {
     assert_eq(
       check_legacy_factory_function_source(
-        "[LegacyFactoryFunction=" + name + "()] interface A {};",
+        "[Exposed=*, LegacyFactoryFunction=" + name + "()] interface A {};",
       ),
       expected,
     )
@@ -78,27 +78,27 @@ test "LegacyFactoryFunction names can be overloaded on one interface and cannot 
   for
     (source, expected) in [
       (
-        "[LegacyFactoryFunction=Create(long value), LegacyFactoryFunction=_Create(DOMString value)] interface A {};",
+        "[Exposed=*, LegacyFactoryFunction=Create(long value), LegacyFactoryFunction=_Create(DOMString value)] interface A {};",
         true,
       ),
       (
-        "[LegacyFactoryFunction=Create()] interface A {}; [LegacyFactoryFunction=Create()] interface B {};",
+        "[Exposed=*, LegacyFactoryFunction=Create()] interface A {}; [Exposed=*, LegacyFactoryFunction=Create()] interface B {};",
         false,
       ),
       (
-        "[LegacyFactoryFunction=Create(long value)] interface A {}; [LegacyFactoryFunction=_Create(DOMString value)] interface B {};",
+        "[Exposed=*, LegacyFactoryFunction=Create(long value)] interface A {}; [Exposed=*, LegacyFactoryFunction=_Create(DOMString value)] interface B {};",
         false,
       ),
       (
-        "[LegacyFactoryFunction=First()] interface A {}; [LegacyFactoryFunction=Second()] interface B {};",
+        "[Exposed=*, LegacyFactoryFunction=First()] interface A {}; [Exposed=*, LegacyFactoryFunction=Second()] interface B {};",
         true,
       ),
       (
-        "[LegacyFactoryFunction=Create()] interface B {}; [LegacyFactoryFunction=_Create()] interface A {};",
+        "[Exposed=*, LegacyFactoryFunction=Create()] interface B {}; [Exposed=*, LegacyFactoryFunction=_Create()] interface A {};",
         false,
       ),
       (
-        "[Global=Window] interface Window {}; [Global=Worker] interface Worker {}; [Exposed=Window, LegacyFactoryFunction=Create()] interface A {}; [Exposed=Worker, LegacyFactoryFunction=Create()] interface B {};",
+        "[Exposed=*, Global=Window] interface Window {}; [Exposed=*, Global=Worker] interface Worker {}; [Exposed=Window, LegacyFactoryFunction=Create()] interface A {}; [Exposed=Worker, LegacyFactoryFunction=Create()] interface B {};",
         false,
       ),
     ] {
@@ -110,35 +110,39 @@ test "LegacyFactoryFunction names can be overloaded on one interface and cannot 
 test "LegacyFactoryFunction names cannot match any interface object name" {
   for
     (source, expected) in [
-      ("[LegacyFactoryFunction=A()] interface A {};", false),
-      ("[LegacyFactoryFunction=_A()] interface A {};", false),
+      ("[Exposed=*, LegacyFactoryFunction=A()] interface A {};", false),
+      ("[Exposed=*, LegacyFactoryFunction=_A()] interface A {};", false),
       (
-        "[LegacyFactoryFunction=Other()] interface A {}; interface _Other {};", false,
+        "[Exposed=*, LegacyFactoryFunction=Other()] interface A {}; [Exposed=*] interface _Other {};",
+        false,
       ),
       (
-        "interface Other {}; [LegacyFactoryFunction=_Other()] interface A {};", false,
+        "[Exposed=*] interface Other {}; [Exposed=*, LegacyFactoryFunction=_Other()] interface A {};",
+        false,
       ),
       (
-        "[LegacyNoInterfaceObject, LegacyFactoryFunction=A()] interface A {};", true,
-      ),
-      (
-        "[LegacyNoInterfaceObject] interface Other {}; [LegacyFactoryFunction=Other()] interface A {};",
+        "[Exposed=*, LegacyNoInterfaceObject, LegacyFactoryFunction=A()] interface A {};",
         true,
       ),
       (
-        "[LegacyNoInterfaceObject()] interface Other {}; [LegacyFactoryFunction=Other()] interface A {};",
+        "[Exposed=*, LegacyNoInterfaceObject] interface Other {}; [Exposed=*, LegacyFactoryFunction=Other()] interface A {};",
+        true,
+      ),
+      (
+        "[Exposed=*, LegacyNoInterfaceObject()] interface Other {}; [Exposed=*, LegacyFactoryFunction=Other()] interface A {};",
         false,
       ),
       (
-        "[LegacyNoInterfaceObject=Other] interface Other {}; [LegacyFactoryFunction=Other()] interface A {};",
+        "[Exposed=*, LegacyNoInterfaceObject=Other] interface Other {}; [Exposed=*, LegacyFactoryFunction=Other()] interface A {};",
         false,
       ),
       (
-        "[LegacyNamespace=NS] interface Other {}; [LegacyFactoryFunction=Other()] interface A {};",
+        "[Exposed=*, LegacyNamespace=NS] interface Other {}; [Exposed=*, LegacyFactoryFunction=Other()] interface A {};",
         false,
       ),
       (
-        "dictionary Other {}; [LegacyFactoryFunction=Other()] interface A {};", true,
+        "dictionary Other {}; [Exposed=*, LegacyFactoryFunction=Other()] interface A {};",
+        true,
       ),
     ] {
     assert_eq(check_legacy_factory_function_source(source), expected)
@@ -158,23 +162,23 @@ test "LegacyFactoryFunction names cannot match same-interface or other-interface
         false,
       ),
       (
-        "[LegacyFactoryFunction=_Create()] interface A {}; [Exposed=*, LegacyWindowAlias=Create] interface B {};",
+        "[Exposed=*, LegacyFactoryFunction=_Create()] interface A {}; [Exposed=*, LegacyWindowAlias=Create] interface B {};",
         false,
       ),
       (
-        "[Exposed=*, LegacyWindowAlias=(_Create,Other)] interface B {}; [LegacyFactoryFunction=Create()] interface A {};",
+        "[Exposed=*, LegacyWindowAlias=(_Create,Other)] interface B {}; [Exposed=*, LegacyFactoryFunction=Create()] interface A {};",
         false,
       ),
       (
-        "[LegacyFactoryFunction=Create()] interface A {}; [Exposed=*, LegacyWindowAlias=Other] interface B {};",
+        "[Exposed=*, LegacyFactoryFunction=Create()] interface A {}; [Exposed=*, LegacyWindowAlias=Other] interface B {};",
         true,
       ),
       (
-        "[LegacyFactoryFunction=Create()] interface A {}; [LegacyWindowAlias=Create()] interface B {};",
+        "[Exposed=*, LegacyFactoryFunction=Create()] interface A {}; [Exposed=*, LegacyWindowAlias=Create()] interface B {};",
         true,
       ),
       (
-        "[LegacyFactoryFunction=Create()] interface A {}; [LegacyWindowAlias] interface B {};",
+        "[Exposed=*, LegacyFactoryFunction=Create()] interface A {}; [Exposed=*, LegacyWindowAlias] interface B {};",
         true,
       ),
     ] {

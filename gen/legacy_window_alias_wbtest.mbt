@@ -90,23 +90,23 @@ test "LegacyWindowAlias names cannot match factory names or interface object nam
     (source, expected) in [
       ("[Exposed=*, LegacyWindowAlias=_A] interface A {};", false),
       (
-        "interface _Other {}; [Exposed=*, LegacyWindowAlias=Other] interface A {};",
+        "[Exposed=*] interface _Other {}; [Exposed=*, LegacyWindowAlias=Other] interface A {};",
         false,
       ),
       (
-        "[Exposed=*, LegacyWindowAlias=_Other] interface A {}; interface Other {};",
+        "[Exposed=*, LegacyWindowAlias=_Other] interface A {}; [Exposed=*] interface Other {};",
         false,
       ),
       (
-        "[LegacyNoInterfaceObject] interface Other {}; [Exposed=*, LegacyWindowAlias=Other] interface A {};",
+        "[Exposed=*, LegacyNoInterfaceObject] interface Other {}; [Exposed=*, LegacyWindowAlias=Other] interface A {};",
         true,
       ),
       (
-        "[LegacyNoInterfaceObject()] interface Other {}; [Exposed=*, LegacyWindowAlias=Other] interface A {};",
+        "[Exposed=*, LegacyNoInterfaceObject()] interface Other {}; [Exposed=*, LegacyWindowAlias=Other] interface A {};",
         false,
       ),
       (
-        "namespace NS {}; [LegacyNamespace=NS] interface Other {}; [Exposed=*, LegacyWindowAlias=Other] interface A {};",
+        "namespace NS {}; [Exposed=*, LegacyNamespace=NS] interface Other {}; [Exposed=*, LegacyWindowAlias=Other] interface A {};",
         false,
       ),
       (
@@ -118,11 +118,11 @@ test "LegacyWindowAlias names cannot match factory names or interface object nam
         false,
       ),
       (
-        "[LegacyFactoryFunction=_Create()] interface B {}; [Exposed=*, LegacyWindowAlias=Create] interface A {};",
+        "[Exposed=*, LegacyFactoryFunction=_Create()] interface B {}; [Exposed=*, LegacyWindowAlias=Create] interface A {};",
         false,
       ),
       (
-        "[Exposed=*, LegacyWindowAlias=Create] interface A {}; [LegacyFactoryFunction=_Create()] interface B {};",
+        "[Exposed=*, LegacyWindowAlias=Create] interface A {}; [Exposed=*, LegacyFactoryFunction=_Create()] interface B {};",
         false,
       ),
     ] {
@@ -159,7 +159,7 @@ test "LegacyWindowAlias cannot share an interface with LegacyNoInterfaceObject o
 
 ///|
 test "LegacyWindowAlias requires Window in its interface exposure set" {
-  let globals = "[Global=Window] interface Window {}; [Global=Worker] interface Worker {};"
+  let globals = "[Exposed=*, Global=Window] interface Window {}; [Exposed=*, Global=Worker] interface Worker {};"
   for
     (attrs, expected) in [
       ("Exposed=Window, LegacyWindowAlias=Old", true),
@@ -191,9 +191,9 @@ test "LegacyWindowAlias requires Window in its interface exposure set" {
 test "LegacyWindowAlias leaves malformed forms and unsupported placements for later validation" {
   for
     source in [
-      "[LegacyWindowAlias()] interface A {};", "[LegacyWindowAlias=Old()] interface A {};",
-      "[LegacyNoInterfaceObject, LegacyWindowAlias()] interface A {};", "[LegacyNamespace=NS, LegacyWindowAlias()] interface A {};",
-      "interface A {}; [LegacyWindowAlias=Old] partial interface A {};",
+      "[Exposed=*, LegacyWindowAlias()] interface A {};", "[Exposed=*, LegacyWindowAlias=Old()] interface A {};",
+      "[Exposed=*, LegacyNoInterfaceObject, LegacyWindowAlias()] interface A {};",
+      "[Exposed=*, LegacyNamespace=NS, LegacyWindowAlias()] interface A {};", "[Exposed=*] interface A {}; [LegacyWindowAlias=Old] partial interface A {};",
     ] {
     assert_true(check_legacy_window_alias_source(source))
   }

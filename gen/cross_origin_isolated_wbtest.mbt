@@ -38,7 +38,9 @@ test "CrossOriginIsolated requires consistent marking in each operation overload
       ),
     ] {
     assert_eq(
-      check_cross_origin_isolated_source("interface A { " + body + " };"),
+      check_cross_origin_isolated_source(
+        "[Exposed=*] interface A { " + body + " };",
+      ),
       expected,
     )
   }
@@ -71,7 +73,9 @@ test "CrossOriginIsolated overload marking includes constructors and named speci
       ),
     ] {
     assert_eq(
-      check_cross_origin_isolated_source("interface A { " + body + " };"),
+      check_cross_origin_isolated_source(
+        "[Exposed=*] interface A { " + body + " };",
+      ),
       expected,
     )
   }
@@ -82,31 +86,31 @@ test "CrossOriginIsolated overload marking checks partials and excludes inherite
   for
     (source, expected) in [
       (
-        "interface A {}; partial interface A { [CrossOriginIsolated] undefined run(long value); undefined run(DOMString value); };",
+        "[Exposed=*] interface A {}; partial interface A { [CrossOriginIsolated] undefined run(long value); undefined run(DOMString value); };",
         false,
       ),
       (
-        "interface A {}; partial interface A { [CrossOriginIsolated] undefined run(long value); [CrossOriginIsolated] undefined run(DOMString value); };",
+        "[Exposed=*] interface A {}; partial interface A { [CrossOriginIsolated] undefined run(long value); [CrossOriginIsolated] undefined run(DOMString value); };",
         true,
       ),
       (
-        "[CrossOriginIsolated] interface A {}; partial interface A { undefined run(long value); undefined run(DOMString value); };",
+        "[Exposed=*, CrossOriginIsolated] interface A {}; partial interface A { undefined run(long value); undefined run(DOMString value); };",
         true,
       ),
       (
-        "interface A {}; [CrossOriginIsolated] partial interface A { undefined run(long value); undefined run(DOMString value); };",
+        "[Exposed=*] interface A {}; [CrossOriginIsolated] partial interface A { undefined run(long value); undefined run(DOMString value); };",
         true,
       ),
       (
-        "interface A { [CrossOriginIsolated] undefined run(long value); }; partial interface A { undefined run(DOMString value); };",
+        "[Exposed=*] interface A { [CrossOriginIsolated] undefined run(long value); }; partial interface A { undefined run(DOMString value); };",
         false,
       ),
       (
-        "interface A {}; partial interface A { undefined run(long value); }; partial interface A { [CrossOriginIsolated] undefined run(DOMString value); };",
+        "[Exposed=*] interface A {}; partial interface A { undefined run(long value); }; partial interface A { [CrossOriginIsolated] undefined run(DOMString value); };",
         false,
       ),
       (
-        "interface Parent { [CrossOriginIsolated] undefined run(long value); }; interface Child : Parent { undefined run(DOMString value); };",
+        "[Exposed=*] interface Parent { [CrossOriginIsolated] undefined run(long value); }; [Exposed=*] interface Child : Parent { undefined run(DOMString value); };",
         true,
       ),
     ] {
@@ -136,7 +140,9 @@ test "CrossOriginIsolated overload marking ignores malformed forms and other att
       ),
     ] {
     assert_eq(
-      check_cross_origin_isolated_source("interface A { " + body + " };"),
+      check_cross_origin_isolated_source(
+        "[Exposed=*] interface A { " + body + " };",
+      ),
       expected,
     )
   }

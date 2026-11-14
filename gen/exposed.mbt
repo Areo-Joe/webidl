@@ -136,6 +136,12 @@ fn check_exposed_attributes(
 }
 
 ///|
+/// Interfaces must be annotated with an [Exposed] extended attribute.
+fn check_exposed_on_interface(interface : Interface) -> Unit raise {
+  assert_true(ExposedAble::Interface(interface).exposed_attribute() is Some(_))
+}
+
+///|
 fn check_exposed_global_names_on_interface(
   interface : Interface,
   available_global_names : Array[StringView],

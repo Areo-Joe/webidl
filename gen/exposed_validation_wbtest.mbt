@@ -10,6 +10,67 @@ fn check_exposed_source(source : String) -> Bool raise {
 }
 
 ///|
+test "Interfaces require a recognized Exposed attribute on their original definition" {
+  for
+    (source, expected) in [
+      ("interface A {};", false),
+      ("[SecureContext] interface A {};", false),
+      ("[Exposed] interface A {};", false),
+      ("[Exposed()] interface A {};", false),
+      ("[Exposed=Window()] interface A {};", false),
+      ("[Exposed=\"Window\"] interface A {};", false),
+      ("[exposed=*] interface A {};", false),
+      ("[Exposed=*] interface A {};", true),
+      (
+        "[Exposed=Window] interface A {}; [Exposed=*, Global=Window] interface W {};",
+        true,
+      ),
+      (
+        "[Exposed=(Window,Worker)] interface A {}; [Exposed=*, Global=(Window,Worker)] interface W {};",
+        true,
+      ),
+      ("[Exposed=*] interface A {}; interface B {};", false),
+      ("[Exposed=*] interface A {}; interface B : A {};", false),
+    ] {
+    assert_eq(check_exposed_source(source), expected)
+  }
+}
+
+///|
+test "Partial and member Exposed annotations cannot replace the original interface annotation" {
+  for
+    (original, expected) in [
+      ("interface A {};", false),
+      ("[Exposed()] interface A {};", false),
+      ("[Exposed=*] interface A {};", true),
+    ] {
+    let partial = "[Exposed=*] partial interface A { undefined run(); };"
+    assert_eq(check_exposed_source(original + partial), expected)
+    assert_eq(check_exposed_source(partial + original), expected)
+  }
+  assert_false(
+    check_exposed_source("interface A { [Exposed=*] undefined run(); };"),
+  )
+  assert_true(
+    check_exposed_source(
+      "[Exposed=*] interface A {}; partial interface A { undefined run(); };",
+    ),
+  )
+}
+
+///|
+test "Interface Exposed requirement does not apply to interface mixins or callback interfaces" {
+  assert_true(
+    check_exposed_source(
+      "interface mixin M {}; partial interface mixin M { undefined run(); };",
+    ),
+  )
+  assert_true(
+    check_exposed_source("callback interface C { undefined run(); };"),
+  )
+}
+
+///|
 test "Exposed interface validation matches global names and rejects duplicates" {
   let globals = "[Exposed=*, Global=Window] interface WindowGlobal {}; [Exposed=*, Global=(Worker,DedicatedWorker)] interface WorkerGlobal {};"
   for
@@ -27,7 +88,7 @@ test "Exposed interface validation matches global names and rejects duplicates" 
     assert_eq(check_exposed_source(source + globals), valid)
   }
   assert_true(check_exposed_source("[Exposed=*] interface A {};"))
-  assert_true(check_exposed_source("interface A {};"))
+  assert_false(check_exposed_source("interface A {};"))
   assert_true(
     check_exposed_source(
       "[Exposed=_Window] interface A {}; [Exposed=*, Global=_Window] interface W {};",
@@ -177,7 +238,7 @@ test "Exposed partial own exposure set must be a subset of the original interfac
       ("[Exposed=Window]", "[Exposed=(Window,Worker)]", false),
       ("[Exposed=Window]", "[Exposed=*]", false),
       ("[Exposed=Window]", "", true),
-      ("", "", true),
+      ("[Exposed=*]", "", true),
     ] {
     for body in ["", "undefined f();"] {
       for partial_first in [true, false] {

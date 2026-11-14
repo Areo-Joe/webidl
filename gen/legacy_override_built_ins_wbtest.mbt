@@ -29,15 +29,17 @@ test "LegacyOverrideBuiltIns on an interface requires its own named getter" {
     ] {
     assert_eq(
       check_legacy_override_built_ins_source(
-        "[LegacyOverrideBuiltIns] interface A { " + members + " };",
+        "[Exposed=*, LegacyOverrideBuiltIns] interface A { " + members + " };",
       ),
       expected,
     )
   }
-  assert_true(check_legacy_override_built_ins_source("interface A {};"))
+  assert_true(
+    check_legacy_override_built_ins_source("[Exposed=*] interface A {};"),
+  )
   assert_false(
     check_legacy_override_built_ins_source(
-      "interface Parent { getter any (DOMString key); }; [LegacyOverrideBuiltIns] interface Child : Parent {};",
+      "[Exposed=*] interface Parent { getter any (DOMString key); }; [Exposed=*, LegacyOverrideBuiltIns] interface Child : Parent {};",
     ),
   )
 }
@@ -46,15 +48,15 @@ test "LegacyOverrideBuiltIns on an interface requires its own named getter" {
 test "LegacyOverrideBuiltIns on an interface includes getters in partial definitions" {
   for
     source in [
-      "[LegacyOverrideBuiltIns] interface A {}; partial interface A { getter any (DOMString key); };",
-      "partial interface A { getter any (DOMString key); }; [LegacyOverrideBuiltIns] interface A {};",
-      "partial interface A { undefined run(); }; [LegacyOverrideBuiltIns] interface A {}; partial interface A { getter any (DOMString key); };",
+      "[Exposed=*, LegacyOverrideBuiltIns] interface A {}; partial interface A { getter any (DOMString key); };",
+      "partial interface A { getter any (DOMString key); }; [Exposed=*, LegacyOverrideBuiltIns] interface A {};",
+      "partial interface A { undefined run(); }; [Exposed=*, LegacyOverrideBuiltIns] interface A {}; partial interface A { getter any (DOMString key); };",
     ] {
     assert_true(check_legacy_override_built_ins_source(source))
   }
   assert_false(
     check_legacy_override_built_ins_source(
-      "[LegacyOverrideBuiltIns] interface A {}; partial interface A { getter any (unsigned long index); };",
+      "[Exposed=*, LegacyOverrideBuiltIns] interface A {}; partial interface A { getter any (unsigned long index); };",
     ),
   )
 }
@@ -64,30 +66,31 @@ test "LegacyOverrideBuiltIns on a partial requires the getter in that same parti
   for
     (source, expected) in [
       (
-        "interface A {}; [LegacyOverrideBuiltIns] partial interface A { getter any (DOMString key); };",
+        "[Exposed=*] interface A {}; [LegacyOverrideBuiltIns] partial interface A { getter any (DOMString key); };",
         true,
       ),
       (
-        "[LegacyOverrideBuiltIns] partial interface A { getter any (DOMString key); }; interface A {};",
+        "[LegacyOverrideBuiltIns] partial interface A { getter any (DOMString key); }; [Exposed=*] interface A {};",
         true,
       ),
       (
-        "interface A {}; [LegacyOverrideBuiltIns] partial interface A {};", false,
-      ),
-      (
-        "interface A { getter any (DOMString key); }; [LegacyOverrideBuiltIns] partial interface A {};",
+        "[Exposed=*] interface A {}; [LegacyOverrideBuiltIns] partial interface A {};",
         false,
       ),
       (
-        "interface A {}; [LegacyOverrideBuiltIns] partial interface A {}; partial interface A { getter any (DOMString key); };",
+        "[Exposed=*] interface A { getter any (DOMString key); }; [LegacyOverrideBuiltIns] partial interface A {};",
         false,
       ),
       (
-        "interface A {}; [LegacyOverrideBuiltIns] partial interface A { getter any (unsigned long index); };",
+        "[Exposed=*] interface A {}; [LegacyOverrideBuiltIns] partial interface A {}; partial interface A { getter any (DOMString key); };",
         false,
       ),
       (
-        "[LegacyOverrideBuiltIns] interface A {}; [LegacyOverrideBuiltIns] partial interface A { getter any (DOMString key); };",
+        "[Exposed=*] interface A {}; [LegacyOverrideBuiltIns] partial interface A { getter any (unsigned long index); };",
+        false,
+      ),
+      (
+        "[Exposed=*, LegacyOverrideBuiltIns] interface A {}; [LegacyOverrideBuiltIns] partial interface A { getter any (DOMString key); };",
         true,
       ),
     ] {
@@ -98,17 +101,20 @@ test "LegacyOverrideBuiltIns on a partial requires the getter in that same parti
 ///|
 test "Named getter checks resolve typedefs in interface and partial declarations" {
   let forms = [
-    ("[LegacyOverrideBuiltIns] interface A { getter any (", " key); };"),
     (
-      "[LegacyOverrideBuiltIns] interface A {}; partial interface A { getter any (",
+      "[Exposed=*, LegacyOverrideBuiltIns] interface A { getter any (", " key); };",
+    ),
+    (
+      "[Exposed=*, LegacyOverrideBuiltIns] interface A {}; partial interface A { getter any (",
       " key); };",
     ),
     (
-      "interface A {}; [LegacyOverrideBuiltIns] partial interface A { getter any (",
+      "[Exposed=*] interface A {}; [LegacyOverrideBuiltIns] partial interface A { getter any (",
       " key); };",
     ),
     (
-      "interface A {}; [Global=Window] partial interface A { getter any (", " key); };",
+      "[Exposed=*] interface A {}; [Global=Window] partial interface A { getter any (",
+      " key); };",
     ),
   ]
   for (prefix, suffix) in forms {
@@ -137,8 +143,8 @@ test "Named getter checks resolve typedefs in interface and partial declarations
 test "LegacyOverrideBuiltIns on a partial conflicts with Global on its interface" {
   for
     source in [
-      "[Global=Window] interface A {}; [LegacyOverrideBuiltIns] partial interface A { getter any (DOMString key); };",
-      "[LegacyOverrideBuiltIns] partial interface A { getter any (DOMString key); }; [Global=(Window,Worker)] interface A {};",
+      "[Exposed=*, Global=Window] interface A {}; [LegacyOverrideBuiltIns] partial interface A { getter any (DOMString key); };",
+      "[LegacyOverrideBuiltIns] partial interface A { getter any (DOMString key); }; [Exposed=*, Global=(Window,Worker)] interface A {};",
     ] {
     assert_false(check_legacy_override_built_ins_source(source))
   }
@@ -148,15 +154,15 @@ test "LegacyOverrideBuiltIns on a partial conflicts with Global on its interface
 test "Global interfaces cannot inherit LegacyOverrideBuiltIns applied through ancestor partials" {
   for
     ancestors in [
-      "interface Parent {}; [LegacyOverrideBuiltIns] partial interface Parent { getter any (DOMString key); };",
-      "interface Parent : Root {}; interface Root {}; [LegacyOverrideBuiltIns] partial interface Root { getter any (DOMString key); };",
+      "[Exposed=*] interface Parent {}; [LegacyOverrideBuiltIns] partial interface Parent { getter any (DOMString key); };",
+      "[Exposed=*] interface Parent : Root {}; [Exposed=*] interface Root {}; [LegacyOverrideBuiltIns] partial interface Root { getter any (DOMString key); };",
     ] {
-    let child = "[Global=Window] interface Child : Parent {};"
+    let child = "[Exposed=*, Global=Window] interface Child : Parent {};"
     assert_false(check_legacy_override_built_ins_source(child + ancestors))
     assert_false(check_legacy_override_built_ins_source(ancestors + child))
     assert_true(
       check_legacy_override_built_ins_source(
-        "interface Child : Parent {};" + ancestors,
+        "[Exposed=*] interface Child : Parent {};" + ancestors,
       ),
     )
   }
@@ -166,9 +172,10 @@ test "Global interfaces cannot inherit LegacyOverrideBuiltIns applied through an
 test "LegacyOverrideBuiltIns leaves malformed forms unrecognized" {
   for
     source in [
-      "[LegacyOverrideBuiltIns()] interface A {};", "[LegacyOverrideBuiltIns=Name] interface A {};",
-      "interface A {}; [LegacyOverrideBuiltIns()] partial interface A {};", "[Global=Window] interface A {}; [LegacyOverrideBuiltIns()] partial interface A {};",
-      "interface Parent {}; [LegacyOverrideBuiltIns()] partial interface Parent {}; [Global=Window] interface Child : Parent {};",
+      "[Exposed=*, LegacyOverrideBuiltIns()] interface A {};", "[Exposed=*, LegacyOverrideBuiltIns=Name] interface A {};",
+      "[Exposed=*] interface A {}; [LegacyOverrideBuiltIns()] partial interface A {};",
+      "[Exposed=*, Global=Window] interface A {}; [LegacyOverrideBuiltIns()] partial interface A {};",
+      "[Exposed=*] interface Parent {}; [LegacyOverrideBuiltIns()] partial interface Parent {}; [Exposed=*, Global=Window] interface Child : Parent {};",
     ] {
     assert_true(check_legacy_override_built_ins_source(source))
   }

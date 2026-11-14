@@ -52,14 +52,14 @@ test "LegacyNoInterfaceObject forbids constructors and static operations on the 
     ] {
     assert_eq(
       check_legacy_no_interface_object_source(
-        "[LegacyNoInterfaceObject] interface A { " + members + " };",
+        "[Exposed=*, LegacyNoInterfaceObject] interface A { " + members + " };",
       ),
       expected,
     )
   }
   assert_true(
     check_legacy_no_interface_object_source(
-      "interface A { constructor(); static undefined run(); };",
+      "[Exposed=*] interface A { constructor(); static undefined run(); };",
     ),
   )
 }
@@ -68,20 +68,20 @@ test "LegacyNoInterfaceObject forbids constructors and static operations on the 
 test "LegacyNoInterfaceObject checks static operations in every partial regardless of order" {
   for
     source in [
-      "[LegacyNoInterfaceObject] interface A {}; partial interface A { static undefined run(); };",
-      "partial interface A { static undefined run(); }; [LegacyNoInterfaceObject] interface A {};",
-      "partial interface A { undefined run(); }; [LegacyNoInterfaceObject] interface A {}; partial interface A { static undefined last(); };",
+      "[Exposed=*, LegacyNoInterfaceObject] interface A {}; partial interface A { static undefined run(); };",
+      "partial interface A { static undefined run(); }; [Exposed=*, LegacyNoInterfaceObject] interface A {};",
+      "partial interface A { undefined run(); }; [Exposed=*, LegacyNoInterfaceObject] interface A {}; partial interface A { static undefined last(); };",
     ] {
     assert_false(check_legacy_no_interface_object_source(source))
   }
   assert_true(
     check_legacy_no_interface_object_source(
-      "[LegacyNoInterfaceObject] interface A {}; partial interface A { static attribute long value; undefined run(); };",
+      "[Exposed=*, LegacyNoInterfaceObject] interface A {}; partial interface A { static attribute long value; undefined run(); };",
     ),
   )
   assert_true(
     check_legacy_no_interface_object_source(
-      "interface A {}; partial interface A { static undefined run(); };",
+      "[Exposed=*] interface A {}; partial interface A { static undefined run(); };",
     ),
   )
 }
@@ -90,28 +90,37 @@ test "LegacyNoInterfaceObject checks static operations in every partial regardle
 test "LegacyNoInterfaceObject inheritance requires the attribute on derived interfaces" {
   for
     (source, expected) in [
-      ("[LegacyNoInterfaceObject] interface A {}; interface B : A {};", false),
       (
-        "[LegacyNoInterfaceObject] interface A {}; [LegacyNoInterfaceObject] interface B : A {};",
-        true,
-      ),
-      (
-        "[LegacyNoInterfaceObject] interface A {}; [LegacyNoInterfaceObject] interface B : A {}; interface C : B {};",
+        "[Exposed=*, LegacyNoInterfaceObject] interface A {}; [Exposed=*] interface B : A {};",
         false,
       ),
       (
-        "[LegacyNoInterfaceObject] interface A {}; [LegacyNoInterfaceObject] interface B : A {}; [LegacyNoInterfaceObject] interface C : B {};",
-        true,
-      ),
-      ("interface A {}; [LegacyNoInterfaceObject] interface B : A {};", true),
-      ("interface A {}; interface B : A {};", true),
-      ("interface B : _A {}; [LegacyNoInterfaceObject] interface A {};", false),
-      (
-        "interface A { constructor(); static undefined run(); }; [LegacyNoInterfaceObject] interface B : A {};",
+        "[Exposed=*, LegacyNoInterfaceObject] interface A {}; [Exposed=*, LegacyNoInterfaceObject] interface B : A {};",
         true,
       ),
       (
-        "interface A {}; partial interface A { static undefined run(); }; [LegacyNoInterfaceObject] interface B : A {};",
+        "[Exposed=*, LegacyNoInterfaceObject] interface A {}; [Exposed=*, LegacyNoInterfaceObject] interface B : A {}; [Exposed=*] interface C : B {};",
+        false,
+      ),
+      (
+        "[Exposed=*, LegacyNoInterfaceObject] interface A {}; [Exposed=*, LegacyNoInterfaceObject] interface B : A {}; [Exposed=*, LegacyNoInterfaceObject] interface C : B {};",
+        true,
+      ),
+      (
+        "[Exposed=*] interface A {}; [Exposed=*, LegacyNoInterfaceObject] interface B : A {};",
+        true,
+      ),
+      ("[Exposed=*] interface A {}; [Exposed=*] interface B : A {};", true),
+      (
+        "[Exposed=*] interface B : _A {}; [Exposed=*, LegacyNoInterfaceObject] interface A {};",
+        false,
+      ),
+      (
+        "[Exposed=*] interface A { constructor(); static undefined run(); }; [Exposed=*, LegacyNoInterfaceObject] interface B : A {};",
+        true,
+      ),
+      (
+        "[Exposed=*] interface A {}; partial interface A { static undefined run(); }; [Exposed=*, LegacyNoInterfaceObject] interface B : A {};",
         true,
       ),
     ] {
@@ -123,15 +132,16 @@ test "LegacyNoInterfaceObject inheritance requires the attribute on derived inte
 test "LegacyNoInterfaceObject leaves malformed forms and unsupported placements for later validation" {
   for
     source in [
-      "[LegacyNoInterfaceObject()] interface A { constructor(); static undefined run(); };",
-      "[LegacyNoInterfaceObject=Name] interface A { constructor(); static undefined run(); };",
-      "[LegacyNoInterfaceObject()] interface A {}; interface B : A {};", "interface A {}; [LegacyNoInterfaceObject] partial interface A { static undefined run(); };",
+      "[Exposed=*, LegacyNoInterfaceObject()] interface A { constructor(); static undefined run(); };",
+      "[Exposed=*, LegacyNoInterfaceObject=Name] interface A { constructor(); static undefined run(); };",
+      "[Exposed=*, LegacyNoInterfaceObject()] interface A {}; [Exposed=*] interface B : A {};",
+      "[Exposed=*] interface A {}; [LegacyNoInterfaceObject] partial interface A { static undefined run(); };",
     ] {
     assert_true(check_legacy_no_interface_object_source(source))
   }
   assert_false(
     check_legacy_no_interface_object_source(
-      "[LegacyNoInterfaceObject] interface A {}; [LegacyNoInterfaceObject()] interface B : A {};",
+      "[Exposed=*, LegacyNoInterfaceObject] interface A {}; [Exposed=*, LegacyNoInterfaceObject()] interface B : A {};",
     ),
   )
 }

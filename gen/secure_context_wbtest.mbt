@@ -44,17 +44,19 @@ test "SecureContext cannot mark both an interface and any of its members" {
     ] {
     assert_false(
       check_secure_context_source(
-        "[SecureContext] interface A { [SecureContext] " + member_ + " };",
+        "[Exposed=*, SecureContext] interface A { [SecureContext] " +
+        member_ +
+        " };",
       ),
     )
     assert_true(
       check_secure_context_source(
-        "interface A { [SecureContext] " + member_ + " };",
+        "[Exposed=*] interface A { [SecureContext] " + member_ + " };",
       ),
     )
     assert_true(
       check_secure_context_source(
-        "[SecureContext] interface A { " + member_ + " };",
+        "[Exposed=*, SecureContext] interface A { " + member_ + " };",
       ),
     )
   }
@@ -65,31 +67,31 @@ test "SecureContext duplicate marking uses the member's partial and original int
   for
     (source, expected) in [
       (
-        "[SecureContext] interface A {}; partial interface A { [SecureContext] undefined run(); };",
+        "[Exposed=*, SecureContext] interface A {}; partial interface A { [SecureContext] undefined run(); };",
         false,
       ),
       (
-        "interface A {}; [SecureContext] partial interface A { [SecureContext] undefined run(); };",
+        "[Exposed=*] interface A {}; [SecureContext] partial interface A { [SecureContext] undefined run(); };",
         false,
       ),
       (
-        "interface A {}; [SecureContext] partial interface A { undefined run(); };",
+        "[Exposed=*] interface A {}; [SecureContext] partial interface A { undefined run(); };",
         true,
       ),
       (
-        "[SecureContext] interface A {}; [SecureContext] partial interface A { undefined run(); };",
+        "[Exposed=*, SecureContext] interface A {}; [SecureContext] partial interface A { undefined run(); };",
         true,
       ),
       (
-        "interface A { [SecureContext] undefined run(); }; [SecureContext] partial interface A { undefined other(); };",
+        "[Exposed=*] interface A { [SecureContext] undefined run(); }; [SecureContext] partial interface A { undefined other(); };",
         true,
       ),
       (
-        "interface A {}; [SecureContext] partial interface A { undefined first(); }; partial interface A { [SecureContext] undefined second(); };",
+        "[Exposed=*] interface A {}; [SecureContext] partial interface A { undefined first(); }; partial interface A { [SecureContext] undefined second(); };",
         true,
       ),
       (
-        "partial interface A { [SecureContext] undefined run(); }; [SecureContext] interface A {};",
+        "partial interface A { [SecureContext] undefined run(); }; [Exposed=*, SecureContext] interface A {};",
         false,
       ),
     ] {
@@ -101,27 +103,37 @@ test "SecureContext duplicate marking uses the member's partial and original int
 test "SecureContext inheritance is determined by original interface annotations" {
   for
     (source, expected) in [
-      ("[SecureContext] interface A {}; interface B : A {};", false),
       (
-        "[SecureContext] interface A {}; [SecureContext] interface B : A {};", true,
-      ),
-      ("interface A {}; [SecureContext] interface B : A {};", true),
-      ("interface A {}; interface B : A {};", true),
-      (
-        "[SecureContext] interface A {}; [SecureContext] interface B : A {}; interface C : B {};",
+        "[Exposed=*, SecureContext] interface A {}; [Exposed=*] interface B : A {};",
         false,
       ),
       (
-        "[SecureContext] interface A {}; [SecureContext] interface B : A {}; [SecureContext] interface C : B {};",
-        true,
-      ),
-      ("interface B : _A {}; [SecureContext] interface A {};", false),
-      (
-        "interface A {}; [SecureContext] partial interface A { undefined run(); }; interface B : A {};",
+        "[Exposed=*, SecureContext] interface A {}; [Exposed=*, SecureContext] interface B : A {};",
         true,
       ),
       (
-        "[SecureContext] interface A {}; interface B : A {}; [SecureContext] partial interface B {};",
+        "[Exposed=*] interface A {}; [Exposed=*, SecureContext] interface B : A {};",
+        true,
+      ),
+      ("[Exposed=*] interface A {}; [Exposed=*] interface B : A {};", true),
+      (
+        "[Exposed=*, SecureContext] interface A {}; [Exposed=*, SecureContext] interface B : A {}; [Exposed=*] interface C : B {};",
+        false,
+      ),
+      (
+        "[Exposed=*, SecureContext] interface A {}; [Exposed=*, SecureContext] interface B : A {}; [Exposed=*, SecureContext] interface C : B {};",
+        true,
+      ),
+      (
+        "[Exposed=*] interface B : _A {}; [Exposed=*, SecureContext] interface A {};",
+        false,
+      ),
+      (
+        "[Exposed=*] interface A {}; [SecureContext] partial interface A { undefined run(); }; [Exposed=*] interface B : A {};",
+        true,
+      ),
+      (
+        "[Exposed=*, SecureContext] interface A {}; [Exposed=*] interface B : A {}; [SecureContext] partial interface B {};",
         false,
       ),
     ] {
@@ -133,61 +145,61 @@ test "SecureContext inheritance is determined by original interface annotations"
 test "SecureContext cannot annotate constructs conditionally exposed on CrossOriginIsolated" {
   for
     (source, expected) in [
-      ("[SecureContext, CrossOriginIsolated] interface A {};", false),
+      ("[Exposed=*, SecureContext, CrossOriginIsolated] interface A {};", false),
       (
-        "interface A { [CrossOriginIsolated, SecureContext] undefined run(); };",
+        "[Exposed=*] interface A { [CrossOriginIsolated, SecureContext] undefined run(); };",
         false,
       ),
       (
-        "[CrossOriginIsolated] interface A { [SecureContext] undefined run(); };",
+        "[Exposed=*, CrossOriginIsolated] interface A { [SecureContext] undefined run(); };",
         false,
       ),
       (
-        "[CrossOriginIsolated] interface A {}; partial interface A { [SecureContext] undefined run(); };",
+        "[Exposed=*, CrossOriginIsolated] interface A {}; partial interface A { [SecureContext] undefined run(); };",
         false,
       ),
       (
-        "[CrossOriginIsolated] interface A {}; [SecureContext] partial interface A {};",
+        "[Exposed=*, CrossOriginIsolated] interface A {}; [SecureContext] partial interface A {};",
         true,
       ),
       (
-        "interface A {}; [CrossOriginIsolated, SecureContext] partial interface A {};",
+        "[Exposed=*] interface A {}; [CrossOriginIsolated, SecureContext] partial interface A {};",
         true,
       ),
       (
-        "[CrossOriginIsolated] interface A {}; [SecureContext] partial interface A { undefined run(); };",
+        "[Exposed=*, CrossOriginIsolated] interface A {}; [SecureContext] partial interface A { undefined run(); };",
         true,
       ),
       (
-        "interface A {}; [CrossOriginIsolated, SecureContext] partial interface A { undefined run(); };",
+        "[Exposed=*] interface A {}; [CrossOriginIsolated, SecureContext] partial interface A { undefined run(); };",
         true,
       ),
       (
-        "interface A {}; [CrossOriginIsolated] partial interface A { [SecureContext] undefined run(); };",
+        "[Exposed=*] interface A {}; [CrossOriginIsolated] partial interface A { [SecureContext] undefined run(); };",
         false,
       ),
       (
-        "interface A {}; partial interface A { [CrossOriginIsolated, SecureContext] undefined run(); };",
+        "[Exposed=*] interface A {}; partial interface A { [CrossOriginIsolated, SecureContext] undefined run(); };",
         false,
       ),
       (
-        "[SecureContext] interface A { [CrossOriginIsolated] undefined run(); };",
+        "[Exposed=*, SecureContext] interface A { [CrossOriginIsolated] undefined run(); };",
         true,
       ),
       (
-        "[SecureContext] interface A {}; [CrossOriginIsolated] partial interface A { undefined run(); };",
+        "[Exposed=*, SecureContext] interface A {}; [CrossOriginIsolated] partial interface A { undefined run(); };",
         true,
       ),
       (
-        "interface A { [SecureContext] undefined run(); }; [CrossOriginIsolated] partial interface A { undefined other(); };",
+        "[Exposed=*] interface A { [SecureContext] undefined run(); }; [CrossOriginIsolated] partial interface A { undefined other(); };",
         true,
       ),
       (
-        "interface A {}; [CrossOriginIsolated] partial interface A { undefined first(); }; [SecureContext] partial interface A { undefined second(); };",
+        "[Exposed=*] interface A {}; [CrossOriginIsolated] partial interface A { undefined first(); }; [SecureContext] partial interface A { undefined second(); };",
         true,
       ),
       (
-        "interface A {}; [SecureContext] partial interface A { [CrossOriginIsolated] undefined run(); };",
+        "[Exposed=*] interface A {}; [SecureContext] partial interface A { [CrossOriginIsolated] undefined run(); };",
         true,
       ),
     ] {
@@ -235,7 +247,9 @@ test "SecureContext must mark every regular or static overload in its own group"
       ),
     ] {
     assert_eq(
-      check_secure_context_source("interface A { " + members + " };"),
+      check_secure_context_source(
+        "[Exposed=*] interface A { " + members + " };",
+      ),
       expected,
     )
   }
@@ -267,7 +281,9 @@ test "SecureContext overload checks include constructors and named special opera
       ),
     ] {
     assert_eq(
-      check_secure_context_source("interface A { " + members + " };"),
+      check_secure_context_source(
+        "[Exposed=*] interface A { " + members + " };",
+      ),
       expected,
     )
   }
@@ -278,27 +294,27 @@ test "SecureContext overload checks cover partial declarations and exclude inher
   for
     (source, expected) in [
       (
-        "interface A {}; partial interface A { [SecureContext] undefined run(long value); undefined run(DOMString value); };",
+        "[Exposed=*] interface A {}; partial interface A { [SecureContext] undefined run(long value); undefined run(DOMString value); };",
         false,
       ),
       (
-        "interface A {}; partial interface A { [SecureContext] undefined run(long value); [SecureContext] undefined run(DOMString value); };",
+        "[Exposed=*] interface A {}; partial interface A { [SecureContext] undefined run(long value); [SecureContext] undefined run(DOMString value); };",
         true,
       ),
       (
-        "[SecureContext] interface A {}; partial interface A { undefined run(long value); undefined run(DOMString value); };",
+        "[Exposed=*, SecureContext] interface A {}; partial interface A { undefined run(long value); undefined run(DOMString value); };",
         true,
       ),
       (
-        "interface A { [SecureContext] undefined run(long value); }; partial interface A { undefined run(DOMString value); };",
+        "[Exposed=*] interface A { [SecureContext] undefined run(long value); }; partial interface A { undefined run(DOMString value); };",
         false,
       ),
       (
-        "interface A {}; partial interface A { undefined run(long value); }; partial interface A { [SecureContext] undefined run(DOMString value); };",
+        "[Exposed=*] interface A {}; partial interface A { undefined run(long value); }; partial interface A { [SecureContext] undefined run(DOMString value); };",
         false,
       ),
       (
-        "interface Parent { [SecureContext] undefined run(long value); }; interface Child : Parent { undefined run(DOMString value); };",
+        "[Exposed=*] interface Parent { [SecureContext] undefined run(long value); }; [Exposed=*] interface Child : Parent { undefined run(DOMString value); };",
         true,
       ),
     ] {
@@ -311,21 +327,29 @@ test "SecureContext malformed forms do not participate in semantic checks" {
   for
     (source, expected) in [
       (
-        "[SecureContext] interface A { [SecureContext()] undefined run(); };", true,
-      ),
-      ("[SecureContext()] interface A {}; interface B : A {};", true),
-      (
-        "[SecureContext] interface A {}; [SecureContext()] interface B : A {};",
-        false,
-      ),
-      ("[SecureContext=Name, CrossOriginIsolated] interface A {};", true),
-      ("[SecureContext, CrossOriginIsolated()] interface A {};", true),
-      (
-        "interface A {}; [CrossOriginIsolated()] partial interface A { [SecureContext] undefined run(); };",
+        "[Exposed=*, SecureContext] interface A { [SecureContext()] undefined run(); };",
         true,
       ),
       (
-        "interface A { [SecureContext] undefined run(long value); [SecureContext()] undefined run(DOMString value); };",
+        "[Exposed=*, SecureContext()] interface A {}; [Exposed=*] interface B : A {};",
+        true,
+      ),
+      (
+        "[Exposed=*, SecureContext] interface A {}; [Exposed=*, SecureContext()] interface B : A {};",
+        false,
+      ),
+      (
+        "[Exposed=*, SecureContext=Name, CrossOriginIsolated] interface A {};", true,
+      ),
+      (
+        "[Exposed=*, SecureContext, CrossOriginIsolated()] interface A {};", true,
+      ),
+      (
+        "[Exposed=*] interface A {}; [CrossOriginIsolated()] partial interface A { [SecureContext] undefined run(); };",
+        true,
+      ),
+      (
+        "[Exposed=*] interface A { [SecureContext] undefined run(long value); [SecureContext()] undefined run(DOMString value); };",
         false,
       ),
     ] {

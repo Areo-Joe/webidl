@@ -65,7 +65,10 @@ test "Global names extraction keeps order and duplicates while ignoring other fo
 
 ///|
 test "Global interface cannot define constructors" {
-  for attrs in ["[Global=Window]", "[Global=(Window,Worker)]"] {
+  for
+    attrs in [
+      "[Exposed=*, Global=Window]", "[Exposed=*, Global=(Window,Worker)]",
+    ] {
     for body in ["", "undefined f();"] {
       assert_true(check_global_source(attrs + " interface A { " + body + " };"))
       for
@@ -80,10 +83,12 @@ test "Global interface cannot define constructors" {
       }
     }
   }
-  assert_true(check_global_source("interface A { constructor(); };"))
+  assert_true(
+    check_global_source("[Exposed=*] interface A { constructor(); };"),
+  )
   assert_true(
     check_global_source(
-      "[Global=Window] interface A {}; interface B { constructor(); };",
+      "[Exposed=*, Global=Window] interface A {}; [Exposed=*] interface B { constructor(); };",
     ),
   )
 }
@@ -95,7 +100,7 @@ test "Global constructor check only uses the original interface annotation" {
       " partial interface A { getter any (DOMString name); };"
     for partial_first in [true, false] {
       for body in ["", "constructor();"] {
-        let original = "interface A { " + body + " };"
+        let original = "[Exposed=*] interface A { " + body + " };"
         let source = if partial_first {
           partial + original
         } else {
@@ -134,20 +139,20 @@ test "LegacyOverrideBuiltIns recognizes only the no arguments form" {
 test "Global and LegacyOverrideBuiltIns cannot annotate the same interface" {
   let body = " interface A { getter any (DOMString name); };"
   for global_attr in ["Global=Window", "Global=(Window,Worker)"] {
-    assert_true(check_global_source("[" + global_attr + "]" + body))
+    assert_true(check_global_source("[Exposed=*, " + global_attr + "]" + body))
     for
       attrs in [
-        "[" + global_attr + ", LegacyOverrideBuiltIns]",
-        "[LegacyOverrideBuiltIns, " + global_attr + "]",
+        "[Exposed=*, " + global_attr + ", LegacyOverrideBuiltIns]",
+        "[Exposed=*, LegacyOverrideBuiltIns, " + global_attr + "]",
       ] {
       assert_false(check_global_source(attrs + body))
     }
   }
-  assert_true(check_global_source("[LegacyOverrideBuiltIns]" + body))
-  assert_true(check_global_source(body))
+  assert_true(check_global_source("[Exposed=*, LegacyOverrideBuiltIns]" + body))
+  assert_true(check_global_source("[Exposed=*]" + body))
   assert_true(
     check_global_source(
-      "[Global=Window] interface A {}; [LegacyOverrideBuiltIns] interface B { getter any (DOMString name); };",
+      "[Exposed=*, Global=Window] interface A {}; [Exposed=*, LegacyOverrideBuiltIns] interface B { getter any (DOMString name); };",
     ),
   )
 }

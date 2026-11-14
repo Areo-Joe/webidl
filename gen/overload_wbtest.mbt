@@ -213,23 +213,23 @@ test "Legacy factory function overloads are checked through doc and grouped by n
   for
     (source, expected) in [
       (
-        "[LegacyFactoryFunction=Create(long value), LegacyFactoryFunction=Create(DOMString value)] interface A {};",
+        "[Exposed=*, LegacyFactoryFunction=Create(long value), LegacyFactoryFunction=Create(DOMString value)] interface A {};",
         true,
       ),
       (
-        "[LegacyFactoryFunction=Create(long value), LegacyFactoryFunction=_Create(double value)] interface A {};",
+        "[Exposed=*, LegacyFactoryFunction=Create(long value), LegacyFactoryFunction=_Create(double value)] interface A {};",
         false,
       ),
       (
-        "[LegacyFactoryFunction=Create(long value), LegacyFactoryFunction=Other(double value)] interface A {};",
+        "[Exposed=*, LegacyFactoryFunction=Create(long value), LegacyFactoryFunction=Other(double value)] interface A {};",
         true,
       ),
       (
-        "[LegacyFactoryFunction=Create(), LegacyFactoryFunction=Create(optional long value)] interface A {};",
+        "[Exposed=*, LegacyFactoryFunction=Create(), LegacyFactoryFunction=Create(optional long value)] interface A {};",
         false,
       ),
       (
-        "[LegacyFactoryFunction=Create(bigint value), LegacyFactoryFunction=Create(long value)] interface A {};",
+        "[Exposed=*, LegacyFactoryFunction=Create(bigint value), LegacyFactoryFunction=Create(long value)] interface A {};",
         false,
       ),
     ] {
