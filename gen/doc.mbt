@@ -139,6 +139,9 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
   })
 
   for (attribute, member_attributes) in attributes {
+    if member_attributes.iter().any(is_valid_same_object) {
+      check_same_object_on_attribute(attribute, typedef_index, definition_index)
+    }
     check_promise_attribute(attribute, member_attributes, typedef_index)
     check_attribute_type_identifier(
       attribute.type_with_extended_attributes.type_,
