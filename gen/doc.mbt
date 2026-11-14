@@ -197,6 +197,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
 
   for operation in operations {
     check_nullable_type_no_observable_array(operation.type_)
+    check_nullable_argument_types_no_observable_array(operation.argument_list)
   }
 
   let callbacks = definitions.filter_map(definition => {
@@ -207,6 +208,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
   })
   for callback in callbacks {
     check_nullable_type_no_observable_array(callback.type_)
+    check_nullable_argument_types_no_observable_array(callback.argument_list)
   }
 
   let operations_not_regular = operations.filter_map(x => {

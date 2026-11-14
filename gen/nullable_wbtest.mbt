@@ -394,3 +394,99 @@ test "Nullable observable array checks inspect every dictionary member" {
     ),
   )
 }
+
+///|
+test "Operation and callback argument checks cover declaration locations and argument forms" {
+  for
+    (prefix, suffix) in [
+      ("[Exposed=*] interface A { undefined use(", "); };"),
+      (
+        "[Exposed=*] interface A {}; partial interface A { undefined use(", "); };",
+      ),
+      (
+        "partial interface A { undefined use(", "); }; [Exposed=*] interface A {};",
+      ),
+      ("interface mixin M { undefined use(", "); };"),
+      (
+        "interface mixin M {}; partial interface mixin M { undefined use(", "); };",
+      ),
+      (
+        "partial interface mixin M { undefined use(", "); }; interface mixin M {};",
+      ),
+      ("namespace N { undefined use(", "); };"),
+      ("namespace N {}; partial namespace N { undefined use(", "); };"),
+      ("partial namespace N { undefined use(", "); }; namespace N {};"),
+      ("callback interface C { undefined use(", "); };"),
+      ("callback Use = undefined (", ");"),
+    ] {
+    for
+      (argument, valid) in [
+        ("ObservableArray<long>? items", false),
+        ("optional ObservableArray<long>? items", false),
+        ("optional ObservableArray<long>? items = null", false),
+        ("ObservableArray<long>?... items", false),
+        ("[Example] ObservableArray<long>? items", false),
+        ("optional [Example] ObservableArray<long>? items", false),
+        ("sequence<ObservableArray<long>?> items", false),
+        ("async_sequence<ObservableArray<long>?> items", false),
+        ("FrozenArray<ObservableArray<long>?> items", false),
+        ("record<DOMString, ObservableArray<long>?> items", false),
+        ("Promise<ObservableArray<long>?> items", false),
+        ("(DOMString or ObservableArray<long>?) items", false),
+        ("ObservableArray<long> items", true),
+        ("ObservableArray<long?> items", true),
+        ("optional DOMString? text = null", true),
+        ("long... values", true),
+        ("", true),
+      ] {
+      assert_eq(check_nullable_source(prefix + argument + suffix), valid)
+    }
+  }
+}
+
+///|
+test "Argument checks cover static and named or unnamed special operations" {
+  for
+    (prefix, suffix) in [
+      ("[Exposed=*] interface A {", "};"),
+      ("[Exposed=*] interface A {}; partial interface A {", "};"),
+      ("partial interface A {", "}; [Exposed=*] interface A {};"),
+    ] {
+    for
+      (operation, argument_prefix) in [
+        ("static undefined use", ""),
+        ("getter long item", ""),
+        ("getter long ", ""),
+        ("setter undefined item", "DOMString name, "),
+        ("setter undefined ", "DOMString name, "),
+        ("deleter boolean item", ""),
+        ("deleter boolean ", ""),
+      ] {
+      assert_false(
+        check_nullable_source(
+          prefix +
+          " " +
+          operation +
+          "(" +
+          argument_prefix +
+          "ObservableArray<long>? items); " +
+          suffix,
+        ),
+      )
+    }
+  }
+}
+
+///|
+test "Argument checks inspect every argument and every operation or callback" {
+  for
+    source in [
+      "[Exposed=*] interface A { undefined use(long first, ObservableArray<long>? last); };",
+      "[Exposed=*] interface A { undefined first(long value); undefined last(ObservableArray<long>? value); };",
+      "[Exposed=*] interface A { undefined first(); }; partial interface A { undefined last(ObservableArray<long>? value); };",
+      "callback Use = undefined (long first, ObservableArray<long>? last);", "callback First = undefined (); callback Last = undefined (ObservableArray<long>? value);",
+      "callback Use = undefined (ObservableArray<long>? _items);",
+    ] {
+    assert_false(check_nullable_source(source))
+  }
+}

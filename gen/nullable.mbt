@@ -10,3 +10,17 @@ fn check_nullable_type_no_observable_array(type_ : @parser.Type) -> Unit raise {
     }),
   )
 }
+
+///|
+fn check_nullable_argument_types_no_observable_array(
+  arguments : @parser.ArgumentList,
+) -> Unit raise {
+  for argument in arguments.iter() {
+    let type_ = match argument.argument_rest {
+      Optional(type_with_extended_attributes, _, _) =>
+        type_with_extended_attributes.type_
+      Ellipsisable(type_, _, _) => type_
+    }
+    check_nullable_type_no_observable_array(type_)
+  }
+}
