@@ -126,6 +126,12 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
 
   let constant_names = constants.map(x => strip_underscore(x.identifier))
 
+  for constant in constants {
+    if constant.const_type is PrimitiveType(Boolean) {
+      check_boolean_constant_value(constant.const_value)
+    }
+  }
+
   let operations = definitions
     .filter_map(definition => {
       match definition {
