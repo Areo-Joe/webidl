@@ -90,7 +90,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
   let attribute_names = attributes.map(name_of_attribute)
 
   for attribute in attributes {
-    check_nullable_type(
+    check_type(
       attribute.type_with_extended_attributes.type_,
       typedef_index,
       dictionary_names,
@@ -129,7 +129,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
         type_with_extended_attributes.type_
       Optional(type_, _, _) => type_
     }
-    check_nullable_type(type_, typedef_index, dictionary_names)
+    check_type(type_, typedef_index, dictionary_names)
     check_type_not_nullable_dictionary(type_, typedef_index, dictionary_names)
   }
 
@@ -275,8 +275,8 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
   let operation_names = operations.filter_map(name_of_operation)
 
   for operation in operations {
-    check_nullable_type(operation.type_, typedef_index, dictionary_names)
-    check_nullable_argument_types(
+    check_type(operation.type_, typedef_index, dictionary_names)
+    check_argument_types(
       operation.argument_list,
       typedef_index,
       dictionary_names,
@@ -290,8 +290,8 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
     }
   })
   for callback in callbacks {
-    check_nullable_type(callback.type_, typedef_index, dictionary_names)
-    check_nullable_argument_types(
+    check_type(callback.type_, typedef_index, dictionary_names)
+    check_argument_types(
       callback.argument_list,
       typedef_index,
       dictionary_names,
@@ -306,29 +306,25 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
             is NamedArgList(
               { identifier: "LegacyFactoryFunction", argument_list, .. }
             ) {
-            check_nullable_argument_types(
-              argument_list, typedef_index, dictionary_names,
-            )
+            check_argument_types(argument_list, typedef_index, dictionary_names)
           }
         }
         for interface_member in interface.members {
           match interface_member.body {
             Constructor(constructor_) =>
-              check_nullable_argument_types(
+              check_argument_types(
                 constructor_.argument_list,
                 typedef_index,
                 dictionary_names,
               )
             PartialInterfaceMember(body) =>
-              check_nullable_collection_types(
-                body, typedef_index, dictionary_names,
-              )
+              check_collection_types(body, typedef_index, dictionary_names)
           }
         }
       }
       PartialInterface(partial) =>
         for interface_member in partial.members {
-          check_nullable_collection_types(
+          check_collection_types(
             interface_member.body,
             typedef_index,
             dictionary_names,
@@ -370,7 +366,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
   )
 
   for typedef_ in typedefs {
-    check_nullable_type(
+    check_type(
       typedef_.type_with_extended_attributes.type_,
       typedef_index,
       dictionary_names,
