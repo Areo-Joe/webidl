@@ -1,4 +1,65 @@
 ///|
+/// The identifier of an attribute must not be the same as the identifier of another
+/// interface member defined on the same interface.
+fn check_attribute_names_no_conflict(
+  attribute_names : Array[StringView],
+  other_member_names : Array[StringView],
+) -> Unit raise {
+  let names = Set(attribute_names)
+  assert_eq(names.length(), attribute_names.length())
+  assert_false(other_member_names.any(name => names.contains(name)))
+}
+
+///|
+fn check_attribute_names_on_interface(interface : Interface) -> Unit raise {
+  let attribute_names = []
+  let other_member_names = []
+  let members = interface.members.filter_map(member_ => {
+    if member_.body is PartialInterfaceMember(body) {
+      Some(body)
+    } else {
+      None
+    }
+  })
+  for partial in interface.partials {
+    members.push_iter(partial.members.iter().map(member_ => member_.body))
+  }
+  for member_ in members {
+    if Attribute::from_partial_interface_member(member_) is Some(attribute) {
+      attribute_names.push(name_of_attribute(attribute))
+    } else if member_ is Const(constant) {
+      other_member_names.push(strip_underscore(constant.identifier))
+    } else if Operation::from_partial_interface_member(member_)
+      is Some(operation) {
+      if name_of_operation(operation) is Some(name) {
+        other_member_names.push(name)
+      }
+    }
+  }
+  let mixin_members = []
+  for mixin_ in interface.mixins {
+    mixin_members.push_iter(mixin_.members.iter().map(member_ => member_.body))
+    for partial in mixin_.partials {
+      mixin_members.push_iter(
+        partial.members.iter().map(member_ => member_.body),
+      )
+    }
+  }
+  for member_ in mixin_members {
+    if Attribute::from_mixin_member(member_) is Some(attribute) {
+      attribute_names.push(name_of_attribute(attribute))
+    } else if member_ is Const(constant) {
+      other_member_names.push(strip_underscore(constant.identifier))
+    } else if Operation::from_interface_mixin_member(member_) is Some(operation) {
+      if name_of_operation(operation) is Some(name) {
+        other_member_names.push(name)
+      }
+    }
+  }
+  check_attribute_names_no_conflict(attribute_names, other_member_names)
+}
+
+///|
 struct Attribute {
   name : @parser.AttributeName
   type_with_extended_attributes : @parser.TypeWithExtendedAttributes
