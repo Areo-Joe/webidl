@@ -319,3 +319,86 @@ test "Global named setter check uses only setter argument count and first argume
     assert_eq(accepted, valid)
   }
 }
+
+///|
+test "Global interface cannot define indexed getters or setters on the original or partials" {
+  for
+    attrs in [
+      "[Exposed=*, Global=Window]", "[Exposed=*, Global=(Window,Worker)]",
+    ] {
+    for
+      operation_source in [
+        "getter any (unsigned long index);", "getter any item(unsigned long index);",
+        "setter undefined (unsigned long index, any value);", "setter undefined setItem(unsigned long index, any value);",
+      ] {
+      assert_false(
+        check_global_source(
+          attrs + " interface A { " + operation_source + " };",
+        ),
+      )
+      let original = attrs + " interface A {};"
+      let partial = "partial interface A { " + operation_source + " };"
+      assert_false(check_global_source(original + partial))
+      assert_false(check_global_source(partial + original))
+      assert_false(
+        check_global_source(
+          original + "partial interface A { undefined first(); };" + partial,
+        ),
+      )
+    }
+  }
+  let ordinary = "[Exposed=*] interface B { readonly attribute unsigned long length; getter any (unsigned long index); setter undefined (unsigned long index, any value); };"
+  assert_true(check_global_source(ordinary))
+  assert_true(
+    check_global_source("[Exposed=*, Global=Window] interface A {};" + ordinary),
+  )
+  assert_true(
+    check_global_source(
+      "[Exposed=*, Global=Window] interface A { getter any (DOMString name); any item(unsigned long index); undefined setItem(unsigned long index, any value); };",
+    ),
+  )
+}
+
+///|
+test "Global indexed getter or setter check uses keyword argument count and unsigned long type" {
+  for
+    (body, valid) in [
+      ("getter any ();", true),
+      ("getter any (unsigned long index, any extra);", true),
+      ("setter undefined (unsigned long index);", true),
+      ("setter undefined (unsigned long index, any value, any extra);", true),
+      ("deleter boolean (unsigned long index);", true),
+      ("static any item(unsigned long index);", true),
+      ("getter any (DOMString name);", true),
+      ("setter undefined (DOMString name, any value);", true),
+      ("getter any (long index);", true),
+      ("getter any (unsigned short index);", true),
+      ("getter any (unsigned long long index);", true),
+      ("getter any (unsigned long? index);", true),
+      ("setter undefined (long index, any value);", true),
+      ("setter undefined (unsigned short index, any value);", true),
+      ("setter undefined (unsigned long long index, any value);", true),
+      ("setter undefined (unsigned long? index, any value);", true),
+      ("getter any (optional unsigned long index);", false),
+      ("getter any (unsigned long... index);", false),
+      ("setter undefined (optional unsigned long index, any value);", false),
+      ("setter undefined (unsigned long index, optional any value);", false),
+      ("setter undefined (unsigned long index, any... value);", false),
+    ] {
+    let (definitions, rest) = @parser.parse(
+      @lexer.tokenize("[Global=Window] interface A { " + body + " };").exact_view(),
+    )
+    assert_true(rest is [])
+    guard Definition::from_parser(definitions)[0] is Interface(interface) else {
+      fail("expected interface")
+    }
+    let accepted = try
+      check_global_interface_no_indexed_getter_or_setter(interface)
+    catch {
+      _ => false
+    } noraise {
+      _ => true
+    }
+    assert_eq(accepted, valid)
+  }
+}

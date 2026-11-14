@@ -125,3 +125,47 @@ fn check_global_interface_no_named_setter(interface : Interface) -> Unit raise {
     }),
   )
 }
+
+///|
+/// If the [Global] extended attributes is used on an interface, then:
+/// The interface must not define indexed property getters or setters.
+fn check_global_interface_no_indexed_getter_or_setter(
+  interface : Interface,
+) -> Unit raise {
+  let operations = interface.members.filter_map(
+    Operation::from_interface_member,
+  )
+  for partial in interface.partials {
+    operations.push_iter(
+      partial.members
+      .iter()
+      .filter_map(interface_member => {
+        Operation::from_partial_interface_member(interface_member.body)
+      }),
+    )
+  }
+  assert_false(
+    operations
+    .iter()
+    .any(operation => {
+      let argument_rest = match (operation.tag, operation.argument_list) {
+        (Getter, Some(first, None)) | (Setter, Some(first, Some(_, None))) =>
+          first.argument_rest
+        _ => return false
+      }
+      let type_ = match argument_rest {
+        Ellipsisable(type_, _, _) => type_
+        Optional({ type_, .. }, _, _) => type_
+      }
+      type_
+      is SingleType(
+        DistinguishableType(
+          PrimitiveType(
+            UnsignedIntegerType(UnsignedIntegerType(Long(None))),
+            None
+          )
+        )
+      )
+    }),
+  )
+}
