@@ -339,13 +339,16 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
   for definition in definitions {
     match definition {
       Interface(interface) => {
+        check_legacy_factory_function_overloads(
+          interface, typedef_index, type_definitions,
+        )
         for attr in interface.extended_attribute_list.iter() {
-          if attr
-            is NamedArgList(
-              { identifier: "LegacyFactoryFunction", argument_list, .. }
-            ) {
+          if is_valid_legacy_factory_function(attr) is Some(factory) {
             check_argument_types(
-              argument_list, typedef_index, dictionary_names, type_definitions,
+              factory.argument_list,
+              typedef_index,
+              dictionary_names,
+              type_definitions,
             )
           }
         }
