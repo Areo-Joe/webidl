@@ -1,4 +1,28 @@
 ///|
+fn check_nullable_type_source(
+  source : String,
+  typedef_source~ : String = "",
+) -> Bool raise {
+  let (definitions, rest) = @parser.parse(
+    @lexer.tokenize(typedef_source).exact_view(),
+  )
+  assert_true(rest is [])
+  let typedefs = Map([])
+  for definition in Definition::from_parser(definitions) {
+    if definition is Typedef(typedef_) {
+      typedefs.set(strip_underscore(typedef_.identifier), typedef_)
+    }
+  }
+  let (type_, rest) = @parser.Type::parse(@lexer.tokenize(source).exact_view()).unwrap()
+  assert_true(rest is [])
+  try check_nullable_type(type_, typedefs, Set([])) catch {
+    _ => false
+  } noraise {
+    _ => true
+  }
+}
+
+///|
 fn check_nullable_source(source : String) -> Bool raise {
   let (definitions, rest) = @parser.parse(@lexer.tokenize(source).exact_view())
   assert_true(rest is [])
@@ -258,12 +282,9 @@ test "Nullable observable array checks resolve typedefs at every declaration ent
         ("sequence<Items?>", false),
         ("(Items or Items?)", false),
         ("(Items? or Items)", false),
-        ("Promise<sequence<Items>?>", true),
-        ("Items", true),
+        ("Promise<sequence<long>?>", true),
+        ("long?", true),
       ] {
-      if prefix == "typedef " && type_ == "Items" {
-        continue
-      }
       let declaration = prefix + type_ + suffix
       for
         source in [
@@ -286,13 +307,16 @@ test "Nullable checks follow compound typedef references without propagating nul
     assert_false(check_nullable_source(source))
   }
   for
-    source in [
-      "typedef ObservableArray<long> Items; typedef sequence<Items>? MaybeSequence;",
-      "typedef ObservableArray<long> Items; typedef (sequence<Items> or DOMString)? MaybeUnion;",
-      "typedef ObservableArray<long?> Items; typedef sequence<Items> Nested;", "typedef sequence<A> A;",
-      "typedef sequence<B> A; typedef sequence<A> B;",
+    (definitions, type_) in [
+      ("typedef ObservableArray<long> Items;", "sequence<Items>?"),
+      (
+        "typedef ObservableArray<long> Items;", "(sequence<Items> or DOMString)?",
+      ),
+      ("typedef ObservableArray<long?> Items;", "sequence<Items>"),
+      ("typedef sequence<A> A;", "A"),
+      ("typedef sequence<B> A; typedef sequence<A> B;", "A"),
     ] {
-    assert_true(check_nullable_source(source))
+    assert_true(check_nullable_type_source(type_, typedef_source=definitions))
   }
   assert_false(
     check_nullable_source(
@@ -367,7 +391,7 @@ test "Nullable observable array checks distinguish array and element nullability
       "record<DOMString, ObservableArray<long?>>", "Promise<ObservableArray<long?>>",
       "(sequence<ObservableArray<long>> or DOMString)", "long?", "DOMString?",
     ] {
-    assert_true(check_nullable_source("typedef " + type_ + " Target;"))
+    assert_true(check_nullable_type_source(type_))
   }
 }
 
@@ -524,8 +548,8 @@ test "Operation return checks cover every declaration location" {
         ("Promise<ObservableArray<long>?>", false),
         ("(DOMString or ObservableArray<long>?)", false),
         ("((long or ObservableArray<long>?) or DOMString)", false),
-        ("ObservableArray<long>", true),
-        ("ObservableArray<long?>", true),
+        ("sequence<long>", true),
+        ("sequence<long?>", true),
         ("long?", true),
         ("undefined", true),
       ] {
@@ -608,9 +632,9 @@ test "Callback return checks visit nested types and distinguish element nullabil
       ("(DOMString or ObservableArray<long>?)", false),
       ("((long or ObservableArray<long>?) or DOMString)", false),
       ("sequence<Promise<record<DOMString, ObservableArray<long>?>>>", false),
-      ("ObservableArray<long>", true),
-      ("ObservableArray<long?>", true),
-      ("Promise<ObservableArray<long?>>", true),
+      ("sequence<long>", true),
+      ("sequence<long?>", true),
+      ("Promise<sequence<long?>>", true),
       ("DOMString?", true),
       ("undefined", true),
     ] {
@@ -643,7 +667,7 @@ test "Nullable observable array checks inspect every callback return type" {
   )
   assert_true(
     check_nullable_source(
-      "callback First = long (); callback Last = ObservableArray<long?> (optional long count = 0);",
+      "callback First = long (); callback Last = sequence<long?> (optional long count = 0);",
     ),
   )
 }
@@ -667,8 +691,8 @@ test "Dictionary member checks cover required optional and partial declarations"
           ("Promise<ObservableArray<long>?>", false),
           ("(DOMString or ObservableArray<long>?)", false),
           ("((long or ObservableArray<long>?) or DOMString)", false),
-          ("ObservableArray<long>", true),
-          ("ObservableArray<long?>", true),
+          ("sequence<long>", true),
+          ("sequence<long?>", true),
           ("DOMString?", true),
         ] {
         assert_eq(
@@ -705,7 +729,7 @@ test "Dictionary member checks retain default values and type extended attribute
   )
   assert_true(
     check_nullable_source(
-      "dictionary Options { DOMString? text = null; required ObservableArray<[Clamp] long?> items; };",
+      "dictionary Options { DOMString? text = null; required sequence<[Clamp] long?> items; };",
     ),
   )
 }
@@ -767,8 +791,8 @@ test "Operation and callback argument checks cover declaration locations and arg
         ("record<DOMString, ObservableArray<long>?> items", false),
         ("Promise<ObservableArray<long>?> items", false),
         ("(DOMString or ObservableArray<long>?) items", false),
-        ("ObservableArray<long> items", true),
-        ("ObservableArray<long?> items", true),
+        ("sequence<long> items", true),
+        ("sequence<long?> items", true),
         ("optional DOMString? text = null", true),
         ("long... values", true),
         ("", true),
@@ -838,8 +862,8 @@ test "Constructor argument checks cover argument forms and nested types" {
       ("sequence<ObservableArray<long>?> items", false),
       ("Promise<record<DOMString, ObservableArray<long>?>> items", false),
       ("long first, ObservableArray<long>? last", false),
-      ("ObservableArray<long> items", true),
-      ("ObservableArray<long?> items", true),
+      ("sequence<long> items", true),
+      ("sequence<long?> items", true),
       ("optional DOMString? text = null", true),
       ("long... values", true),
       ("", true),
@@ -896,8 +920,8 @@ test "Collection type checks cover every type slot and partial declaration" {
           ("record<DOMString, ObservableArray<long>?>", false),
           ("Promise<ObservableArray<long>?>", false),
           ("(DOMString or ObservableArray<long>?)", false),
-          ("ObservableArray<long>", true),
-          ("ObservableArray<long?>", true),
+          ("sequence<long>", true),
+          ("sequence<long?>", true),
           ("DOMString", true),
         ] {
         assert_eq(
@@ -931,8 +955,8 @@ test "Async iterable argument checks cover both iterable forms and partial decla
           ("sequence<ObservableArray<long>?> items", false),
           ("Promise<record<DOMString, ObservableArray<long>?>> items", false),
           ("long first, ObservableArray<long>? last", false),
-          ("ObservableArray<long> items", true),
-          ("ObservableArray<long?> items", true),
+          ("sequence<long> items", true),
+          ("sequence<long?> items", true),
           ("optional DOMString? text = null", true),
           ("long... values", true),
           ("", true),
