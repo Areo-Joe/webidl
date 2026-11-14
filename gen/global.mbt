@@ -57,11 +57,7 @@ fn check_global_interface_no_constructor(interface : Interface) -> Unit raise {
 fn check_global_interface_no_legacy_override_built_ins(
   interface : Interface,
 ) -> Unit raise {
-  assert_false(
-    interface.extended_attribute_list
-    .iter()
-    .any(is_valid_legacy_override_built_ins),
-  )
+  assert_false(interface.has_legacy_override_built_ins())
 }
 
 ///|
@@ -71,11 +67,7 @@ fn check_global_interface_inheritance_no_legacy_override_built_ins(
   interface : Interface,
 ) -> Unit raise {
   guard interface.inheritance is Some(inheritance) else { return }
-  assert_false(
-    inheritance.extended_attribute_list
-    .iter()
-    .any(is_valid_legacy_override_built_ins),
-  )
+  assert_false(inheritance.has_legacy_override_built_ins())
   check_global_interface_inheritance_no_legacy_override_built_ins(inheritance)
 }
 
@@ -174,6 +166,7 @@ fn check_global_interface_no_indexed_getter_or_setter(
 /// If [Global] is specified on a partial interface definition, then that partial interface definition must be the part of the interface definition that defines the named property getter.
 fn check_global_partial_interface_has_named_getter(
   partial : PartialInterface,
+  typedefs : Map[StringView, TypeDef],
 ) -> Unit raise {
   assert_true(
     partial.members
@@ -181,16 +174,6 @@ fn check_global_partial_interface_has_named_getter(
     .filter_map(interface_member => {
       Operation::from_partial_interface_member(interface_member.body)
     })
-    .any(operation => {
-      guard operation.tag is Getter else { return false }
-      guard operation.argument_list is Some({ argument_rest, .. }, None) else {
-        return false
-      }
-      let type_ = match argument_rest {
-        Ellipsisable(type_, _, _) => type_
-        Optional({ type_, .. }, _, _) => type_
-      }
-      type_ is SingleType(DistinguishableType(StringType(DOMString, None)))
-    }),
+    .any(operation => operation.is_named_getter(typedefs)),
   )
 }

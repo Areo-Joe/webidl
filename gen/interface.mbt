@@ -4,6 +4,7 @@ fn check_interfaces(
   includes_statements : Array[IncludesStatement],
   interface_mixins : Array[InterfaceMixin],
   partial_interfaces : Array[PartialInterface],
+  typedefs : Map[StringView, TypeDef],
 ) -> Unit raise {
   check_inheritance_exists(interfaces)
   check_inheritance_no_circle(interfaces)
@@ -16,6 +17,11 @@ fn check_interfaces(
     .flatten()
 
   for interface in interfaces {
+    if interface.has_legacy_override_built_ins() {
+      check_legacy_override_built_ins_interface_has_named_getter(
+        interface, typedefs,
+      )
+    }
     if interface.extended_attribute_list
       .iter()
       .any(is_valid_legacy_no_interface_object) {
@@ -48,8 +54,15 @@ fn check_interfaces(
     for partial in interface.partials {
       if partial.extended_attribute_list
         .iter()
+        .any(is_valid_legacy_override_built_ins) {
+        check_legacy_override_built_ins_partial_interface_has_named_getter(
+          partial, typedefs,
+        )
+      }
+      if partial.extended_attribute_list
+        .iter()
         .any(attr => is_valid_global(attr) is Some(_)) {
-        check_global_partial_interface_has_named_getter(partial)
+        check_global_partial_interface_has_named_getter(partial, typedefs)
       }
       if ExposedAble::PartialInterface(partial).exposed_attribute()
         is Some(exposed) {

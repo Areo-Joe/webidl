@@ -16,6 +16,25 @@ enum OperationTag {
 }
 
 ///|
+fn Operation::is_named_getter(
+  self : Self,
+  typedefs : Map[StringView, TypeDef],
+) -> Bool {
+  guard self.tag is Getter else { return false }
+  guard self.argument_list
+    is Some({ argument_rest: Ellipsisable(type_, None, _), .. }, None) else {
+    return false
+  }
+  let (type_, nullable, _) = resolve_type_with_extended_attributes(
+    type_,
+    [],
+    typedefs,
+  )
+  !nullable &&
+  type_ is SingleType(DistinguishableType(StringType(DOMString, _)))
+}
+
+///|
 fn Operation::from_interface_member(
   interface_member : InterfaceMember,
 ) -> Operation? {
