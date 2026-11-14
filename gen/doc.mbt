@@ -118,6 +118,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
       Optional(type_, _, _) => type_
     }
     check_nullable_type(type_, typedef_index, dictionary_names)
+    check_type_not_nullable_dictionary(type_, typedef_index, dictionary_names)
   }
 
   let constants = definitions

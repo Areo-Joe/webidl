@@ -55,6 +55,34 @@ fn check_nullable_union_type(
 }
 
 ///|
+/// Although dictionary types can in general be nullable,
+/// they cannot when used as the type of an operation argument or a dictionary member.
+fn check_type_not_nullable_dictionary(
+  type_ : @parser.Type,
+  typedefs : Map[StringView, TypeDef],
+  dictionary_names : Set[StringView],
+) -> Unit raise {
+  let mut current = type_
+  let mut nullable = false
+  let visited : Set[(StringView, Bool)] = Set([])
+  while current is SingleType(DistinguishableType(Identifier(identifier, null))) {
+    nullable = nullable || null is Some
+    let name = strip_underscore(identifier)
+    if dictionary_names.contains(name) {
+      assert_false(nullable)
+      return
+    }
+    guard typedefs.get(name) is Some(typedef_) else { return }
+    let state = (name, nullable)
+    if visited.contains(state) {
+      return
+    }
+    visited.add(state)
+    current = typedef_.type_with_extended_attributes.type_
+  }
+}
+
+///|
 fn check_nullable_argument_types(
   arguments : @parser.ArgumentList,
   typedefs : Map[StringView, TypeDef],
@@ -67,6 +95,7 @@ fn check_nullable_argument_types(
       Ellipsisable(type_, _, _) => type_
     }
     check_nullable_type(type_, typedefs, dictionary_names)
+    check_type_not_nullable_dictionary(type_, typedefs, dictionary_names)
   }
 }
 

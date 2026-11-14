@@ -84,13 +84,142 @@ test "Nullable constraints cover every declaration entry and typedef order" {
           "dictionary Options {}; typedef sequence<Options> Configs;", "(Configs or DOMString)?",
           true,
         ),
-        ("dictionary Options {};", "Options?", true),
       ] {
       let declaration = prefix + type_ + suffix
       for source in [definitions + declaration, declaration + definitions] {
         assert_eq(check_nullable_source(source), valid)
       }
     }
+  }
+}
+
+///|
+test "Argument types reject nullable dictionaries across all argument list entry points" {
+  for
+    (prefix, suffix) in [
+      ("[Exposed=*] interface A { undefined use(", "); };"),
+      ("[Exposed=*] interface A { static undefined use(", "); };"),
+      (
+        "[Exposed=*] interface A {}; partial interface A { undefined use(", "); };",
+      ),
+      (
+        "partial interface A { undefined use(", "); }; [Exposed=*] interface A {};",
+      ),
+      ("interface mixin M { undefined use(", "); };"),
+      (
+        "interface mixin M {}; partial interface mixin M { undefined use(", "); };",
+      ),
+      ("namespace N { undefined use(", "); };"),
+      ("namespace N {}; partial namespace N { undefined use(", "); };"),
+      ("callback interface C { undefined use(", "); };"),
+      ("callback C = undefined (", ");"),
+      ("[Exposed=*] interface A { constructor(", "); };"),
+      ("[Exposed=*, LegacyFactoryFunction=Create(", ")] interface A {};"),
+      ("[Exposed=*] interface A { async_iterable<long>(", "); };"),
+      ("[Exposed=*] interface A { async_iterable<DOMString, long>(", "); };"),
+      (
+        "[Exposed=*] interface A {}; partial interface A { async_iterable<long>(",
+        "); };",
+      ),
+    ] {
+    for
+      (type_, valid) in [
+        ("Options?", false),
+        ("_Options?", false),
+        ("Config?", false),
+        ("_MaybeConfig", false),
+        ("Options", true),
+        ("Config", true),
+        ("sequence<Options?>", true),
+        ("sequence<MaybeConfig>", true),
+        ("FrozenArray<Options?>", true),
+        ("record<DOMString, Options?>", true),
+        ("(Options or DOMString)", true),
+      ] {
+      let declaration = prefix + "optional " + type_ + " value" + suffix
+      let definitions = "dictionary _Options {}; typedef Options Config; typedef Config? MaybeConfig;"
+      for source in [definitions + declaration, declaration + definitions] {
+        assert_eq(check_nullable_source(source), valid)
+      }
+    }
+  }
+}
+
+///|
+test "Nullable dictionary argument checks cover required optional variadic and later arguments" {
+  for
+    arguments in [
+      "Options? value", "[Example] Options? value", "optional Options? value", "optional [Example] Options? value",
+      "optional Options? value = null", "Options?... values", "long first, Options? last",
+      "MaybeConfig value",
+    ] {
+    assert_false(
+      check_nullable_source(
+        "dictionary Options {}; typedef Options? MaybeConfig; [Exposed=*] interface A { undefined use(" +
+        arguments +
+        "); };",
+      ),
+    )
+  }
+  assert_false(
+    check_nullable_source(
+      "dictionary Options {}; [Exposed=*] interface A { setter undefined set(DOMString name, Options? value); };",
+    ),
+  )
+  assert_true(
+    check_nullable_source(
+      "dictionary Options {}; [Exposed=*] interface A { setter undefined set(DOMString name, Options value); };",
+    ),
+  )
+}
+
+///|
+test "Dictionary member types reject nullable dictionaries including partials and defaults" {
+  for
+    (prefix, suffix) in [
+      ("dictionary D {", "};"),
+      ("dictionary D {}; partial dictionary D {", "};"),
+      ("partial dictionary D {", "}; dictionary D {};"),
+    ] {
+    for
+      (member_source, valid) in [
+        ("Options? value;", false),
+        ("_Config? value;", false),
+        ("MaybeConfig value;", false),
+        ("required Options? value;", false),
+        ("required [Example] MaybeConfig value;", false),
+        ("[Example] Options? value;", false),
+        ("Options? value = null;", false),
+        ("Options value;", true),
+        ("required Config value;", true),
+        ("sequence<Options?> value;", true),
+        ("sequence<MaybeConfig> value;", true),
+        ("FrozenArray<Options?> value;", true),
+        ("record<DOMString, Options?> value;", true),
+        ("(Options or DOMString) value;", true),
+      ] {
+      let declaration = prefix + member_source + suffix
+      let definitions = "dictionary Options {}; typedef _Options Config; typedef Options? MaybeConfig;"
+      for source in [definitions + declaration, declaration + definitions] {
+        assert_eq(check_nullable_source(source), valid)
+      }
+    }
+  }
+  assert_false(
+    check_nullable_source(
+      "dictionary Options {}; dictionary D { long first; Options? last; };",
+    ),
+  )
+}
+
+///|
+test "Nullable dictionaries remain permitted outside argument and dictionary member types" {
+  for
+    source in [
+      "dictionary Options {}; typedef Options? Maybe;", "dictionary Options {}; callback C = Options? ();",
+      "dictionary Options {}; [Exposed=*] interface A { Options? get(); };", "dictionary Options {}; typedef sequence<Options?> Values;",
+    ] {
+    assert_true(check_nullable_source(source))
   }
 }
 
