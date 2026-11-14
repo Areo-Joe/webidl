@@ -292,6 +292,11 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
     }
   })
   check_typedef_type_not_typedef(typedefs)
+  for constant in constants {
+    if constant.const_type is Identifier(identifier) {
+      check_constant_type_identifier(identifier, typedefs)
+    }
+  }
 
   let interfaces = definitions.filter_map(x => {
     match x {
