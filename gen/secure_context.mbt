@@ -86,3 +86,13 @@ fn check_secure_context_overloads_on_interface(
     attributes.iter().any(is_valid_secure_context)
   })
 }
+
+///|
+/// If [SecureContext] appears on an overloaded operation, then it must appear on all overloads.
+fn check_secure_context_overloads_on_interface_mixin(
+  mixin_ : InterfaceMixin,
+) -> Unit raise {
+  check_overload_extended_attribute_on_interface_mixin(mixin_, attributes => {
+    attributes.iter().any(is_valid_secure_context)
+  })
+}

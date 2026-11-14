@@ -10,6 +10,101 @@ fn check_secure_context_source(source : String) -> Bool raise {
 }
 
 ///|
+test "SecureContext requires consistent marking on mixin operation overloads" {
+  for
+    (members, expected) in [
+      ("undefined run(long value); undefined run(DOMString value);", true),
+      (
+        "[SecureContext] undefined run(long value); undefined run(DOMString value);",
+        false,
+      ),
+      (
+        "undefined run(long value); [SecureContext] undefined run(DOMString value);",
+        false,
+      ),
+      (
+        "[SecureContext] undefined run(long value); [SecureContext] undefined _run(DOMString value);",
+        true,
+      ),
+      ("[SecureContext] undefined first(); undefined second();", true),
+      (
+        "[SecureContext] undefined run(optional long value); undefined run(DOMString first, long... rest);",
+        false,
+      ),
+      (
+        "[SecureContext()] undefined run(long value); undefined run(DOMString value);",
+        true,
+      ),
+      (
+        "[SecureContext] undefined run(long value); [SecureContext()] undefined run(DOMString value);",
+        false,
+      ),
+      (
+        "[SecureContext=Name] undefined run(long value); undefined run(DOMString value);",
+        true,
+      ),
+      (
+        "[SecureContext] attribute long value; undefined run(long value); undefined run(DOMString value);",
+        true,
+      ),
+      (
+        "[SecureContext] undefined run(long value); [CrossOriginIsolated] undefined run(DOMString value);",
+        false,
+      ),
+    ] {
+    let original = "interface mixin M {};"
+    let partial = "partial interface mixin M { " + members + " };"
+    assert_eq(
+      check_secure_context_source("interface mixin M { " + members + " };"),
+      expected,
+    )
+    assert_eq(check_secure_context_source(original + partial), expected)
+    assert_eq(check_secure_context_source(partial + original), expected)
+  }
+}
+
+///|
+test "SecureContext mixin overload groups use explicit annotations independently of containers and hosts" {
+  for
+    (source, expected) in [
+      (
+        "[SecureContext] interface mixin M { [SecureContext] undefined run(long value); undefined run(DOMString value); };",
+        false,
+      ),
+      (
+        "[SecureContext] interface mixin M { undefined run(long value); undefined run(DOMString value); };",
+        true,
+      ),
+      (
+        "interface mixin M {}; [SecureContext] partial interface mixin M { [SecureContext] undefined run(long value); undefined run(DOMString value); };",
+        false,
+      ),
+      (
+        "interface mixin M {}; [SecureContext] partial interface mixin M { undefined run(long value); undefined run(DOMString value); };",
+        true,
+      ),
+      (
+        "interface mixin M { [SecureContext] undefined run(); }; interface mixin N { undefined run(); };",
+        true,
+      ),
+      (
+        "[Exposed=*, SecureContext] interface A {}; interface mixin M { [SecureContext] undefined run(long value); undefined run(DOMString value); }; A includes M;",
+        false,
+      ),
+      (
+        "interface mixin M { [SecureContext] undefined run(long value); }; partial interface mixin M { undefined run(DOMString value); };",
+        false,
+      ),
+      (
+        "interface mixin M {}; partial interface mixin M { undefined run(long value); }; partial interface mixin M { [SecureContext] undefined run(DOMString value); };",
+        false,
+      ),
+    ] {
+    assert_eq(check_secure_context_source(source), expected)
+  }
+}
+
+///|
 test "SecureContext recognizes only the no-arguments form" {
   for
     (source, expected) in [

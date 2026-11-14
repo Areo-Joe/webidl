@@ -38,6 +38,7 @@ fn check_interface_mixins(
       mixin_marked=has_cross_origin_isolated,
     )
     check_cross_origin_isolated_overloads_on_interface_mixin(mixin_)
+    check_secure_context_overloads_on_interface_mixin(mixin_)
   }
 }
 
