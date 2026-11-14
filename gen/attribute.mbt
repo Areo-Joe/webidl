@@ -1,4 +1,25 @@
 ///|
+/// If the Type is an identifier or an identifier followed by ?, then the identifier
+/// must identify an interface, enumeration, callback function, callback interface or typedef.
+fn check_attribute_type_identifier(
+  type_ : @parser.Type,
+  definitions : Map[StringView, Definition],
+) -> Unit raise {
+  if type_ is SingleType(DistinguishableType(Identifier(identifier, _))) {
+    assert_true(
+      definitions.get(strip_underscore(identifier))
+      is Some(
+        Interface(_)
+        | Enum(_)
+        | Callback(_)
+        | CallbackInterface(_)
+        | Typedef(_)
+      ),
+    )
+  }
+}
+
+///|
 /// The identifier of an attribute must not be the same as the identifier of another
 /// interface member defined on the same interface.
 fn check_attribute_names_no_conflict(

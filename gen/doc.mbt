@@ -113,6 +113,10 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
   let attribute_names = attributes.map(name_of_attribute)
 
   for attribute in attributes {
+    check_attribute_type_identifier(
+      attribute.type_with_extended_attributes.type_,
+      definition_index,
+    )
     check_type(
       attribute.type_with_extended_attributes.type_,
       typedef_index,

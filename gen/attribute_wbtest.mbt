@@ -10,6 +10,62 @@ fn check_attribute_source(source : String) -> Bool raise {
 }
 
 ///|
+test "Attribute type identifiers must reference permitted definitions" {
+  for
+    (definition, expected) in [
+      ("[Exposed=*] interface T {};", true),
+      ("enum T { \"value\" };", true),
+      ("callback T = undefined ();", true),
+      ("callback interface T { undefined run(); };", true),
+      ("typedef long T;", true),
+      ("", false),
+      ("dictionary T {};", false),
+      ("namespace T {};", false),
+      ("interface mixin T {};", false),
+    ] {
+    for type_ in ["T", "T?", "_T", "_T?"] {
+      for
+        (prefix, suffix) in [
+          ("[Exposed=*] interface A { attribute ", " value; };"),
+          ("[Exposed=*] interface A { readonly attribute ", " value; };"),
+          ("[Exposed=*] interface A { static attribute ", " value; };"),
+          ("[Exposed=*] interface A { static readonly attribute ", " value; };"),
+          (
+            "[Exposed=*] interface A {}; partial interface A { attribute ", " value; };",
+          ),
+          ("interface mixin M { attribute ", " value; };"),
+          (
+            "interface mixin M {}; partial interface mixin M { attribute ", " value; };",
+          ),
+          ("[Exposed=*] namespace N { readonly attribute ", " value; };"),
+          (
+            "[Exposed=*] namespace N {}; partial namespace N { readonly attribute ",
+            " value; };",
+          ),
+        ] {
+        let declaration = prefix + type_ + suffix
+        assert_eq(check_attribute_source(definition + declaration), expected)
+        assert_eq(check_attribute_source(declaration + definition), expected)
+      }
+    }
+  }
+}
+
+///|
+test "Attribute identifier lookup normalizes definition names and keeps other type forms" {
+  for
+    source in [
+      "typedef long _T; [Exposed=*] interface A { attribute T value; };", "[Exposed=*] interface _T {}; [Exposed=*] interface A { attribute T? value; };",
+      "typedef DOMString T; [Exposed=*] interface A { stringifier attribute T value; };",
+      "[Exposed=*] interface Parent { readonly attribute long value; }; [Exposed=*] interface A : Parent { inherit attribute long value; };",
+      "[Exposed=*] interface A { attribute long first; attribute DOMString second; attribute object? third; attribute (long or DOMString) fourth; };",
+      "typedef long T; interface mixin T {}; [Exposed=*] interface A { attribute T value; };",
+    ] {
+    assert_true(check_attribute_source(source))
+  }
+}
+
+///|
 test "Attributes cannot share identifiers with other members across declaration parts" {
   for
     other in [
