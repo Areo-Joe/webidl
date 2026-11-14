@@ -164,3 +164,99 @@ test "Nullable observable array checks inspect every attribute" {
     ),
   )
 }
+
+///|
+test "Operation return checks cover every declaration location" {
+  for
+    (prefix, suffix) in [
+      ("[Exposed=*] interface A {", "};"),
+      ("[Exposed=*] interface A {}; partial interface A {", "};"),
+      ("partial interface A {", "}; [Exposed=*] interface A {};"),
+      ("interface mixin M {", "};"),
+      ("interface mixin M {}; partial interface mixin M {", "};"),
+      ("partial interface mixin M {", "}; interface mixin M {};"),
+      ("namespace N {", "};"),
+      ("namespace N {}; partial namespace N {", "};"),
+      ("partial namespace N {", "}; namespace N {};"),
+      ("callback interface C {", "};"),
+    ] {
+    for
+      (type_, valid) in [
+        ("ObservableArray<long>?", false),
+        ("FrozenArray<ObservableArray<long>?>", false),
+        ("sequence<ObservableArray<long>?>", false),
+        ("async_sequence<ObservableArray<long>?>", false),
+        ("record<DOMString, ObservableArray<long>?>", false),
+        ("Promise<ObservableArray<long>?>", false),
+        ("(DOMString or ObservableArray<long>?)", false),
+        ("((long or ObservableArray<long>?) or DOMString)", false),
+        ("ObservableArray<long>", true),
+        ("ObservableArray<long?>", true),
+        ("long?", true),
+        ("undefined", true),
+      ] {
+      assert_eq(
+        check_nullable_source(prefix + " " + type_ + " items(); " + suffix),
+        valid,
+      )
+    }
+  }
+}
+
+///|
+test "Operation return checks cover regular static and named or unnamed special operations" {
+  for
+    (prefix, suffix) in [
+      ("[Exposed=*] interface A {", "};"),
+      ("[Exposed=*] interface A {}; partial interface A {", "};"),
+      ("partial interface A {", "}; [Exposed=*] interface A {};"),
+    ] {
+    for
+      (special, rest, valid_type) in [
+        ("", "items();", "long"),
+        ("static ", "items();", "long"),
+        ("getter ", "items(DOMString name);", "long"),
+        ("getter ", "(DOMString name);", "long"),
+        ("setter ", "items(DOMString name, long value);", "undefined"),
+        ("setter ", "(DOMString name, long value);", "undefined"),
+        ("deleter ", "items(DOMString name);", "boolean"),
+        ("deleter ", "(DOMString name);", "boolean"),
+      ] {
+      assert_false(
+        check_nullable_source(
+          prefix +
+          " " +
+          special +
+          "ObservableArray<long>? " +
+          rest +
+          " " +
+          suffix,
+        ),
+      )
+      assert_true(
+        check_nullable_source(
+          prefix + " " + special + valid_type + " " + rest + " " + suffix,
+        ),
+      )
+    }
+  }
+}
+
+///|
+test "Nullable observable array checks inspect every operation return type" {
+  assert_false(
+    check_nullable_source(
+      "[Exposed=*] interface A { long first(); ObservableArray<long>? last(); };",
+    ),
+  )
+  assert_false(
+    check_nullable_source(
+      "[Exposed=*] interface A { long first(); }; partial interface A { ObservableArray<long>? last(); };",
+    ),
+  )
+  assert_false(
+    check_nullable_source(
+      "[Exposed=*] interface A { ObservableArray<long>? _items(); };",
+    ),
+  )
+}

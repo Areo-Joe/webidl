@@ -185,6 +185,10 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
 
   let operation_names = operations.filter_map(name_of_operation)
 
+  for operation in operations {
+    check_nullable_type_no_observable_array(operation.type_)
+  }
+
   let operations_not_regular = operations.filter_map(x => {
     match x.tag {
       Regular => None
