@@ -93,6 +93,23 @@ fn check_interfaces(
       .iter()
       .any(is_valid_cross_origin_isolated)
 
+    let has_secure_context = interface.extended_attribute_list
+      .iter()
+      .any(is_valid_secure_context)
+    check_is_valid_secure_context_on_interface(
+      interface,
+      interface_marked=has_secure_context,
+    )
+    if !has_secure_context {
+      check_interface_inheritance_no_secure_context(interface)
+    }
+    check_secure_context_interface_no_cross_origin_isolated(
+      interface,
+      interface_marked=has_secure_context,
+      interface_cross_origin_isolated=has_cross_origin_isolated,
+    )
+    check_secure_context_overloads_on_interface(interface)
+
     check_is_valid_cross_origin_isolated_on_interface(
       interface,
       interface_marked=has_cross_origin_isolated,
