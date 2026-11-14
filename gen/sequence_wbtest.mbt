@@ -81,6 +81,14 @@ test "Attribute sequence checks cover every declaration and attribute form" {
           ("Promise<sequence<long>>", true),
           ("Promise<(sequence<Values> or DOMString)?>", true),
         ] {
+        let valid = valid &&
+          (
+            !type_.has_prefix("Promise<") ||
+            form
+            is ("readonly attribute"
+            | "static readonly attribute"
+            | "stringifier readonly attribute")
+          )
         let declaration = prefix + form + " " + type_ + " value; " + suffix
         let definitions = "typedef sequence<long> _Values; typedef sequence<long>? MaybeValues; typedef (Values or DOMString) ValueUnion;"
         for source in [definitions + declaration, declaration + definitions] {

@@ -37,13 +37,13 @@ fn check_nullable_source(source : String) -> Bool raise {
 fn nullable_declaration_forms() -> Array[(String, String)] {
   [
     ("typedef ", " Result;"),
-    ("[Exposed=*] interface A { attribute ", " value; };"),
+    ("[Exposed=*] interface A { readonly attribute ", " value; };"),
     (
-      "[Exposed=*] interface A {}; partial interface A { attribute ", " value; };",
+      "[Exposed=*] interface A {}; partial interface A { readonly attribute ", " value; };",
     ),
-    ("interface mixin M { attribute ", " value; };"),
+    ("interface mixin M { readonly attribute ", " value; };"),
     (
-      "interface mixin M {}; partial interface mixin M { attribute ", " value; };",
+      "interface mixin M {}; partial interface mixin M { readonly attribute ", " value; };",
     ),
     ("namespace N { readonly attribute ", " value; };"),
     ("namespace N {}; partial namespace N { readonly attribute ", " value; };"),

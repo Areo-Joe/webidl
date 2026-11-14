@@ -78,41 +78,68 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
         Interface(interface) =>
           interface.members
           .iter()
-          .filter_map(x => Attribute::from_interface_member(x.body))
+          .filter_map(x => {
+            Attribute::from_interface_member(x.body).map(attribute => {
+              (attribute, x.extended_attribute_list)
+            })
+          })
           .collect()
         InterfaceMixin(interface_mixin) =>
           interface_mixin.members
           .iter()
-          .filter_map(x => Attribute::from_mixin_member(x.body))
+          .filter_map(x => {
+            Attribute::from_mixin_member(x.body).map(attribute => {
+              (attribute, x.extended_attribute_list)
+            })
+          })
           .collect()
         PartialInterface(interface) =>
           interface.members
           .iter()
-          .filter_map(x => Attribute::from_partial_interface_member(x.body))
+          .filter_map(x => {
+            Attribute::from_partial_interface_member(x.body).map(attribute => {
+              (attribute, x.extended_attribute_list)
+            })
+          })
           .collect()
         PartialInterfaceMixin(partial_interface_mixin) =>
           partial_interface_mixin.members
           .iter()
-          .filter_map(x => Attribute::from_mixin_member(x.body))
+          .filter_map(x => {
+            Attribute::from_mixin_member(x.body).map(attribute => {
+              (attribute, x.extended_attribute_list)
+            })
+          })
           .collect()
         Namespace(x) =>
           x.members
           .iter()
-          .filter_map(x => Attribute::from_namespace_member(x.body))
+          .filter_map(x => {
+            Attribute::from_namespace_member(x.body).map(attribute => {
+              (attribute, x.extended_attribute_list)
+            })
+          })
           .collect()
         PartialNamespace(x) =>
           x.members
           .iter()
-          .filter_map(x => Attribute::from_namespace_member(x.body))
+          .filter_map(x => {
+            Attribute::from_namespace_member(x.body).map(attribute => {
+              (attribute, x.extended_attribute_list)
+            })
+          })
           .collect()
         _ => []
       }
     })
     .flatten()
 
-  let attribute_names = attributes.map(name_of_attribute)
+  let attribute_names = attributes.map(attribute => {
+    name_of_attribute(attribute.0)
+  })
 
-  for attribute in attributes {
+  for (attribute, member_attributes) in attributes {
+    check_promise_attribute(attribute, member_attributes, typedef_index)
     check_attribute_type_identifier(
       attribute.type_with_extended_attributes.type_,
       definition_index,

@@ -81,6 +81,14 @@ test "Attribute async sequence checks cover every declaration and attribute form
           ("ValueUnion", true),
           ("ValueUnion?", true),
         ] {
+        let valid = valid &&
+          (
+            !type_.has_prefix("Promise<") ||
+            form
+            is ("readonly attribute"
+            | "static readonly attribute"
+            | "stringifier readonly attribute")
+          )
         let declaration = prefix + form + " " + type_ + " value; " + suffix
         let definitions = "typedef async_sequence<long> _Values; typedef async_sequence<long>? MaybeValues; typedef (Values or boolean) ValueUnion;"
         for source in [definitions + declaration, declaration + definitions] {
@@ -96,7 +104,7 @@ test "Async sequence attribute checks stop at union and container boundaries" {
   for
     source in [
       "typedef (Value or async_sequence<long>) Value; [Exposed=*] interface A { attribute Value value; };",
-      "typedef Promise<Value> Value; [Exposed=*] interface A { attribute Value value; };",
+      "typedef Promise<Value> Value; [Exposed=*] interface A { readonly attribute Value value; };",
       "typedef async_sequence<long> Values; [Exposed=*] interface A { readonly attribute Promise<Values> values; };",
     ] {
     assert_true(check_async_sequence_source(source))
