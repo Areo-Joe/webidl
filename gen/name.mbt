@@ -4,6 +4,19 @@ fn name_of_interface(interface : Interface) -> StringView {
 }
 
 ///|
+fn interface_object_names(interfaces : Array[Interface]) -> Set[StringView] {
+  Set(
+    interfaces
+    .filter(interface => {
+      !interface.extended_attribute_list
+      .iter()
+      .any(is_valid_legacy_no_interface_object)
+    })
+    .map(name_of_interface),
+  )
+}
+
+///|
 fn name_of_interface_mixin(interface_mixin : InterfaceMixin) -> StringView {
   strip_underscore(interface_mixin.identifier)
 }

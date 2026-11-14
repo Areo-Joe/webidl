@@ -11,6 +11,7 @@ fn check_interfaces(
   check_includes_valid(includes_statements, interfaces, interface_mixins)
   check_partial_interface_name(partial_interfaces, interfaces)
   check_legacy_factory_function_names(interfaces)
+  check_legacy_window_alias_names(interfaces)
 
   let available_global_names = interfaces
     .map(interface => global_names(interface.extended_attribute_list))
@@ -51,6 +52,15 @@ fn check_interfaces(
       ExposedSetStruct::Interface(interface),
       None,
     )
+    let window_alias_count = interface.extended_attribute_list
+      .iter()
+      .filter_map(is_valid_legacy_window_alias)
+      .count()
+    if window_alias_count > 0 {
+      check_legacy_window_alias_on_interface(
+        interface, window_alias_count, interface_exposure_set,
+      )
+    }
     for partial in interface.partials {
       if partial.extended_attribute_list
         .iter()

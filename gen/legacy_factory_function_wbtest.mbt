@@ -150,23 +150,23 @@ test "LegacyFactoryFunction names cannot match same-interface or other-interface
   for
     (source, expected) in [
       (
-        "[LegacyWindowAlias=Create, LegacyFactoryFunction=Create()] interface A {};",
+        "[Exposed=*, LegacyWindowAlias=Create, LegacyFactoryFunction=Create()] interface A {};",
         false,
       ),
       (
-        "[LegacyWindowAlias=(First,_Create), LegacyFactoryFunction=Create()] interface A {};",
+        "[Exposed=*, LegacyWindowAlias=(First,_Create), LegacyFactoryFunction=Create()] interface A {};",
         false,
       ),
       (
-        "[LegacyFactoryFunction=_Create()] interface A {}; [LegacyWindowAlias=Create] interface B {};",
+        "[LegacyFactoryFunction=_Create()] interface A {}; [Exposed=*, LegacyWindowAlias=Create] interface B {};",
         false,
       ),
       (
-        "[LegacyWindowAlias=(_Create,Other)] interface B {}; [LegacyFactoryFunction=Create()] interface A {};",
+        "[Exposed=*, LegacyWindowAlias=(_Create,Other)] interface B {}; [LegacyFactoryFunction=Create()] interface A {};",
         false,
       ),
       (
-        "[LegacyFactoryFunction=Create()] interface A {}; [LegacyWindowAlias=Other] interface B {};",
+        "[LegacyFactoryFunction=Create()] interface A {}; [Exposed=*, LegacyWindowAlias=Other] interface B {};",
         true,
       ),
       (

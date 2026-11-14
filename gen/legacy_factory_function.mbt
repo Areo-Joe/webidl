@@ -26,15 +26,7 @@ fn check_legacy_factory_function_interface_no_global(
 fn check_legacy_factory_function_names(
   interfaces : Array[Interface],
 ) -> Unit raise {
-  let interface_object_names = Set(
-    interfaces
-    .filter(interface => {
-      !interface.extended_attribute_list
-      .iter()
-      .any(is_valid_legacy_no_interface_object)
-    })
-    .map(name_of_interface),
-  )
+  let interface_object_names = interface_object_names(interfaces)
   let alias_names = Set(
     interfaces
     .map(interface => {
