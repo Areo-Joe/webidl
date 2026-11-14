@@ -1,4 +1,11 @@
 ///|
+/// The identifier also must not be "length", "name" or "prototype".
+fn check_constant_name(constant : @parser.Const) -> Unit raise {
+  let name = strip_underscore(constant.identifier)
+  assert_false(name is ("length" | "name" | "prototype"))
+}
+
+///|
 /// The identifier of a constant must not be the same as the identifier of another
 /// interface member or callback interface member defined on the same interface or callback interface.
 fn check_constant_names_no_conflict(

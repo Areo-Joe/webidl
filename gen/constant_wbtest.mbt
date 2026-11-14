@@ -10,6 +10,59 @@ fn check_constant_source(source : String) -> Bool raise {
 }
 
 ///|
+test "Constant identifiers must not be length name or prototype in any declaration context" {
+  for
+    (prefix, suffix) in [
+      ("[Exposed=*] interface A {", "};"),
+      ("[Exposed=*] interface A {}; partial interface A {", "};"),
+      ("partial interface A {", "}; [Exposed=*] interface A {};"),
+      ("interface mixin M {", "};"),
+      ("interface mixin M {}; partial interface mixin M {", "};"),
+      ("partial interface mixin M {", "}; interface mixin M {};"),
+      ("[Exposed=*] callback interface C { undefined run();", "};"),
+      ("[Exposed=*] namespace N {", "};"),
+      ("[Exposed=*] namespace N {}; partial namespace N {", "};"),
+    ] {
+    for
+      name in ["length", "name", "prototype", "_length", "_name", "_prototype"] {
+      assert_false(
+        check_constant_source(
+          prefix + " const long " + name + " = 1; " + suffix,
+        ),
+      )
+    }
+    for name in ["Length", "Name", "Prototype", "lengthValue", "_value"] {
+      assert_true(
+        check_constant_source(
+          prefix + " const long " + name + " = 1; " + suffix,
+        ),
+      )
+    }
+  }
+}
+
+///|
+test "Constant identifier restrictions do not apply to regular attributes or operations" {
+  for name in ["length", "name", "prototype"] {
+    assert_true(
+      check_constant_source(
+        "[Exposed=*] interface A { attribute long " + name + "; };",
+      ),
+    )
+    assert_true(
+      check_constant_source(
+        "[Exposed=*] interface A { undefined " + name + "(); };",
+      ),
+    )
+    assert_true(
+      check_constant_source(
+        "callback interface C { undefined " + name + "(); };",
+      ),
+    )
+  }
+}
+
+///|
 test "Interface constants cannot share names with other members across declaration parts" {
   for
     other in [

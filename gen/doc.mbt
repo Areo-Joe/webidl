@@ -442,6 +442,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
     )
   }
   for constant in constants {
+    check_constant_name(constant)
     let primitive_type = primitive_type_of_constant(
       constant.const_type,
       typedefs,
