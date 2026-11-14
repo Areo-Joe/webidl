@@ -30,6 +30,7 @@ pub enum ArgumentName {
 }
 pub fn ArgumentName::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+#derive(@debug.Debug)
 pub enum ArgumentNameKeyword {
   Attribute
   Callback
@@ -55,7 +56,7 @@ pub enum ArgumentNameKeyword {
   Stringifier
   Typedef
   Unrestricted
-} derive(@debug.Debug)
+}
 pub fn ArgumentNameKeyword::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 pub fn ArgumentNameKeyword::to_repr(Self) -> @debug.Repr
 
@@ -102,6 +103,7 @@ pub enum BooleanLiteral {
 }
 pub fn BooleanLiteral::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+#derive(@debug.Debug)
 pub enum BufferRelatedType {
   ArrayBuffer
   SharedArrayBuffer
@@ -118,7 +120,7 @@ pub enum BufferRelatedType {
   Float16Array
   Float32Array
   Float64Array
-} derive(@debug.Debug)
+}
 pub fn BufferRelatedType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 pub fn BufferRelatedType::to_repr(Self) -> @debug.Repr
 
@@ -518,10 +520,11 @@ pub enum NamespaceMembers {
 pub fn NamespaceMembers::iter(Self) -> Iter[(ExtendedAttributeList, NamespaceMember)]
 pub fn NamespaceMembers::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
+#derive(@debug.Debug)
 pub enum Null {
   Some
   None
-} derive(@debug.Debug)
+}
 pub fn Null::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 pub fn Null::to_repr(Self) -> @debug.Repr
 
@@ -566,10 +569,11 @@ pub enum OptionalOperationName {
 }
 pub fn OptionalOperationName::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 
+#derive(@debug.Debug)
 pub enum OptionalReadOnly {
   ReadOnly
   None
-} derive(@debug.Debug)
+}
 pub fn OptionalReadOnly::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])
 pub fn OptionalReadOnly::to_repr(Self) -> @debug.Repr
 
@@ -721,11 +725,12 @@ pub enum StaticMemberRest {
 }
 pub fn StaticMemberRest::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
+#derive(@debug.Debug)
 pub enum StringType {
   ByteString
   DOMString
   USVString
-} derive(@debug.Debug)
+}
 pub fn StringType::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 pub fn StringType::to_repr(Self) -> @debug.Repr
 
@@ -744,6 +749,7 @@ pub enum Type {
   SingleType(SingleType)
   UnionType(UnionType, Null)
 }
+pub fn Type::iter_types(Self) -> Iter[Self]
 pub fn Type::parse(ArrayView[(@lexer.TokenType, StringView)]) -> (Self, ArrayView[(@lexer.TokenType, StringView)])?
 
 pub struct TypeWithExtendedAttributes {
