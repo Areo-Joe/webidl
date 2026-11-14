@@ -9,12 +9,18 @@ fn check_interfaces(
   check_inheritance_no_circle(interfaces)
   check_includes_valid(includes_statements, interfaces, interface_mixins)
   check_partial_interface_name(partial_interfaces, interfaces)
+  check_legacy_factory_function_names(interfaces)
 
   let available_global_names = interfaces
     .map(interface => global_names(interface.extended_attribute_list))
     .flatten()
 
   for interface in interfaces {
+    if interface.extended_attribute_list
+      .iter()
+      .any(attr => is_valid_legacy_factory_function(attr) is Some(_)) {
+      check_legacy_factory_function_interface_no_global(interface)
+    }
     check_interface_inheritance_no_global(interface)
     if interface.extended_attribute_list
       .iter()
