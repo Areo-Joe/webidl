@@ -319,6 +319,31 @@ fn check_exposed_interface_member_is_subset_of_interface(
 }
 
 ///|
+/// If [Exposed] appears both on an interface mixin member and the interface mixin it is a member of,
+/// then the interface mixin members’s own exposure set must be a subset of the interface mixin’s own exposure set.
+fn check_exposed_interface_mixin_member_is_subset_of_interface_mixin(
+  mixin_ : InterfaceMixin,
+  mixin_own_exposure_set : ExposureSet,
+) -> Unit raise {
+  for member_ in mixin_.members {
+    if ExposedAble::InterfaceMixinMember(member_).exposed_attribute()
+      is Some(exposed) {
+      assert_true(exposed.own_exposure_set().is_subset(mixin_own_exposure_set))
+    }
+  }
+  for partial in mixin_.partials {
+    for member_ in partial.members {
+      if ExposedAble::PartialInterfaceMixinMember(member_).exposed_attribute()
+        is Some(exposed) {
+        assert_true(
+          exposed.own_exposure_set().is_subset(mixin_own_exposure_set),
+        )
+      }
+    }
+  }
+}
+
+///|
 /// If an interface X inherits from another interface Y then the exposure set of X must be a subset of the exposure set of Y.
 fn check_exposed_interface_is_subset_of_inheritance(
   interface : Interface,

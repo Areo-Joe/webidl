@@ -25,6 +25,11 @@ fn check_interface_mixins(
         }
       }
     }
+    if mixin_own_exposure_set is Some(mixin_own_exposure_set) {
+      check_exposed_interface_mixin_member_is_subset_of_interface_mixin(
+        mixin_, mixin_own_exposure_set,
+      )
+    }
     let has_cross_origin_isolated = mixin_.extended_attribute_list
       .iter()
       .any(is_valid_cross_origin_isolated)
