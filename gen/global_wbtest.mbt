@@ -101,15 +101,7 @@ test "Global constructor check only uses the original interface annotation" {
         } else {
           original + partial
         }
-        let (definitions, rest) = @parser.parse(
-          @lexer.tokenize(source).exact_view(),
-        )
-        assert_true(rest is [])
-        for definition in Definition::from_parser(definitions) {
-          if definition is Interface(interface) {
-            check_global_interface_no_constructor(interface)
-          }
-        }
+        assert_true(check_global_source(source))
       }
     }
   }

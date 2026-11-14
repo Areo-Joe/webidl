@@ -42,17 +42,13 @@ fn global_names(attr_list : @parser.ExtendedAttributeList) -> Array[StringView] 
 /// If the [Global] extended attributes is used on an interface, then:
 /// The interface must not define a constructor operation.
 fn check_global_interface_no_constructor(interface : Interface) -> Unit raise {
-  if interface.extended_attribute_list
+  assert_false(
+    interface.members
     .iter()
-    .any(attr => is_valid_global(attr) is Some(_)) {
-    assert_false(
-      interface.members
-      .iter()
-      .any(interface_member => {
-        interface_member.body is @parser.InterfaceMember::Constructor(_)
-      }),
-    )
-  }
+    .any(interface_member => {
+      interface_member.body is @parser.InterfaceMember::Constructor(_)
+    }),
+  )
 }
 
 ///|
@@ -61,13 +57,9 @@ fn check_global_interface_no_constructor(interface : Interface) -> Unit raise {
 fn check_global_interface_no_legacy_override_built_ins(
   interface : Interface,
 ) -> Unit raise {
-  if interface.extended_attribute_list
+  assert_false(
+    interface.extended_attribute_list
     .iter()
-    .any(attr => is_valid_global(attr) is Some(_)) {
-    assert_false(
-      interface.extended_attribute_list
-      .iter()
-      .any(is_valid_legacy_override_built_ins),
-    )
-  }
+    .any(is_valid_legacy_override_built_ins),
+  )
 }

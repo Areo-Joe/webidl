@@ -15,13 +15,32 @@ fn check_interfaces(
     .flatten()
 
   for interface in interfaces {
-    check_global_interface_no_constructor(interface)
-    check_global_interface_no_legacy_override_built_ins(interface)
+    if interface.extended_attribute_list
+      .iter()
+      .any(attr => is_valid_global(attr) is Some(_)) {
+      check_global_interface_no_constructor(interface)
+      check_global_interface_no_legacy_override_built_ins(interface)
+    }
     check_exposed_global_names_on_interface(interface, available_global_names)
-    check_exposed_partial_interface_member_no_duplicate(interface)
-    check_exposed_partial_interface_is_subset_of_interface(interface)
-    check_exposed_interface_member_is_subset_of_interface(interface)
-    check_exposed_interface_is_subset_of_inheritance(interface)
+    let interface_exposure_set = exposure_set(
+      ExposedSetStruct::Interface(interface),
+      None,
+    )
+    for partial in interface.partials {
+      if ExposedAble::PartialInterface(partial).exposed_attribute()
+        is Some(exposed) {
+        check_exposed_partial_interface_member_no_duplicate(partial)
+        check_exposed_partial_interface_is_subset_of_interface(
+          exposed, interface_exposure_set,
+        )
+      }
+    }
+    check_exposed_interface_member_is_subset_of_interface(
+      interface, interface_exposure_set,
+    )
+    check_exposed_interface_is_subset_of_inheritance(
+      interface, interface_exposure_set,
+    )
 
     let has_cross_origin_isolated = interface.extended_attribute_list
       .iter()

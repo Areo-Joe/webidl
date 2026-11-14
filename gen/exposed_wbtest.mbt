@@ -6,6 +6,28 @@ fn parse_exposure_definitions(input : String) -> Array[Definition] raise {
 }
 
 ///|
+test "explicit interface member exposure sets are not intersected with the interface" {
+  let definitions = parse_exposure_definitions(
+    "[Exposed=Window] interface A { [Exposed=Worker] undefined first(); }; partial interface A { [Exposed=Worker] undefined second(); };",
+  )
+  guard definitions[0] is Interface(interface) else {
+    fail("expected interface")
+  }
+  for
+    construct in [
+      ExposedSetStruct::InterfaceMember(interface.members[0]),
+      ExposedSetStruct::PartialInterfaceMember(interface.partials[0].members[0]),
+    ] {
+    guard exposure_set(construct, None) is List(names) else {
+      fail("expected finite exposure set")
+    }
+    assert_eq(names.length(), 1)
+    assert_true(names.contains("Worker"))
+    assert_false(names.contains("Window"))
+  }
+}
+
+///|
 test "partial mixin exposure depends on the including interface" {
   let cases = [
     (
