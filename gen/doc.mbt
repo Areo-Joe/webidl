@@ -156,6 +156,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
       extended_attributes~,
     )
     check_type_not_nullable_dictionary(type_, typedef_index, dictionary_names)
+    check_type_not_undefined(type_, typedef_index)
   }
 
   let constants = definitions

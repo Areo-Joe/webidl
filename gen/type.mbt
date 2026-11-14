@@ -102,6 +102,7 @@ fn check_argument_types(
       extended_attributes~,
     )
     check_type_not_nullable_dictionary(type_, typedefs, dictionary_names)
+    check_type_not_undefined(type_, typedefs)
   }
 }
 
