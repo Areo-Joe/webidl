@@ -56,6 +56,7 @@ test "Constant type identifiers must reference typedefs of non nullable primitiv
         ("FrozenArray<long>", false),
         ("ObservableArray<long>", false),
         ("record<DOMString, long>", false),
+        ("record<DOMString, long>?", false),
         ("Promise<long>", false),
         ("(long or DOMString)", false),
       ] {

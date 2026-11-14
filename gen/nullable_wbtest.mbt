@@ -78,7 +78,7 @@ test "Nullable constraints cover every declaration entry and typedef order" {
         ("typedef any Anything;", "FrozenArray<Anything>?", true),
         ("typedef long? Maybe;", "FrozenArray<Maybe>?", true),
         ("", "(FrozenArray<long?> or DOMString)?", true),
-        ("", "(record<DOMString, long?> or boolean)?", true),
+        ("", "(FrozenArray<record<DOMString, long?>> or boolean)?", true),
         ("dictionary Options {};", "(FrozenArray<Options> or DOMString)?", true),
         (
           "dictionary Options {}; typedef FrozenArray<Options> Configs;", "(Configs or DOMString)?",
