@@ -7,6 +7,39 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
 
   let definition_names = definitions.filter_map(name_of_definition)
 
+  // Within the set of IDL fragments that a given implementation supports, the identifier of every interface, namespace, dictionary, enumeration, callback function, callback interface and typedef must not be the same as the identifier of any other interface, namespace, dictionary, enumeration, callback function, callback interface or typedef.
+  let no_name_conflict_definitions = definitions.filter_map(x => {
+    match x {
+      Interface(_)
+      | Callback(_)
+      | Namespace(_)
+      | Dictionary(_)
+      | Enum(_)
+      | CallbackInterface(_)
+      | Typedef(_) => Some(x)
+      _ => None
+    }
+  })
+
+  let no_conflict_names = no_name_conflict_definitions.filter_map(
+    name_of_definition,
+  )
+
+  assert_eq(no_conflict_names.length(), Set(no_conflict_names).length())
+
+  let typedefs = definitions.filter_map(x => {
+    match x {
+      Typedef(typedef_) => Some(typedef_)
+      _ => None
+    }
+  })
+  check_typedef_type_not_typedef(typedefs)
+
+  let typedef_index = Map([])
+  for typedef_ in typedefs {
+    typedef_index.set(strip_underscore(typedef_.identifier), typedef_)
+  }
+
   let attributes = definitions
     .map(definition => {
       match definition {
@@ -50,6 +83,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
   for attribute in attributes {
     check_nullable_type_no_observable_array(
       attribute.type_with_extended_attributes.type_,
+      typedef_index,
     )
   }
 
@@ -73,7 +107,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
         type_with_extended_attributes.type_
       Optional(type_, _, _) => type_
     }
-    check_nullable_type_no_observable_array(type_)
+    check_nullable_type_no_observable_array(type_, typedef_index)
   }
 
   let constants = definitions
@@ -196,8 +230,11 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
   let operation_names = operations.filter_map(name_of_operation)
 
   for operation in operations {
-    check_nullable_type_no_observable_array(operation.type_)
-    check_nullable_argument_types_no_observable_array(operation.argument_list)
+    check_nullable_type_no_observable_array(operation.type_, typedef_index)
+    check_nullable_argument_types_no_observable_array(
+      operation.argument_list,
+      typedef_index,
+    )
   }
 
   let callbacks = definitions.filter_map(definition => {
@@ -207,8 +244,11 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
     }
   })
   for callback in callbacks {
-    check_nullable_type_no_observable_array(callback.type_)
-    check_nullable_argument_types_no_observable_array(callback.argument_list)
+    check_nullable_type_no_observable_array(callback.type_, typedef_index)
+    check_nullable_argument_types_no_observable_array(
+      callback.argument_list,
+      typedef_index,
+    )
   }
 
   for definition in definitions {
@@ -219,7 +259,9 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
             is NamedArgList(
               { identifier: "LegacyFactoryFunction", argument_list, .. }
             ) {
-            check_nullable_argument_types_no_observable_array(argument_list)
+            check_nullable_argument_types_no_observable_array(
+              argument_list, typedef_index,
+            )
           }
         }
         for interface_member in interface.members {
@@ -227,9 +269,12 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
             Constructor(constructor_) =>
               check_nullable_argument_types_no_observable_array(
                 constructor_.argument_list,
+                typedef_index,
               )
             PartialInterfaceMember(body) =>
-              check_nullable_collection_types_no_observable_array(body)
+              check_nullable_collection_types_no_observable_array(
+                body, typedef_index,
+              )
           }
         }
       }
@@ -237,6 +282,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
         for interface_member in partial.members {
           check_nullable_collection_types_no_observable_array(
             interface_member.body,
+            typedef_index,
           )
         }
       _ => ()
@@ -274,36 +320,10 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
     operation_names_not_regular).every(name => name != "toJSON"),
   )
 
-  // Within the set of IDL fragments that a given implementation supports, the identifier of every interface, namespace, dictionary, enumeration, callback function, callback interface and typedef must not be the same as the identifier of any other interface, namespace, dictionary, enumeration, callback function, callback interface or typedef.
-  let no_name_conflict_definitions = definitions.filter_map(x => {
-    match x {
-      Interface(_)
-      | Callback(_)
-      | Namespace(_)
-      | Dictionary(_)
-      | Enum(_)
-      | CallbackInterface(_)
-      | Typedef(_) => Some(x)
-      _ => None
-    }
-  })
-
-  let no_conflict_names = no_name_conflict_definitions.filter_map(
-    name_of_definition,
-  )
-
-  assert_eq(no_conflict_names.length(), Set(no_conflict_names).length())
-
-  let typedefs = definitions.filter_map(x => {
-    match x {
-      Typedef(typedef_) => Some(typedef_)
-      _ => None
-    }
-  })
-  check_typedef_type_not_typedef(typedefs)
   for typedef_ in typedefs {
     check_nullable_type_no_observable_array(
       typedef_.type_with_extended_attributes.type_,
+      typedef_index,
     )
   }
   for constant in constants {

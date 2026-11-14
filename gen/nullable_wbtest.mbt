@@ -10,6 +10,95 @@ fn check_nullable_source(source : String) -> Bool raise {
 }
 
 ///|
+test "Nullable observable array checks resolve typedefs at every declaration entry" {
+  for
+    (prefix, suffix) in [
+      ("typedef ", " Result;"),
+      ("[Exposed=*] interface A { attribute ", " value; };"),
+      (
+        "[Exposed=*] interface A {}; partial interface A { attribute ", " value; };",
+      ),
+      ("interface mixin M { attribute ", " value; };"),
+      (
+        "interface mixin M {}; partial interface mixin M { attribute ", " value; };",
+      ),
+      ("namespace N { readonly attribute ", " value; };"),
+      (
+        "namespace N {}; partial namespace N { readonly attribute ", " value; };",
+      ),
+      ("[Exposed=*] interface A { ", " get(); };"),
+      ("[Exposed=*] interface A { undefined use(", " value); };"),
+      ("callback C = ", " ();"),
+      ("callback C = undefined (", " value);"),
+      ("callback interface C { ", " get(); };"),
+      ("callback interface C { undefined use(", " value); };"),
+      ("dictionary D { ", " value; };"),
+      ("dictionary D { required ", " value; };"),
+      ("dictionary D {}; partial dictionary D { ", " value; };"),
+      ("[Exposed=*] interface A { constructor(", " value); };"),
+      ("[Exposed=*, LegacyFactoryFunction=Create(", " value)] interface A {};"),
+      ("[Exposed=*] interface A { iterable<", ">; };"),
+      ("[Exposed=*] interface A { iterable<", ", DOMString>; };"),
+      ("[Exposed=*] interface A { iterable<DOMString, ", ">; };"),
+      ("[Exposed=*] interface A { async_iterable<", ">; };"),
+      ("[Exposed=*] interface A { async_iterable<DOMString, ", ">; };"),
+      ("[Exposed=*] interface A { async_iterable<long>(", " value); };"),
+      ("[Exposed=*] interface A { maplike<", ", DOMString>; };"),
+      ("[Exposed=*] interface A { readonly maplike<DOMString, ", ">; };"),
+      ("[Exposed=*] interface A { setlike<", ">; };"),
+      ("[Exposed=*] interface A { readonly setlike<", ">; };"),
+    ] {
+    for
+      (type_, valid) in [
+        ("Items?", false),
+        ("_Items?", false),
+        ("sequence<Items?>", false),
+        ("(Items or Items?)", false),
+        ("(Items? or Items)", false),
+        ("sequence<Items>?", true),
+        ("Items", true),
+      ] {
+      if prefix == "typedef " && type_ == "Items" {
+        continue
+      }
+      let declaration = prefix + type_ + suffix
+      for
+        source in [
+          "typedef ObservableArray<long> Items; " + declaration,
+          declaration + " typedef ObservableArray<long> _Items;",
+        ] {
+        assert_eq(check_nullable_source(source), valid)
+      }
+    }
+  }
+}
+
+///|
+test "Nullable checks follow compound typedef references without propagating nullability to elements" {
+  for
+    source in [
+      "typedef ObservableArray<long> Items; typedef Items? MaybeItems;", "typedef ObservableArray<long> Items; typedef sequence<Items?> Bad;",
+      "typedef sequence<Items?> Bad; typedef ObservableArray<long> Items;", "typedef ObservableArray<long> Items; typedef Items? MaybeItems; typedef FrozenArray<MaybeItems> Bad;",
+    ] {
+    assert_false(check_nullable_source(source))
+  }
+  for
+    source in [
+      "typedef ObservableArray<long> Items; typedef sequence<Items>? MaybeSequence;",
+      "typedef ObservableArray<long> Items; typedef (Items or DOMString)? MaybeUnion;",
+      "typedef ObservableArray<long?> Items; typedef sequence<Items> Nested;", "typedef sequence<A> A;",
+      "typedef sequence<B> A; typedef sequence<A> B;", "typedef A? A;",
+    ] {
+    assert_true(check_nullable_source(source))
+  }
+  assert_false(
+    check_nullable_source(
+      "typedef (sequence<A> or Items?) A; typedef ObservableArray<long> Items;",
+    ),
+  )
+}
+
+///|
 test "Legacy factory function arguments reject nullable observable arrays" {
   for
     arguments in [
