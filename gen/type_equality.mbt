@@ -4,17 +4,37 @@ fn same_flattened_member_type(
   right : @parser.Type,
   typedefs : Map[StringView, TypeDef],
 ) -> Bool {
-  let visiting : Array[(@parser.Type, @parser.Type)] = []
+  same_type(left, right, typedefs, ignore_outer=true)
+}
+
+///|
+fn same_type(
+  left : @parser.Type,
+  right : @parser.Type,
+  typedefs : Map[StringView, TypeDef],
+  left_attributes~ : Array[@parser.ExtendedAttribute] = [],
+  right_attributes~ : Array[@parser.ExtendedAttribute] = [],
+  ignore_outer~ : Bool = false,
+) -> Bool {
+  let visiting : Array[
+    (
+      @parser.Type,
+      @parser.Type,
+      Array[@parser.ExtendedAttribute],
+      Array[@parser.ExtendedAttribute],
+    ),
+  ] = []
 
   fn flatten_union(
     union_type : @parser.UnionType,
+    attributes : Array[@parser.ExtendedAttribute],
   ) -> (Array[(@parser.Type, Array[@parser.ExtendedAttribute])], Bool) {
     let pending : Array[(@parser.Type, Array[@parser.ExtendedAttribute])] = []
     let visited : Array[(@parser.Type, Array[@parser.ExtendedAttribute])] = []
     let types : Array[(@parser.Type, Array[@parser.ExtendedAttribute])] = []
 
     pending.push_iter(
-      union_member_types_with_extended_attributes(union_type, []),
+      union_member_types_with_extended_attributes(union_type, attributes),
     )
     let mut nullable = false
     while pending.pop() is Some((type_, attributes)) {
@@ -75,11 +95,14 @@ fn same_flattened_member_type(
       return false
     }
     if visiting.any(state => {
-        physical_equal(state.0, left) && physical_equal(state.1, right)
+        physical_equal(state.0, left) &&
+        physical_equal(state.1, right) &&
+        same_type_attributes(state.2, left_attributes) &&
+        same_type_attributes(state.3, right_attributes)
       }) {
       return true
     }
-    visiting.push((left, right))
+    visiting.push((left, right, left_attributes, right_attributes))
     let result = match (left, right) {
       (SingleType(Any), SingleType(Any)) => true
       (SingleType(PromiseType(left)), SingleType(PromiseType(right))) =>
@@ -92,8 +115,8 @@ fn same_flattened_member_type(
           same_type_attributes(left.1, right.1) &&
           same(left.0, right.0, true, [], [])
         }
-        let (left, left_nullable) = flatten_union(left)
-        let (right, right_nullable) = flatten_union(right)
+        let (left, left_nullable) = flatten_union(left, left_attributes)
+        let (right, right_nullable) = flatten_union(right, right_attributes)
         left_nullable == right_nullable &&
         left.all(left => right.any(right => same_member(left, right))) &&
         right.all(right => left.any(left => same_member(left, right)))
@@ -134,5 +157,5 @@ fn same_flattened_member_type(
     result
   }
 
-  same(left, right, true, [], [])
+  same(left, right, ignore_outer, left_attributes, right_attributes)
 }
