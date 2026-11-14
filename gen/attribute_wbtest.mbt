@@ -1,4 +1,79 @@
 ///|
+test "Attribute dictionary checks resolve typedefs and flattened union members" {
+  let definitions = "dictionary _D {}; typedef D Value; typedef D? MaybeValue; typedef (D or DOMString) ValueUnion;"
+  for
+    type_ in [
+      "D", "_D?", "Value", "Value?", "MaybeValue", "ValueUnion", "ValueUnion?", "(D or DOMString)",
+      "((DOMString or Value) or boolean)", "(DOMString or (boolean or Value)?)",
+      "([Example] Value or DOMString)",
+    ] {
+    for
+      (prefix, suffix) in [
+        ("[Exposed=*] interface A { attribute ", " value; };"),
+        ("[Exposed=*] interface A { readonly attribute ", " value; };"),
+        ("[Exposed=*] interface A { static attribute ", " value; };"),
+        ("[Exposed=*] interface A { static readonly attribute ", " value; };"),
+        (
+          "[Exposed=*] interface A {}; partial interface A { attribute ", " value; };",
+        ),
+        ("interface mixin M { attribute ", " value; };"),
+        (
+          "interface mixin M {}; partial interface mixin M { attribute ", " value; };",
+        ),
+        ("namespace N { readonly attribute ", " value; };"),
+        (
+          "namespace N {}; partial namespace N { readonly attribute ", " value; };",
+        ),
+      ] {
+      let declaration = prefix + type_ + suffix
+      assert_false(check_attribute_source(definitions + declaration))
+      assert_false(check_attribute_source(declaration + definitions))
+    }
+  }
+}
+
+///|
+test "Attribute dictionary checks terminate on cycles and inspect other branches" {
+  for
+    definition in [
+      "typedef (Value or D) Value;", "typedef (D or Value) Value;", "typedef (Other or DOMString) Value; typedef (Value or D) Other;",
+    ] {
+    assert_false(
+      check_attribute_source(
+        "dictionary D {}; " +
+        definition +
+        "[Exposed=*] interface A { attribute Value value; };",
+      ),
+    )
+  }
+  assert_true(
+    check_attribute_source(
+      "typedef (Value or DOMString) Value; [Exposed=*] interface A { attribute Value value; };",
+    ),
+  )
+}
+
+///|
+test "Attribute dictionary checks preserve nested types and other type uses" {
+  for
+    source in [
+      "dictionary D {}; [Exposed=*] interface A { readonly attribute Promise<D> value; };",
+      "dictionary D {}; typedef D Value; [Exposed=*] interface A { readonly attribute Promise<(Value or DOMString)> value; };",
+      "dictionary D {}; [Exposed=*] interface A { D get(); undefined use(D value); constructor(D value); };",
+      "dictionary D {}; dictionary Other { D value; };", "dictionary D {}; callback C = D (D value);",
+    ] {
+    assert_true(check_attribute_source(source))
+  }
+  for
+    source in [
+      "dictionary D {}; typedef D Value; [Exposed=*] interface A { attribute long first; attribute Value last; };",
+      "dictionary D {}; typedef D Value; [Exposed=*] interface A {}; [Exposed=*] interface B { attribute Value value; };",
+    ] {
+    assert_false(check_attribute_source(source))
+  }
+}
+
+///|
 fn check_attribute_source(source : String) -> Bool raise {
   let (definitions, rest) = @parser.parse(@lexer.tokenize(source).exact_view())
   assert_true(rest is [])

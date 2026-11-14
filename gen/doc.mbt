@@ -137,6 +137,11 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
       attribute.type_with_extended_attributes.type_,
       typedef_index,
     )
+    check_attribute_type_no_dictionary(
+      attribute.type_with_extended_attributes.type_,
+      typedef_index,
+      dictionary_names,
+    )
     check_attribute_type_no_record(
       attribute.type_with_extended_attributes.type_,
       typedef_index,
