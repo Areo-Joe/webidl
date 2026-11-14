@@ -477,5 +477,5 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
   check_interfaces(
     interfaces, includes_statements, interface_mixins, partial_interfaces, typedef_index,
   )
-  check_interface_mixins(interface_mixins, interfaces)
+  check_interface_mixins(interface_mixins, interfaces, includes_statements)
 }

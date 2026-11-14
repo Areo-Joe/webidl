@@ -2,6 +2,7 @@
 fn check_interface_mixins(
   interface_mixins : Array[InterfaceMixin],
   interfaces : Array[Interface],
+  includes_statements : Array[IncludesStatement],
 ) -> Unit raise {
   let available_global_names = interfaces
     .map(interface => global_names(interface.extended_attribute_list))
@@ -38,7 +39,28 @@ fn check_interface_mixins(
       mixin_marked=has_cross_origin_isolated,
     )
     check_cross_origin_isolated_overloads_on_interface_mixin(mixin_)
+    let has_secure_context = mixin_.extended_attribute_list
+      .iter()
+      .any(is_valid_secure_context)
+    check_is_valid_secure_context_on_interface_mixin(
+      mixin_,
+      mixin_marked=has_secure_context,
+    )
     check_secure_context_overloads_on_interface_mixin(mixin_)
+    let host_cross_origin_isolated = includes_statements.any(statement => {
+      strip_underscore(statement.mixin_) == name_of_interface_mixin(mixin_) &&
+      interfaces.any(interface => {
+        name_of_interface(interface) == strip_underscore(statement.interface) &&
+        interface.extended_attribute_list
+        .iter()
+        .any(is_valid_cross_origin_isolated)
+      })
+    })
+    check_secure_context_interface_mixin_no_cross_origin_isolated(
+      mixin_,
+      mixin_cross_origin_isolated=has_cross_origin_isolated,
+      host_cross_origin_isolated~,
+    )
   }
 }
 

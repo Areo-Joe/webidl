@@ -10,6 +10,150 @@ fn check_secure_context_source(source : String) -> Bool raise {
 }
 
 ///|
+test "SecureContext mixin members cannot be conditionally exposed on CrossOriginIsolated" {
+  for
+    member_ in [
+      "const long value = 1;", "attribute long value;", "undefined run();", "stringifier;",
+    ] {
+    for
+      (original_attribute, partial_attribute, member_attribute, expected) in [
+        ("", "", "[SecureContext]", true),
+        ("", "", "[SecureContext,CrossOriginIsolated]", false),
+        ("[CrossOriginIsolated]", "", "[SecureContext]", false),
+        ("", "[CrossOriginIsolated]", "[SecureContext]", false),
+        ("[CrossOriginIsolated()]", "", "[SecureContext]", true),
+        ("", "[CrossOriginIsolated=Name]", "[SecureContext]", true),
+        ("[CrossOriginIsolated]", "", "[SecureContext()]", true),
+      ] {
+      let original = original_attribute + " interface mixin M {};"
+      let partial = partial_attribute +
+        " partial interface mixin M { " +
+        member_attribute +
+        member_ +
+        " };"
+      assert_eq(check_secure_context_source(original + partial), expected)
+      assert_eq(check_secure_context_source(partial + original), expected)
+      if partial_attribute == "" {
+        assert_eq(
+          check_secure_context_source(
+            original_attribute +
+            " interface mixin M { " +
+            member_attribute +
+            member_ +
+            " };",
+          ),
+          expected,
+        )
+      }
+    }
+  }
+}
+
+///|
+test "SecureContext mixin member conditional exposure accounts for every direct host" {
+  for
+    members in [
+      "interface mixin M { [SecureContext] undefined run(); };", "interface mixin M {}; partial interface mixin M { [SecureContext] undefined run(); };",
+    ] {
+    for
+      (hosts, expected) in [
+        ("[Exposed=*] interface A {}; A includes M;", true),
+        ("[Exposed=*,CrossOriginIsolated] interface A {}; A includes M;", false),
+        (
+          "[Exposed=*] interface A {}; [Exposed=*,CrossOriginIsolated] interface B {}; A includes M; B includes M;",
+          false,
+        ),
+        (
+          "[Exposed=*] interface A {}; [Exposed=*,CrossOriginIsolated] interface B {}; A includes M;",
+          true,
+        ),
+        (
+          "[Exposed=*,CrossOriginIsolated()] interface A {}; A includes M;", true,
+        ),
+        (
+          "[Exposed=*,CrossOriginIsolated] interface _A {}; _A includes _M;", false,
+        ),
+        (
+          "[Exposed=*] interface A {}; [CrossOriginIsolated] partial interface A {}; A includes M;",
+          true,
+        ),
+        (
+          "[Exposed=*] interface A {}; [Exposed=*,CrossOriginIsolated] interface B : A {}; A includes M;",
+          true,
+        ),
+      ] {
+      assert_eq(check_secure_context_source(members + hosts), expected)
+      assert_eq(check_secure_context_source(hosts + members), expected)
+    }
+  }
+}
+
+///|
+test "SecureContext conditional exposure does not turn container annotations into member annotations" {
+  for
+    source in [
+      "[SecureContext,CrossOriginIsolated] interface mixin M { undefined run(); };",
+      "interface mixin M {}; [SecureContext,CrossOriginIsolated] partial interface mixin M { undefined run(); };",
+      "[Exposed=*,CrossOriginIsolated] interface A {}; [SecureContext] interface mixin M { undefined run(); }; A includes M;",
+      "[Exposed=*,CrossOriginIsolated] interface A {}; interface mixin M {}; [SecureContext] partial interface mixin M { undefined run(); }; A includes M;",
+      "interface mixin M { [SecureContext] undefined first(); }; [CrossOriginIsolated] partial interface mixin M { undefined second(); }; partial interface mixin M { [SecureContext] undefined third(); };",
+    ] {
+    assert_true(check_secure_context_source(source))
+  }
+}
+
+///|
+test "SecureContext mixin members must not duplicate their containing definition annotation" {
+  for
+    member_ in [
+      "const long value = 1;", "attribute long value;", "undefined run();", "stringifier;",
+    ] {
+    for
+      (container_attribute, member_attribute, expected) in [
+        ("", "", true),
+        ("[SecureContext]", "", true),
+        ("", "[SecureContext]", true),
+        ("[SecureContext]", "[SecureContext]", false),
+        ("[SecureContext()]", "[SecureContext]", true),
+        ("[SecureContext]", "[SecureContext=Name]", true),
+      ] {
+      let body = " { " + member_attribute + member_ + " };"
+      assert_eq(
+        check_secure_context_source(
+          container_attribute + " interface mixin M" + body,
+        ),
+        expected,
+      )
+      let original = "interface mixin M {};"
+      let partial = container_attribute + " partial interface mixin M" + body
+      assert_eq(check_secure_context_source(original + partial), expected)
+      assert_eq(check_secure_context_source(partial + original), expected)
+      assert_eq(
+        check_secure_context_source(
+          container_attribute +
+          " interface mixin M {}; partial interface mixin M" +
+          body,
+        ),
+        expected,
+      )
+    }
+  }
+}
+
+///|
+test "SecureContext partial mixin annotations only constrain their own members" {
+  for
+    source in [
+      "interface mixin M { [SecureContext] undefined original(); }; [SecureContext] partial interface mixin M { undefined first(); }; partial interface mixin M { [SecureContext] undefined second(); };",
+      "[SecureContext] interface mixin M {}; [SecureContext] partial interface mixin M { undefined run(); };",
+      "[Exposed=*, SecureContext] interface A {}; interface mixin M { [SecureContext] undefined run(); }; A includes M;",
+      "[SecureContext] interface mixin M {}; interface mixin N { [SecureContext] undefined run(); };",
+    ] {
+    assert_true(check_secure_context_source(source))
+  }
+}
+
+///|
 test "SecureContext requires consistent marking on mixin operation overloads" {
   for
     (members, expected) in [
