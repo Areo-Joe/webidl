@@ -10,6 +10,104 @@ fn check_constant_source(source : String) -> Bool raise {
 }
 
 ///|
+test "Interface constants cannot share names with other members across declaration parts" {
+  for
+    other in [
+      "const long _value = 2;", "attribute long _value;", "readonly attribute long _value;",
+      "undefined _value();", "stringifier attribute DOMString _value;",
+    ] {
+    for
+      (first, second) in [
+        ("const long value = 1;", other),
+        (other, "const long value = 1;"),
+      ] {
+      for
+        source in [
+          "[Exposed=*] interface A { " + first + second + " };",
+          "[Exposed=*] interface A { " +
+          first +
+          " }; partial interface A { " +
+          second +
+          " };",
+          "partial interface A { " +
+          second +
+          " }; [Exposed=*] interface A { " +
+          first +
+          " };",
+          "[Exposed=*] interface A {}; partial interface A { " +
+          first +
+          " }; partial interface A { " +
+          second +
+          " };",
+          "[Exposed=*] interface A { " +
+          first +
+          " }; interface mixin M { " +
+          second +
+          " }; A includes M;",
+          "[Exposed=*] interface A {}; partial interface A { " +
+          first +
+          " }; interface mixin M {}; partial interface mixin M { " +
+          second +
+          " }; A includes M;",
+          "[Exposed=*] interface A {}; interface mixin M { " +
+          first +
+          " }; interface mixin N { " +
+          second +
+          " }; A includes M; A includes N;",
+        ] {
+        assert_false(check_constant_source(source))
+      }
+    }
+  }
+  for
+    other in [
+      "static attribute long value;", "static undefined value();", "getter any value(DOMString key);",
+      "setter undefined value(DOMString key, any data);", "deleter boolean value(DOMString key);",
+      "inherit attribute long value;",
+    ] {
+    assert_false(
+      check_constant_source(
+        "[Exposed=*] interface A { const long value = 1; " + other + " };",
+      ),
+    )
+  }
+}
+
+///|
+test "Callback interface constants cannot share names with constants or operations" {
+  for
+    members in [
+      "const long value = 1; const long _value = 2; undefined run();", "const long value = 1; undefined _value();",
+      "undefined _value(); const long value = 1;",
+    ] {
+    assert_false(
+      check_constant_source(
+        "[Exposed=*] callback interface C { " + members + " };",
+      ),
+    )
+  }
+}
+
+///|
+test "Constant name conflicts exclude inherited members and unrelated declarations" {
+  for
+    source in [
+      "[Exposed=*] interface A { const long first = 1; attribute long second; undefined third(); };",
+      "[Exposed=*] interface A { const long value = 1; }; [Exposed=*] interface B { const long value = 2; };",
+      "[Exposed=*] interface Parent { const long value = 1; }; [Exposed=*] interface A : Parent { const long value = 2; };",
+      "[Exposed=*] interface Parent { attribute long value; }; [Exposed=*] interface A : Parent { const long value = 1; };",
+      "[Exposed=*] interface Parent { const long value = 1; }; [Exposed=*] interface A : Parent { attribute long value; };",
+      "[Exposed=*] interface Parent {}; interface mixin M { const long value = 1; }; Parent includes M; [Exposed=*] interface A : Parent { attribute long value; };",
+      "[Exposed=*] interface A { const long value = 1; }; interface mixin M { attribute long value; };",
+      "[Exposed=*] interface A { const long value = 1; getter any (DOMString key); stringifier; };",
+      "[Exposed=*] interface A { undefined run(long value); undefined run(DOMString value); };",
+      "[Exposed=*] callback interface C { const long value = 1; undefined run(); };",
+    ] {
+    assert_true(check_constant_source(source))
+  }
+}
+
+///|
 test "Constant type identifiers must reference typedefs of non nullable primitive types" {
   for
     (prefix, suffix) in [
