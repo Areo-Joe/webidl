@@ -11,6 +11,12 @@ fn check_interface_mixins(
       mixin_, available_global_names,
     )
     check_exposed_overloads_on_interface_mixin(mixin_)
+    for partial in mixin_.partials {
+      if ExposedAble::PartialInterfaceMixin(partial).exposed_attribute()
+        is Some(_) {
+        check_exposed_partial_interface_mixin_member_no_duplicate(partial)
+      }
+    }
     let has_cross_origin_isolated = mixin_.extended_attribute_list
       .iter()
       .any(is_valid_cross_origin_isolated)

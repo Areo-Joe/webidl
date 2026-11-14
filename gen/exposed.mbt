@@ -251,6 +251,22 @@ fn check_exposed_partial_interface_member_no_duplicate(
 }
 
 ///|
+/// The [Exposed] extended attribute must not be specified both on an interface member,
+/// interface mixin member, or namespace member, and on the partial interface,
+/// partial interface mixin, or partial namespace definition the member is declared on.
+fn check_exposed_partial_interface_mixin_member_no_duplicate(
+  partial : PartialInterfaceMixin,
+) -> Unit raise {
+  for member_ in partial.members {
+    assert_false(
+      member_.extended_attribute_list
+      .iter()
+      .any(attr => is_valid_exposed(attr) is Some(_)),
+    )
+  }
+}
+
+///|
 /// A partial interface annotated with [Exposed] must have an own exposure set that is a subset of its original interface's exposure set.
 fn check_exposed_partial_interface_is_subset_of_interface(
   exposed : Exposed,

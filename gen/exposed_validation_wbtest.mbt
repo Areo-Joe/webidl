@@ -72,6 +72,48 @@ test "Mixin Exposed names are checked without includes and against all global in
 }
 
 ///|
+test "Exposed partial mixin members must not duplicate their containing partial annotation" {
+  let globals = "[Exposed=*, Global=(Window,Worker)] interface G {};"
+  for
+    member_ in [
+      "const long value = 1;", "attribute long value;", "undefined run();", "stringifier;",
+    ] {
+    for
+      (partial_attribute, member_attribute, expected) in [
+        ("", "", true),
+        ("[Exposed=*]", "", true),
+        ("", "[Exposed=*]", true),
+        ("[Exposed=*]", "[Exposed=*]", false),
+        ("[Exposed=Window]", "[Exposed=Worker]", false),
+        ("[Exposed=(Window,Worker)]", "[Exposed=Window]", false),
+        ("[Exposed()]", "[Exposed=*]", true),
+        ("[Exposed=*]", "[Exposed()]", true),
+      ] {
+      let partial = partial_attribute +
+        " partial interface mixin M { " +
+        member_attribute +
+        member_ +
+        " };"
+      let original = "interface mixin M {};"
+      assert_eq(check_exposed_source(globals + original + partial), expected)
+      assert_eq(check_exposed_source(globals + partial + original), expected)
+    }
+  }
+}
+
+///|
+test "Exposed partial mixin duplicate checks only apply to members declared in that partial" {
+  for
+    source in [
+      "[Exposed=*] interface mixin M { [Exposed=*] undefined run(); };", "[Exposed=*] interface mixin M {}; partial interface mixin M { [Exposed=*] undefined run(); };",
+      "interface mixin M { [Exposed=*] undefined first(); }; [Exposed=*] partial interface mixin M { undefined second(); }; partial interface mixin M { [Exposed=*] undefined third(); };",
+      "interface mixin M {}; [Exposed=*] partial interface mixin M {};", "interface mixin M {}; [Exposed=*] partial interface mixin M { undefined first(); }; interface mixin N { [Exposed=*] undefined second(); };",
+    ] {
+    assert_true(check_exposed_source(source))
+  }
+}
+
+///|
 test "Mixin Exposed must appear identically on every overload" {
   let globals = "[Exposed=*, Global=(Window,Worker)] interface G {};"
   for
