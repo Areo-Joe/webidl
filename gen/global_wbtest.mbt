@@ -151,3 +151,58 @@ test "Global and LegacyOverrideBuiltIns cannot annotate the same interface" {
     ),
   )
 }
+
+///|
+test "Global interface cannot inherit LegacyOverrideBuiltIns along its inheritance chain" {
+  for global_attr in ["Global=Window", "Global=(Window,Worker)"] {
+    for
+      (parents, valid) in [
+        ("[Exposed=*] interface Parent {};", true),
+        (
+          "[Exposed=*, LegacyOverrideBuiltIns] interface Parent { getter any (DOMString name); };",
+          false,
+        ),
+        (
+          "[Exposed=*] interface Parent : Root {}; [Exposed=*] interface Root {};",
+          true,
+        ),
+        (
+          "[Exposed=*] interface Parent : Root {}; [Exposed=*, LegacyOverrideBuiltIns] interface Root { getter any (DOMString name); };",
+          false,
+        ),
+        (
+          "[Exposed=*] interface Parent : Middle {}; [Exposed=*, LegacyOverrideBuiltIns] interface Middle : Root { getter any (DOMString name); }; [Exposed=*] interface Root {};",
+          false,
+        ),
+        (
+          "[Exposed=*] interface Parent : Middle {}; [Exposed=*] interface Middle : Root {}; [Exposed=*, LegacyOverrideBuiltIns] interface Root { getter any (DOMString name); };",
+          false,
+        ),
+      ] {
+      let child = "[Exposed=*, " +
+        global_attr +
+        "] interface Child : Parent {};"
+      assert_eq(check_global_source(child + parents), valid)
+      assert_eq(check_global_source(parents + child), valid)
+    }
+  }
+}
+
+///|
+test "Global inheritance restriction is limited to global interfaces and their ancestors" {
+  assert_true(
+    check_global_source(
+      "[Exposed=*] interface Child : Parent {}; [Exposed=*, LegacyOverrideBuiltIns] interface Parent { getter any (DOMString name); };",
+    ),
+  )
+  assert_true(
+    check_global_source(
+      "[Exposed=*, Global=Window] interface A {}; [Exposed=*] interface Child : Parent {}; [Exposed=*, LegacyOverrideBuiltIns] interface Parent { getter any (DOMString name); };",
+    ),
+  )
+  assert_false(
+    check_global_source(
+      "[Exposed=*, Global=Window] interface Child : _Parent {}; [Exposed=*, LegacyOverrideBuiltIns] interface Parent { getter any (DOMString name); };",
+    ),
+  )
+}
