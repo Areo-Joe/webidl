@@ -79,3 +79,54 @@ fn name_of_operation(operation : Operation) -> StringView? raise {
 
   Some(name)
 }
+
+///|
+fn name_of_primitive_type(type_ : @parser.PrimitiveType) -> StringView {
+  match type_ {
+    Boolean => "boolean"
+    Bigint => "bigint"
+    Byte => "byte"
+    Octet => "octet"
+    UnsignedIntegerType(IntegerType(Short)) => "short"
+    UnsignedIntegerType(IntegerType(Long(None))) => "long"
+    UnsignedIntegerType(IntegerType(Long(Long))) => "long long"
+    UnsignedIntegerType(UnsignedIntegerType(Short)) => "unsigned short"
+    UnsignedIntegerType(UnsignedIntegerType(Long(None))) => "unsigned long"
+    UnsignedIntegerType(UnsignedIntegerType(Long(Long))) => "unsigned long long"
+    UnrestrictedFloatType(FloatType(Float)) => "float"
+    UnrestrictedFloatType(FloatType(Double)) => "double"
+    UnrestrictedFloatType(UnrestrictedFloatType(Float)) => "unrestricted float"
+    UnrestrictedFloatType(UnrestrictedFloatType(Double)) =>
+      "unrestricted double"
+  }
+}
+
+///|
+fn name_of_string_type(type_ : @parser.StringType) -> StringView {
+  match type_ {
+    DOMString => "DOMString"
+    ByteString => "ByteString"
+    USVString => "USVString"
+  }
+}
+
+///|
+fn name_of_buffer_type(type_ : @parser.BufferRelatedType) -> StringView {
+  match type_ {
+    ArrayBuffer => "ArrayBuffer"
+    SharedArrayBuffer => "SharedArrayBuffer"
+    DataView => "DataView"
+    Int8Array => "Int8Array"
+    Int16Array => "Int16Array"
+    Int32Array => "Int32Array"
+    Uint8Array => "Uint8Array"
+    Uint16Array => "Uint16Array"
+    Uint32Array => "Uint32Array"
+    Uint8ClampedArray => "Uint8ClampedArray"
+    BigInt64Array => "BigInt64Array"
+    BigUint64Array => "BigUint64Array"
+    Float16Array => "Float16Array"
+    Float32Array => "Float32Array"
+    Float64Array => "Float64Array"
+  }
+}

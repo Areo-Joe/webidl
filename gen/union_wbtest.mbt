@@ -149,6 +149,7 @@ test "Union checks cover operation forms and every collection type slot" {
     for
       (type_, valid) in [
         ("(Anything or long)", false),
+        ("(long or double)", false),
         ("(long? or DOMString?)", false),
         ("(long? or Options)", false),
         ("(long? or DOMString)", true),

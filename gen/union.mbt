@@ -35,6 +35,7 @@ fn check_union_type(
   union_type : @parser.UnionType,
   typedefs : Map[StringView, TypeDef],
   dictionary_names : Set[StringView],
+  definitions : Map[StringView, Definition],
 ) -> Unit raise {
   let pending = union_type.iter_member_types().collect()
   let references : Array[TypeDef] = []
@@ -82,6 +83,62 @@ fn check_union_type(
     assert_true(count <= 1)
     if count == 1 {
       assert_false(has_dictionary)
+    }
+  }
+  check_union_member_types_distinguishable(union_type, typedefs, definitions)
+}
+
+///|
+/// The flattened member types of a union type, possibly annotated, is a set of types determined as follows:
+fn flattened_member_types(
+  union_type : @parser.UnionType,
+  typedefs : Map[StringView, TypeDef],
+) -> Array[@parser.Type] {
+  let pending = union_type.iter_member_types().collect()
+  let visited : Set[StringView] = Set([])
+  let members : Array[@parser.Type] = []
+  while pending.pop() is Some(type_) {
+    match type_ {
+      UnionType(union_type, _) =>
+        pending.push_iter(union_type.iter_member_types())
+      SingleType(DistinguishableType(Identifier(name, _))) if typedefs.get(
+          strip_underscore(name),
+        )
+        is Some(typedef_) => {
+        let name = strip_underscore(name)
+        if !visited.contains(name) {
+          visited.add(name)
+          pending.push(typedef_.type_with_extended_attributes.type_)
+        }
+      }
+      _ =>
+        if !members.any(existing => {
+            same_flattened_member_type(existing, type_, typedefs)
+          }) {
+          members.push(type_)
+        }
+    }
+  }
+  members
+}
+
+///|
+/// Each pair of flattened member types in a union type, T and U, must be distinguishable.
+fn check_union_member_types_distinguishable(
+  union_type : @parser.UnionType,
+  typedefs : Map[StringView, TypeDef],
+  definitions : Map[StringView, Definition],
+) -> Unit raise {
+  let members = flattened_member_types(union_type, typedefs)
+  for i in 0..<members.length() {
+    for j in 0..<i {
+      assert_true(
+        are_flattened_member_types_distinguishable(
+          members[i],
+          members[j],
+          definitions,
+        ),
+      )
     }
   }
 }

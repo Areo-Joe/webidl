@@ -49,6 +49,13 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
     }),
   )
 
+  let type_definitions = Map([])
+  for definition in no_name_conflict_definitions {
+    if name_of_definition(definition) is Some(name) {
+      type_definitions.set(name, definition)
+    }
+  }
+
   let attributes = definitions
     .map(definition => {
       match definition {
@@ -94,6 +101,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
       attribute.type_with_extended_attributes.type_,
       typedef_index,
       dictionary_names,
+      type_definitions,
     )
     check_attribute_type_no_sequence(
       attribute.type_with_extended_attributes.type_,
@@ -129,7 +137,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
         type_with_extended_attributes.type_
       Optional(type_, _, _) => type_
     }
-    check_type(type_, typedef_index, dictionary_names)
+    check_type(type_, typedef_index, dictionary_names, type_definitions)
     check_type_not_nullable_dictionary(type_, typedef_index, dictionary_names)
   }
 
@@ -275,11 +283,17 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
   let operation_names = operations.filter_map(name_of_operation)
 
   for operation in operations {
-    check_type(operation.type_, typedef_index, dictionary_names)
+    check_type(
+      operation.type_,
+      typedef_index,
+      dictionary_names,
+      type_definitions,
+    )
     check_argument_types(
       operation.argument_list,
       typedef_index,
       dictionary_names,
+      type_definitions,
     )
   }
 
@@ -290,11 +304,17 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
     }
   })
   for callback in callbacks {
-    check_type(callback.type_, typedef_index, dictionary_names)
+    check_type(
+      callback.type_,
+      typedef_index,
+      dictionary_names,
+      type_definitions,
+    )
     check_argument_types(
       callback.argument_list,
       typedef_index,
       dictionary_names,
+      type_definitions,
     )
   }
 
@@ -306,7 +326,9 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
             is NamedArgList(
               { identifier: "LegacyFactoryFunction", argument_list, .. }
             ) {
-            check_argument_types(argument_list, typedef_index, dictionary_names)
+            check_argument_types(
+              argument_list, typedef_index, dictionary_names, type_definitions,
+            )
           }
         }
         for interface_member in interface.members {
@@ -316,9 +338,12 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
                 constructor_.argument_list,
                 typedef_index,
                 dictionary_names,
+                type_definitions,
               )
             PartialInterfaceMember(body) =>
-              check_collection_types(body, typedef_index, dictionary_names)
+              check_collection_types(
+                body, typedef_index, dictionary_names, type_definitions,
+              )
           }
         }
       }
@@ -328,6 +353,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
             interface_member.body,
             typedef_index,
             dictionary_names,
+            type_definitions,
           )
         }
       _ => ()
@@ -370,6 +396,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
       typedef_.type_with_extended_attributes.type_,
       typedef_index,
       dictionary_names,
+      type_definitions,
     )
   }
   for constant in constants {

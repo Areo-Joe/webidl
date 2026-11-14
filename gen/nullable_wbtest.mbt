@@ -237,7 +237,7 @@ test "Nullable constraints follow aliases through repeated states and cycles" {
   for
     source in [
       "typedef sequence<A> A; typedef A? Maybe;", "typedef (A or long) A; typedef A? Maybe;",
-      "dictionary Options {}; typedef (sequence<A> or sequence<Options>) A; typedef A? Maybe;",
+      "dictionary Options {}; typedef (A or sequence<Options>) A; typedef A? Maybe;",
       "typedef long? Maybe; typedef (Maybe or DOMString) Value;", "typedef sequence<long?> Values; typedef (Values or DOMString)? Maybe;",
       "dictionary Options {}; typedef Options Config; typedef (Config or DOMString) Value;",
     ] {
@@ -285,7 +285,7 @@ test "Nullable checks follow compound typedef references without propagating nul
   for
     source in [
       "typedef ObservableArray<long> Items; typedef sequence<Items>? MaybeSequence;",
-      "typedef ObservableArray<long> Items; typedef (Items or DOMString)? MaybeUnion;",
+      "typedef ObservableArray<long> Items; typedef (FrozenArray<Items> or DOMString)? MaybeUnion;",
       "typedef ObservableArray<long?> Items; typedef sequence<Items> Nested;", "typedef sequence<A> A;",
       "typedef sequence<B> A; typedef sequence<A> B;",
     ] {
@@ -362,7 +362,7 @@ test "Nullable observable array checks distinguish array and element nullability
       "ObservableArray<long>", "ObservableArray<long?>", "ObservableArray<DOMString?>",
       "sequence<ObservableArray<long>>?", "FrozenArray<ObservableArray<long?>>",
       "record<DOMString, ObservableArray<long?>>", "Promise<ObservableArray<long?>>",
-      "(ObservableArray<long> or DOMString)", "long?", "DOMString?",
+      "(FrozenArray<ObservableArray<long>> or DOMString)", "long?", "DOMString?",
     ] {
     assert_true(check_nullable_source("typedef " + type_ + " Target;"))
   }
