@@ -126,61 +126,6 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
 
   let constant_names = constants.map(x => strip_underscore(x.identifier))
 
-  for constant in constants {
-    if constant.const_type is PrimitiveType(Boolean) {
-      check_boolean_constant_value(constant.const_value)
-    }
-    if constant.const_type is PrimitiveType(Byte) {
-      check_byte_constant_value(constant.const_value)
-    }
-    if constant.const_type is PrimitiveType(Octet) {
-      check_octet_constant_value(constant.const_value)
-    }
-    if constant.const_type
-      is PrimitiveType(UnsignedIntegerType(IntegerType(Short))) {
-      check_short_constant_value(constant.const_value)
-    }
-    if constant.const_type
-      is PrimitiveType(UnsignedIntegerType(UnsignedIntegerType(Short))) {
-      check_unsigned_short_constant_value(constant.const_value)
-    }
-    if constant.const_type
-      is PrimitiveType(UnsignedIntegerType(IntegerType(Long(None)))) {
-      check_long_constant_value(constant.const_value)
-    }
-    if constant.const_type
-      is PrimitiveType(UnsignedIntegerType(UnsignedIntegerType(Long(None)))) {
-      check_unsigned_long_constant_value(constant.const_value)
-    }
-    if constant.const_type
-      is PrimitiveType(UnsignedIntegerType(IntegerType(Long(Long)))) {
-      check_long_long_constant_value(constant.const_value)
-    }
-    if constant.const_type
-      is PrimitiveType(UnsignedIntegerType(UnsignedIntegerType(Long(Long)))) {
-      check_unsigned_long_long_constant_value(constant.const_value)
-    }
-    if constant.const_type
-      is PrimitiveType(UnrestrictedFloatType(FloatType(Float))) {
-      check_float_constant_value(constant.const_value)
-    }
-    if constant.const_type
-      is PrimitiveType(UnrestrictedFloatType(UnrestrictedFloatType(Float))) {
-      check_unrestricted_float_constant_value(constant.const_value)
-    }
-    if constant.const_type
-      is PrimitiveType(UnrestrictedFloatType(FloatType(Double))) {
-      check_double_constant_value(constant.const_value)
-    }
-    if constant.const_type
-      is PrimitiveType(UnrestrictedFloatType(UnrestrictedFloatType(Double))) {
-      check_unrestricted_double_constant_value(constant.const_value)
-    }
-    if constant.const_type is PrimitiveType(Bigint) {
-      check_bigint_constant_value(constant.const_value)
-    }
-  }
-
   let operations = definitions
     .filter_map(definition => {
       match definition {
@@ -293,9 +238,11 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
   })
   check_typedef_type_not_typedef(typedefs)
   for constant in constants {
-    if constant.const_type is Identifier(identifier) {
-      check_constant_type_identifier(identifier, typedefs)
-    }
+    let primitive_type = primitive_type_of_constant(
+      constant.const_type,
+      typedefs,
+    )
+    check_constant_value(primitive_type, constant.const_value)
   }
 
   let interfaces = definitions.filter_map(x => {
