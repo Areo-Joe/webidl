@@ -19,7 +19,7 @@ test "Bigint constants require integer tokens without a range limit" {
       ("interface mixin M {", "};"),
       ("interface mixin M {}; partial interface mixin M {", "};"),
       ("partial interface mixin M {", "}; interface mixin M {};"),
-      ("callback interface C { undefined run();", "};"),
+      ("[Exposed=*] callback interface C { undefined run();", "};"),
     ] {
     for
       (value, valid) in [

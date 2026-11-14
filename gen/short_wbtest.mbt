@@ -19,7 +19,7 @@ test "Short constants require integer tokens within signed sixteen bit range" {
       ("interface mixin M {", "};"),
       ("interface mixin M {}; partial interface mixin M {", "};"),
       ("partial interface mixin M {", "}; interface mixin M {};"),
-      ("callback interface C { undefined run();", "};"),
+      ("[Exposed=*] callback interface C { undefined run();", "};"),
     ] {
     for
       (value, valid) in [

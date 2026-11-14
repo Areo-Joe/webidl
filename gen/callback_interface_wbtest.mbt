@@ -10,6 +10,73 @@ fn check_callback_interface_source(source : String) -> Bool raise {
 }
 
 ///|
+test "Callback interfaces with constants require a valid Exposed annotation" {
+  let globals = "[Exposed=*, Global=(Window,Worker)] interface G {};"
+  for
+    (attribute, valid) in [
+      ("", false),
+      ("[Exposed=*]", true),
+      ("[Exposed=Window]", true),
+      ("[Exposed=(Window,Worker)]", true),
+      ("[Exposed=_Window]", true),
+      ("[Exposed]", false),
+      ("[Exposed()]", false),
+      ("[Exposed=Name()]", false),
+      ("[SecureContext]", false),
+    ] {
+    for
+      constants in [
+        "const long value = 1;", "const long first = 1; const long second = 2;",
+      ] {
+      assert_eq(
+        check_callback_interface_source(
+          globals +
+          attribute +
+          " callback interface C { " +
+          constants +
+          " undefined run(); };",
+        ),
+        valid,
+      )
+    }
+    assert_true(
+      check_callback_interface_source(
+        globals + attribute + " callback interface C { undefined run(); };",
+      ),
+    )
+  }
+}
+
+///|
+test "Callback interface Exposed requirements are local to the definition" {
+  for
+    (source, expected) in [
+      (
+        "callback interface C { [Exposed=*] const long value = 1; undefined run(); };",
+        false,
+      ),
+      (
+        "callback interface C { const long value = 1; [Exposed=*] undefined run(); };",
+        false,
+      ),
+      (
+        "[Exposed=*] callback interface A { const long first = 1; undefined run(); }; callback interface B { const long second = 2; undefined run(); };",
+        false,
+      ),
+      (
+        "[Exposed=*] callback interface A { const long first = 1; undefined run(); }; callback interface B { undefined run(); };",
+        true,
+      ),
+      (
+        "[Exposed=*] interface A { const long value = 1; }; callback interface B { undefined run(); };",
+        true,
+      ),
+    ] {
+    assert_eq(check_callback_interface_source(source), expected)
+  }
+}
+
+///|
 test "Callback interfaces must declare exactly one regular operation" {
   for
     (members, expected) in [

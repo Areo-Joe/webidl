@@ -4,6 +4,9 @@ fn check_callback_interfaces(
 ) -> Unit raise {
   for callback_interface in callback_interfaces {
     check_callback_interface_has_one_regular_operation(callback_interface)
+    if callback_interface.members.iter().any(member_ => member_.1 is Const(_)) {
+      check_exposed_on_callback_interface(callback_interface)
+    }
   }
 }
 

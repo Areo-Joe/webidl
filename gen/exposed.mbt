@@ -178,6 +178,17 @@ fn check_exposed_on_interface(interface : Interface) -> Unit raise {
 }
 
 ///|
+/// Callback interfaces which declare constants must be annotated with an [Exposed] extended attribute.
+fn check_exposed_on_callback_interface(
+  callback_interface : CallbackInterface,
+) -> Unit raise {
+  assert_true(
+    ExposedAble::CallbackInterface(callback_interface).exposed_attribute()
+    is Some(_),
+  )
+}
+
+///|
 fn check_exposed_global_names_on_interface_mixin(
   mixin_ : InterfaceMixin,
   available_global_names : Array[StringView],

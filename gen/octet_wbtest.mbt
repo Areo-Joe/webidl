@@ -19,7 +19,7 @@ test "Octet constants require integer tokens within unsigned eight bit range" {
       ("interface mixin M {", "};"),
       ("interface mixin M {}; partial interface mixin M {", "};"),
       ("partial interface mixin M {", "}; interface mixin M {};"),
-      ("callback interface C { undefined run();", "};"),
+      ("[Exposed=*] callback interface C { undefined run();", "};"),
     ] {
     for
       (value, valid) in [
