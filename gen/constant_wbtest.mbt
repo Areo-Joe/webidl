@@ -51,6 +51,8 @@ test "Constant type identifiers must reference typedefs of non nullable primitiv
         ("symbol", false),
         ("ArrayBuffer", false),
         ("sequence<long>", false),
+        ("async_sequence<long>", false),
+        ("async_sequence<long>?", false),
         ("FrozenArray<long>", false),
         ("ObservableArray<long>", false),
         ("record<DOMString, long>", false),
