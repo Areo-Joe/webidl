@@ -42,6 +42,7 @@ fn check_interfaces(
     if interface.extended_attribute_list
       .iter()
       .any(attr => is_valid_global(attr) is Some(_)) {
+      check_global_interface_members_unique(interface)
       check_global_interface_no_constructor(interface)
       check_global_interface_no_named_setter(interface, typedefs)
       check_global_interface_no_indexed_getter_or_setter(interface, typedefs)

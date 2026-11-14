@@ -39,6 +39,56 @@ fn global_names(attr_list : @parser.ExtendedAttributeList) -> Array[StringView] 
 }
 
 ///|
+/// If an interface is declared with the [Global] extended attribute, then there
+/// must not be more than one member across the interface with the same identifier.
+/// There also must not be more than one stringifier or more than one iterable
+/// declaration, asynchronously iterable declaration, maplike declaration or
+/// setlike declaration across those interfaces.
+fn check_global_interface_members_unique(interface : Interface) -> Unit raise {
+  let members = interface.members.filter_map(member_ => {
+    match member_.body {
+      PartialInterfaceMember(body) => Some(body)
+      Constructor(_) => None
+    }
+  })
+  for partial in interface.partials {
+    members.push_iter(partial.members.iter().map(member_ => member_.body))
+  }
+  let names : Set[StringView] = Set([])
+  let mut stringifiers = 0
+  let mut collections = 0
+  for member_ in members {
+    let name = if member_ is Const(constant) {
+      Some(strip_underscore(constant.identifier))
+    } else if Attribute::from_partial_interface_member(member_)
+      is Some(attribute) {
+      Some(name_of_attribute(attribute))
+    } else if Operation::from_partial_interface_member(member_)
+      is Some(operation) {
+      name_of_operation(operation)
+    } else {
+      None
+    }
+    if name is Some(name) {
+      assert_false(names.contains(name))
+      names.add(name)
+    }
+    match member_ {
+      Stringifier(_) => stringifiers = stringifiers + 1
+      Iterable(_)
+      | AsyncIterable(_)
+      | ReadWriteMaplike(_)
+      | ReadWriteSetlike(_)
+      | ReadOnlyMember({ read_only_member_rest: Maplike(_) | Setlike(_), }) =>
+        collections = collections + 1
+      _ => ()
+    }
+  }
+  assert_true(stringifiers <= 1)
+  assert_true(collections <= 1)
+}
+
+///|
 /// If the [Global] extended attributes is used on an interface, then:
 /// The interface must not define a constructor operation.
 fn check_global_interface_no_constructor(interface : Interface) -> Unit raise {

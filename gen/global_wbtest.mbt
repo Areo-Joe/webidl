@@ -1,4 +1,124 @@
 ///|
+test "Global interfaces require unique member identifiers across original and partial definitions" {
+  for
+    (first, second) in [
+      ("undefined run(long value);", "undefined run(DOMString value);"),
+      ("undefined _run();", "undefined run(long value);"),
+      ("attribute long value;", "readonly attribute long _value;"),
+      ("const long value = 1;", "const long _value = 2;"),
+      ("attribute long value;", "undefined value();"),
+      ("const long value = 1;", "attribute long value;"),
+      ("static undefined run();", "undefined run();"),
+      (
+        "static undefined run(long value);", "static undefined run(DOMString value);",
+      ),
+      ("static attribute long value;", "attribute long value;"),
+      ("getter any lookup(DOMString key);", "any lookup(long key);"),
+      (
+        "stringifier attribute DOMString value;", "readonly attribute DOMString value;",
+      ),
+      ("inherit attribute long value;", "attribute long value;"),
+      ("attribute long required;", "undefined _required();"),
+      ("undefined includes();", "undefined _includes(long value);"),
+    ] {
+    let global = "[Exposed=*, Global=Window] interface A { "
+    assert_false(check_global_source(global + first + second + " };"))
+    assert_false(
+      check_global_source(
+        global + first + " }; partial interface A { " + second + " };",
+      ),
+    )
+    assert_false(
+      check_global_source(
+        "partial interface A { " + second + " }; " + global + first + " };",
+      ),
+    )
+    assert_false(
+      check_global_source(
+        global +
+        " }; partial interface A { " +
+        first +
+        " }; partial interface A { " +
+        second +
+        " };",
+      ),
+    )
+  }
+}
+
+///|
+test "Global declaration counts include every form across original and partial definitions" {
+  let stringifiers = [
+    "stringifier;", "stringifier attribute DOMString text;", "stringifier readonly attribute DOMString other;",
+  ]
+  let collections = [
+    "iterable<long>;", "iterable<DOMString, long>;", "async_iterable<long>;", "async_iterable<DOMString, long>;",
+    "maplike<DOMString, long>;", "readonly maplike<DOMString, long>;", "setlike<long>;",
+    "readonly setlike<long>;",
+  ]
+  for declarations in [stringifiers, collections] {
+    for first in declarations {
+      for second in declarations {
+        let original = "[Exposed=*, Global=Window] interface A { " +
+          first +
+          " };"
+        let partial = "partial interface A { " + second + " };"
+        assert_false(
+          check_global_source(
+            "[Exposed=*, Global=Window] interface A { " + first + second + " };",
+          ),
+        )
+        assert_false(check_global_source(original + partial))
+        assert_false(check_global_source(partial + original))
+        assert_false(
+          check_global_source(
+            "[Exposed=*, Global=Window] interface A {}; partial interface A { " +
+            first +
+            " };" +
+            partial,
+          ),
+        )
+      }
+    }
+  }
+}
+
+///|
+test "Global uniqueness checks preserve unnamed members separate interfaces and inherited members" {
+  for
+    source in [
+      "[Exposed=*, Global=Window] interface A { attribute long first; undefined second(); const long third = 1; };",
+      "[Exposed=*, Global=Window] interface A { getter any (DOMString key); deleter boolean (DOMString key); };",
+      "[Exposed=*, Global=Window] interface A {}; [Exposed=*] interface B { undefined run(long value); undefined run(DOMString value); };",
+      "[Exposed=*, Global=Window] interface A { undefined run(); }; [Exposed=*, Global=Worker] interface B { undefined run(); };",
+      "[Exposed=*] interface Parent { undefined run(); }; [Exposed=*, Global=Window] interface A : Parent { undefined run(); };",
+      "[Exposed=*] interface Parent { stringifier; }; [Exposed=*, Global=Window] interface A : Parent { stringifier; };",
+      "[Exposed=*, Global=Window] interface A { stringifier; }; partial interface A { iterable<DOMString, long>; };",
+    ] {
+    assert_true(check_global_source(source))
+  }
+  for
+    declaration in [
+      "stringifier;", "stringifier attribute DOMString text;", "stringifier readonly attribute DOMString text;",
+      "iterable<DOMString, long>;", "async_iterable<long>;", "maplike<DOMString, long>;",
+      "readonly maplike<DOMString, long>;", "setlike<long>;", "readonly setlike<long>;",
+    ] {
+    assert_true(
+      check_global_source(
+        "[Exposed=*, Global=Window] interface A { " + declaration + " };",
+      ),
+    )
+    assert_true(
+      check_global_source(
+        "[Exposed=*, Global=Window] interface A {}; partial interface A { " +
+        declaration +
+        " };",
+      ),
+    )
+  }
+}
+
+///|
 test "Global indexed setter typedef checks are independent of getters" {
   for
     (typedef_source, argument_type, expected) in [
