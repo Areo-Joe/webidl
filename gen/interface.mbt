@@ -18,6 +18,15 @@ fn check_interfaces(
   for interface in interfaces {
     if interface.extended_attribute_list
       .iter()
+      .any(is_valid_legacy_no_interface_object) {
+      check_legacy_no_interface_object_interface_no_constructor_or_static_operation(
+        interface,
+      )
+    } else {
+      check_interface_inheritance_no_legacy_no_interface_object(interface)
+    }
+    if interface.extended_attribute_list
+      .iter()
       .any(attr => is_valid_legacy_factory_function(attr) is Some(_)) {
       check_legacy_factory_function_interface_no_global(interface)
     }
