@@ -189,6 +189,17 @@ fn check_exposed_on_callback_interface(
 }
 
 ///|
+fn check_exposed_global_names_on_callback_interface(
+  callback_interface : CallbackInterface,
+  available_global_names : Array[StringView],
+) -> Unit raise {
+  check_exposed_attributes(
+    callback_interface.extended_attribute_list,
+    available_global_names,
+  )
+}
+
+///|
 fn check_exposed_global_names_on_interface_mixin(
   mixin_ : InterfaceMixin,
   available_global_names : Array[StringView],

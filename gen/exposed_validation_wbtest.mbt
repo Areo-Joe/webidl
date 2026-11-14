@@ -10,6 +10,62 @@ fn check_exposed_source(source : String) -> Bool raise {
 }
 
 ///|
+test "Callback interface Exposed identifiers must be unique global names with or without constants" {
+  let globals = "[Exposed=*, Global=(_Window,Worker)] interface G {};"
+  for
+    (attribute, expected) in [
+      ("[Exposed=*]", true),
+      ("[Exposed=Window]", true),
+      ("[Exposed=_Window]", true),
+      ("[Exposed=(Window,_Worker)]", true),
+      ("[Exposed=Missing]", false),
+      ("[Exposed=G]", false),
+      ("[Exposed=(Window,Missing)]", false),
+      ("[Exposed=(Window,Window)]", false),
+      ("[Exposed=(Window,_Window)]", false),
+      ("[Exposed=Window,Exposed=Missing]", false),
+    ] {
+    for
+      members in ["undefined run();", "const long value = 1; undefined run();"] {
+      let callback_interface = attribute +
+        " callback interface C { " +
+        members +
+        " };"
+      assert_eq(check_exposed_source(globals + callback_interface), expected)
+      assert_eq(check_exposed_source(callback_interface + globals), expected)
+    }
+  }
+}
+
+///|
+test "Callback interface Exposed global name checks preserve optional annotations and wildcard" {
+  for
+    (source, expected) in [
+      ("callback interface C { undefined run(); };", true),
+      (
+        "[Exposed=*] callback interface C { const long value = 1; undefined run(); };",
+        true,
+      ),
+      ("[Exposed=Window] callback interface C { undefined run(); };", false),
+      (
+        "[Exposed=*,Global=Window] interface G {}; [Exposed=G] callback interface C { undefined run(); };",
+        false,
+      ),
+      (
+        "[Exposed=*,Global=Window] interface G {}; [Exposed=Window] callback interface A { undefined run(); }; [Exposed=Missing] callback interface B { undefined run(); };",
+        false,
+      ),
+      (
+        "[Exposed=*,Global=Window] interface W {}; [Exposed=*,Global=Worker] interface G {}; [Exposed=(Window,Worker)] callback interface C { undefined run(); };",
+        true,
+      ),
+      ("[Exposed()] callback interface C { undefined run(); };", true),
+    ] {
+    assert_eq(check_exposed_source(source), expected)
+  }
+}
+
+///|
 test "Mixin member own exposure sets must be subsets when both member and mixin specify Exposed" {
   let globals = "[Exposed=*, Global=(Window,Worker)] interface G {};"
   for
