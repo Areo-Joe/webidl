@@ -15,6 +15,7 @@ fn check_interfaces(
     .flatten()
 
   for interface in interfaces {
+    check_interface_inheritance_no_global(interface)
     if interface.extended_attribute_list
       .iter()
       .any(attr => is_valid_global(attr) is Some(_)) {

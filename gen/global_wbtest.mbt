@@ -206,3 +206,39 @@ test "Global inheritance restriction is limited to global interfaces and their a
     ),
   )
 }
+
+///|
+test "Interfaces cannot inherit from global interfaces" {
+  for global_attr in ["Global=Window", "Global=(Window,Worker)"] {
+    for child_attrs in ["[Exposed=*]", "[Exposed=*, Global=Other]"] {
+      let child = child_attrs + " interface Child : Parent {};"
+      let parent = "[Exposed=*, " + global_attr + "] interface Parent {};"
+      assert_false(check_global_source(child + parent))
+      assert_false(check_global_source(parent + child))
+      assert_false(
+        check_global_source(
+          child_attrs +
+          " interface Child : Middle {}; [Exposed=*] interface Middle : Parent {};" +
+          parent,
+        ),
+      )
+    }
+  }
+  assert_false(
+    check_global_source(
+      "[Exposed=*] interface Child : _Parent {}; [Exposed=*, Global=_Window] interface Parent {};",
+    ),
+  )
+}
+
+///|
+test "Global interfaces may inherit ordinary interfaces and coexist with unrelated inheritance" {
+  for
+    source in [
+      "[Exposed=*] interface Child : Parent {}; [Exposed=*] interface Parent {};",
+      "[Exposed=*, Global=Window] interface Child : Parent {}; [Exposed=*] interface Parent : Root {}; [Exposed=*] interface Root {};",
+      "[Exposed=*, Global=Window] interface A {}; [Exposed=*] interface Child : Parent {}; [Exposed=*] interface Parent {};",
+    ] {
+    assert_true(check_global_source(source))
+  }
+}

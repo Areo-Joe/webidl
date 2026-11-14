@@ -78,3 +78,16 @@ fn check_global_interface_inheritance_no_legacy_override_built_ins(
   )
   check_global_interface_inheritance_no_legacy_override_built_ins(inheritance)
 }
+
+///|
+/// If the [Global] extended attributes is used on an interface, then:
+/// Any other interface must not inherit from it.
+fn check_interface_inheritance_no_global(interface : Interface) -> Unit raise {
+  guard interface.inheritance is Some(inheritance) else { return }
+  assert_false(
+    inheritance.extended_attribute_list
+    .iter()
+    .any(attr => is_valid_global(attr) is Some(_)),
+  )
+  check_interface_inheritance_no_global(inheritance)
+}
