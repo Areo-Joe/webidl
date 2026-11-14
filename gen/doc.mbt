@@ -47,6 +47,12 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
 
   let attribute_names = attributes.map(name_of_attribute)
 
+  for attribute in attributes {
+    check_nullable_type_no_observable_array(
+      attribute.type_with_extended_attributes.type_,
+    )
+  }
+
   let dictionary_member_names = definitions
     .filter_map(x => {
       match x {

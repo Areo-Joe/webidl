@@ -51,3 +51,116 @@ test "Nullable observable array checks inspect every typedef target" {
   )
   assert_false(check_nullable_source("typedef ObservableArray<long>? _Target;"))
 }
+
+///|
+test "Attribute nullable observable array checks cover every declaration and attribute form" {
+  for
+    (prefix, suffix, forms) in [
+      (
+        "[Exposed=*] interface A {",
+        "};",
+        [
+          "attribute", "readonly attribute", "static attribute", "static readonly attribute",
+          "inherit attribute", "stringifier attribute", "stringifier readonly attribute",
+        ],
+      ),
+      (
+        "[Exposed=*] interface A {}; partial interface A {",
+        "};",
+        [
+          "attribute", "readonly attribute", "static attribute", "static readonly attribute",
+          "inherit attribute", "stringifier attribute", "stringifier readonly attribute",
+        ],
+      ),
+      (
+        "partial interface A {",
+        "}; [Exposed=*] interface A {};",
+        [
+          "attribute", "readonly attribute", "static attribute", "static readonly attribute",
+          "inherit attribute", "stringifier attribute", "stringifier readonly attribute",
+        ],
+      ),
+      (
+        "interface mixin M {",
+        "};",
+        [
+          "attribute", "readonly attribute", "stringifier attribute", "stringifier readonly attribute",
+        ],
+      ),
+      (
+        "interface mixin M {}; partial interface mixin M {",
+        "};",
+        [
+          "attribute", "readonly attribute", "stringifier attribute", "stringifier readonly attribute",
+        ],
+      ),
+      (
+        "partial interface mixin M {",
+        "}; interface mixin M {};",
+        [
+          "attribute", "readonly attribute", "stringifier attribute", "stringifier readonly attribute",
+        ],
+      ),
+      ("namespace N {", "};", ["readonly attribute"]),
+      ("namespace N {}; partial namespace N {", "};", ["readonly attribute"]),
+      ("partial namespace N {", "}; namespace N {};", ["readonly attribute"]),
+    ] {
+    for form in forms {
+      assert_false(
+        check_nullable_source(
+          prefix + " " + form + " ObservableArray<long>? items; " + suffix,
+        ),
+      )
+      assert_true(
+        check_nullable_source(
+          prefix + " " + form + " DOMString text; " + suffix,
+        ),
+      )
+    }
+  }
+}
+
+///|
+test "Attribute checks visit nested types and distinguish element nullability" {
+  for
+    (type_, valid) in [
+      ("ObservableArray<long>?", false),
+      ("FrozenArray<ObservableArray<long>?>", false),
+      ("sequence<ObservableArray<long>?>", false),
+      ("async_sequence<ObservableArray<long>?>", false),
+      ("record<DOMString, ObservableArray<long>?>", false),
+      ("Promise<ObservableArray<long>?>", false),
+      ("(DOMString or ObservableArray<long>?)", false),
+      ("((long or ObservableArray<long>?) or DOMString)", false),
+      ("[Example] ObservableArray<long>?", false),
+      ("ObservableArray<long>", true),
+      ("ObservableArray<long?>", true),
+      ("DOMString?", true),
+    ] {
+    assert_eq(
+      check_nullable_source(
+        "[Exposed=*] interface A { attribute " + type_ + " items; };",
+      ),
+      valid,
+    )
+  }
+}
+
+///|
+test "Nullable observable array checks inspect every attribute" {
+  assert_false(
+    check_nullable_source(
+      "[Exposed=*] interface A { attribute DOMString first; attribute ObservableArray<long>? last; };",
+    ),
+  )
+  assert_false(
+    check_nullable_source(
+      "[Exposed=*] interface A { attribute DOMString first; }; partial interface A { attribute ObservableArray<long>? last; };",
+    ),
+  )
+  assert_false(
+    check_nullable_source(
+      "[Exposed=*] interface A { attribute ObservableArray<long>? _items; };",
+    ),
+  )
+}
