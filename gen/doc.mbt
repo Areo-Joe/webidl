@@ -145,6 +145,9 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
     if member_attributes.iter().any(is_valid_legacy_lenient_setter) {
       check_legacy_lenient_setter_on_attribute(attribute, member_attributes)
     }
+    if member_attributes.iter().any(is_valid_legacy_lenient_this) {
+      check_legacy_lenient_this_on_attribute(attribute)
+    }
     check_promise_attribute(attribute, member_attributes, typedef_index)
     check_attribute_type_identifier(
       attribute.type_with_extended_attributes.type_,
