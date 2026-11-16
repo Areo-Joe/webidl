@@ -240,10 +240,11 @@ pub fn DistinguishableType::parse(
 }
 
 ///|
+#derive(@debug.Debug)
 pub enum Null {
   Some
   None
-} derive(Debug)
+}
 
 ///|
 pub extend Null with @debug.Debug::{to_repr}
@@ -257,11 +258,12 @@ pub fn Null::parse(input : Tokens) -> (Null, Tokens) {
 }
 
 ///|
+#derive(@debug.Debug)
 pub enum StringType {
   ByteString
   DOMString
   USVString
-} derive(Debug)
+}
 
 ///|
 pub extend StringType with @debug.Debug::{to_repr}
@@ -423,6 +425,7 @@ pub fn PrimitiveType::parse(input : Tokens) -> (PrimitiveType, Tokens)? {
 }
 
 ///|
+#derive(@debug.Debug)
 pub enum BufferRelatedType {
   ArrayBuffer
   SharedArrayBuffer
@@ -439,7 +442,7 @@ pub enum BufferRelatedType {
   Float16Array
   Float32Array
   Float64Array
-} derive(Debug)
+}
 
 ///|
 pub extend BufferRelatedType with @debug.Debug::{to_repr}

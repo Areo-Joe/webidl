@@ -20,6 +20,7 @@ const COMMENT = re"^(//[^\n]*|/\*.*?\*/)"
 const OTHER = re"^[^\t\n\r 0-9A-Za-z]"
 
 ///|
+#derive(@debug.Debug)
 pub enum TokenType {
   Integer
   Decimal
@@ -28,7 +29,7 @@ pub enum TokenType {
   String
   Punctuation
   Other
-} derive(Debug)
+}
 
 ///|
 pub extend TokenType with @debug.Debug::{to_repr}

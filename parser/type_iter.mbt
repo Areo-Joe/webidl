@@ -13,7 +13,7 @@
 /// ```mbt check
 /// test {
 ///   let tokens = @lexer.tokenize("sequence<Promise<long?>>")
-///   let (type_, rest) = Type::parse(tokens.exact_view()).unwrap()
+///   let (type_, rest) = @parser.Type::parse(tokens.exact_view()).unwrap()
 ///   assert_true(rest is [])
 ///   let types = type_.iter_types().collect()
 ///   assert_eq(types.length(), 3)

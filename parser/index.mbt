@@ -59,10 +59,11 @@ pub fn Const::parse(input : Tokens) -> (Const, Tokens)? {
 }
 
 ///|
+#derive(@debug.Debug)
 pub enum OptionalReadOnly {
   ReadOnly
   None
-} derive(Debug)
+}
 
 ///|
 pub extend OptionalReadOnly with @debug.Debug::{to_repr}

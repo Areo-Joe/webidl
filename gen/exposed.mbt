@@ -1,6 +1,6 @@
 ///|
 #derive(Eq)
-enum Exposed {
+priv enum Exposed {
   Ident(StringView)
   IdentList(Array[StringView])
   Wildcard

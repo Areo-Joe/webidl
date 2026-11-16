@@ -64,6 +64,7 @@ pub fn Default::parse(input : Tokens) -> (Default, Tokens) {
 }
 
 ///|
+#derive(@debug.Debug)
 pub enum ArgumentNameKeyword {
   Attribute
   Callback
@@ -89,7 +90,7 @@ pub enum ArgumentNameKeyword {
   Stringifier
   Typedef
   Unrestricted
-} derive(Debug)
+}
 
 ///|
 pub extend ArgumentNameKeyword with @debug.Debug::{to_repr}

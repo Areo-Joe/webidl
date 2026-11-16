@@ -11,6 +11,7 @@ pub fn tokenize(StringView) -> Array[(TokenType, StringView)] raise
 // Errors
 
 // Types and methods
+#derive(@debug.Debug)
 pub enum TokenType {
   Integer
   Decimal
@@ -19,7 +20,7 @@ pub enum TokenType {
   String
   Punctuation
   Other
-} derive(@debug.Debug)
+}
 pub fn TokenType::to_repr(Self) -> @debug.Repr
 
 // Type aliases

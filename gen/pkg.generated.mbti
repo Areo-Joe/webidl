@@ -22,9 +22,6 @@ type DictionaryMember
 
 type Enum
 
-#derive(Eq)
-type Exposed
-
 type ExposedAble
 
 type ExposedSetStruct
