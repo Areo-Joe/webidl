@@ -153,6 +153,9 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
       .any(attr => is_valid_put_forwards(attr) is Some(_)) {
       check_put_forwards_placement(attribute, member_attributes)
     }
+    if member_attributes.iter().any(is_valid_replaceable) {
+      check_replaceable_on_attribute(attribute, member_attributes)
+    }
     check_promise_attribute(attribute, member_attributes, typedef_index)
     check_attribute_type_identifier(
       attribute.type_with_extended_attributes.type_,
