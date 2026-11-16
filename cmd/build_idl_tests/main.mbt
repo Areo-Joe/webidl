@@ -82,7 +82,7 @@ fn generate_test_source(files : ArrayView[WptFile]) -> String {
 }
 
 ///|
-fn generate_readme(count : Int) -> String {
+fn generate_readme(count : Int32) -> String {
   let output =
     $|# WPT Web IDL fixtures
     $|

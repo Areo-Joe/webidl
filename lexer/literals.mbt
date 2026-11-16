@@ -38,7 +38,7 @@ fn is_keyword(text : StringView) -> Bool {
 
 ///|
 /// Try to match a grammar punctuation literal at the start of `text`.
-fn match_punctuation(text : StringView) -> Int {
+fn match_punctuation(text : StringView) -> Int32 {
   for p in punctuation {
     if text.has_prefix(p[:]) {
       return p.length()

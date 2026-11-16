@@ -80,7 +80,7 @@ fn generate_output(kw : Array[String], punc : Array[String]) -> String {
     #|
     #|///|
     #|/// Try to match a grammar punctuation literal at the start of `text`.
-    #|fn match_punctuation(text : StringView) -> Int {
+    #|fn match_punctuation(text : StringView) -> Int32 {
     #|  for p in punctuation {
     #|    if text.has_prefix(p[:]) {
     #|      return p.length()
