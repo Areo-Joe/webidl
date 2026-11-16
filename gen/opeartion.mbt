@@ -16,6 +16,42 @@ enum OperationTag {
 }
 
 ///|
+fn Interface::operations_with_extended_attributes(
+  self : Self,
+) -> Array[(Operation, @parser.ExtendedAttributeList)] {
+  let operations = []
+  for member_ in self.members {
+    if Operation::from_interface_member(member_) is Some(operation) {
+      operations.push((operation, member_.extended_attribute_list))
+    }
+  }
+  for partial in self.partials {
+    for member_ in partial.members {
+      if Operation::from_partial_interface_member(member_.body)
+        is Some(operation) {
+        operations.push((operation, member_.extended_attribute_list))
+      }
+    }
+  }
+  for mixin_ in self.mixins {
+    for member_ in mixin_.members {
+      if Operation::from_interface_mixin_member(member_.body) is Some(operation) {
+        operations.push((operation, member_.extended_attribute_list))
+      }
+    }
+    for partial in mixin_.partials {
+      for member_ in partial.members {
+        if Operation::from_interface_mixin_member(member_.body)
+          is Some(operation) {
+          operations.push((operation, member_.extended_attribute_list))
+        }
+      }
+    }
+  }
+  operations
+}
+
+///|
 fn Operation::is_named_getter(
   self : Self,
   typedefs : Map[StringView, TypeDef],

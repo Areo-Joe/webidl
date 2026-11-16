@@ -156,6 +156,9 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
     if member_attributes.iter().any(is_valid_replaceable) {
       check_replaceable_on_attribute(attribute, member_attributes)
     }
+    if member_attributes.iter().any(is_valid_legacy_unforgeable) {
+      check_legacy_unforgeable_on_attribute(attribute)
+    }
     check_promise_attribute(attribute, member_attributes, typedef_index)
     check_attribute_type_identifier(
       attribute.type_with_extended_attributes.type_,
@@ -532,5 +535,6 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
   check_callback_interfaces(callback_interfaces, interfaces)
   for interface in interfaces {
     check_put_forwards_on_interface(interface, typedef_index, definition_index)
+    check_legacy_unforgeable_on_interface(interface)
   }
 }
