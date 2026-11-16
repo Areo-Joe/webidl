@@ -148,6 +148,11 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
     if member_attributes.iter().any(is_valid_legacy_lenient_this) {
       check_legacy_lenient_this_on_attribute(attribute)
     }
+    if member_attributes
+      .iter()
+      .any(attr => is_valid_put_forwards(attr) is Some(_)) {
+      check_put_forwards_placement(attribute, member_attributes)
+    }
     check_promise_attribute(attribute, member_attributes, typedef_index)
     check_attribute_type_identifier(
       attribute.type_with_extended_attributes.type_,
@@ -522,4 +527,7 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
   check_interfaces(interfaces, partial_interfaces, typedef_index)
   check_interface_mixins(interface_mixins, interfaces)
   check_callback_interfaces(callback_interfaces, interfaces)
+  for interface in interfaces {
+    check_put_forwards_on_interface(interface, typedef_index, definition_index)
+  }
 }

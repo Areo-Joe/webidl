@@ -1,32 +1,55 @@
 ///|
 fn Interface::attributes(self : Self) -> Array[Attribute] {
-  let attributes = self.members.filter_map(member_ => {
-    Attribute::from_interface_member(member_.body)
-  })
+  self.attributes_with_extended_attributes().map(attribute => attribute.0)
+}
+
+///|
+fn Interface::attributes_with_extended_attributes(
+  self : Self,
+) -> Array[(Attribute, @parser.ExtendedAttributeList)] {
+  let attributes = []
+  for member_ in self.members {
+    if Attribute::from_interface_member(member_.body) is Some(attribute) {
+      attributes.push((attribute, member_.extended_attribute_list))
+    }
+  }
   for partial in self.partials {
-    attributes.push_iter(
-      partial.members
-      .iter()
-      .filter_map(member_ => {
-        Attribute::from_partial_interface_member(member_.body)
-      }),
-    )
+    for member_ in partial.members {
+      if Attribute::from_partial_interface_member(member_.body)
+        is Some(attribute) {
+        attributes.push((attribute, member_.extended_attribute_list))
+      }
+    }
   }
   for mixin_ in self.mixins {
-    attributes.push_iter(
-      mixin_.members
-      .iter()
-      .filter_map(member_ => Attribute::from_mixin_member(member_.body)),
-    )
+    for member_ in mixin_.members {
+      if Attribute::from_mixin_member(member_.body) is Some(attribute) {
+        attributes.push((attribute, member_.extended_attribute_list))
+      }
+    }
     for partial in mixin_.partials {
-      attributes.push_iter(
-        partial.members
-        .iter()
-        .filter_map(member_ => Attribute::from_mixin_member(member_.body)),
-      )
+      for member_ in partial.members {
+        if Attribute::from_mixin_member(member_.body) is Some(attribute) {
+          attributes.push((attribute, member_.extended_attribute_list))
+        }
+      }
     }
   }
   attributes
+}
+
+///|
+fn Interface::attribute(
+  self : Self,
+  name : StringView,
+) -> (Attribute, @parser.ExtendedAttributeList)? raise {
+  for
+    (attribute, extended_attributes) in self.attributes_with_extended_attributes() {
+    if name_of_attribute(attribute) == name {
+      return Some((attribute, extended_attributes))
+    }
+  }
+  None
 }
 
 ///|
