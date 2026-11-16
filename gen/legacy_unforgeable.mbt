@@ -77,7 +77,7 @@ fn regular_member_names(interface : Interface) -> Array[StringView] raise {
       names.push(name)
     }
   }
-  for (operation, _) in interface.operations_with_extended_attributes() {
+  for operation in interface.operations() {
     if operation.tag is Static {
       continue
     }

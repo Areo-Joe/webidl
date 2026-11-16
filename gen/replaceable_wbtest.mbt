@@ -59,11 +59,11 @@ test "Replaceable requires a read only regular attribute" {
         form +
         " long value; " +
         suffix
-      assert_eq(check_attribute_source(declaration), expected)
+      assert_eq(check_source(declaration), expected)
     }
   }
   assert_false(
-    check_attribute_source(
+    check_source(
       "[Exposed=*] interface P { readonly attribute long value; }; [Exposed=*] interface A : P { [Replaceable] inherit attribute long value; };",
     ),
   )
@@ -78,7 +78,7 @@ test "Replaceable cannot combine with LegacyLenientSetter or PutForwards" {
       "[Replaceable, PutForwards=value]", "[PutForwards=value, Replaceable]",
     ] {
     assert_false(
-      check_attribute_source(
+      check_source(
         target +
         "[Exposed=*] interface A { " +
         attribute +
@@ -87,7 +87,7 @@ test "Replaceable cannot combine with LegacyLenientSetter or PutForwards" {
     )
   }
   assert_true(
-    check_attribute_source(
+    check_source(
       target +
       "[Exposed=*] interface A { [Replaceable] readonly attribute T value; };",
     ),
@@ -98,7 +98,7 @@ test "Replaceable cannot combine with LegacyLenientSetter or PutForwards" {
 test "Replaceable only recognizes the no arguments form" {
   for attribute in ["Replaceable=value", "Replaceable()", "Replaceable=(value)"] {
     assert_true(
-      check_attribute_source(
+      check_source(
         "[Exposed=*] interface A { [" + attribute + "] attribute long value; };",
       ),
     )

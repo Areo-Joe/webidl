@@ -15,14 +15,12 @@ test "Inherited getters require the closest same-name ancestor attribute to be r
       declaration in [
         "[Exposed=*] interface A : Parent { inherit attribute long _value; };", "[Exposed=*] interface A : Parent {}; partial interface A { inherit attribute long _value; };",
       ] {
-      assert_eq(check_attribute_source(base + declaration), expected)
-      assert_eq(check_attribute_source(declaration + base), expected)
+      assert_eq(check_source(base + declaration), expected)
+      assert_eq(check_source(declaration + base), expected)
     }
   }
   assert_false(
-    check_attribute_source(
-      "[Exposed=*] interface A { inherit attribute long value; };",
-    ),
+    check_source("[Exposed=*] interface A { inherit attribute long value; };"),
   )
   let grandparent = "[Exposed=*] interface Grandparent { readonly attribute long value; };"
   for
@@ -37,7 +35,7 @@ test "Inherited getters require the closest same-name ancestor attribute to be r
       ("inherit attribute long value;", false),
     ] {
     assert_eq(
-      check_attribute_source(
+      check_source(
         grandparent +
         "[Exposed=*] interface Parent : Grandparent {" +
         parent +
@@ -58,13 +56,13 @@ test "Inherited getters include ancestor partials and included mixin members" {
       "[Exposed=*] interface Parent { stringifier readonly attribute DOMString value; };",
     ] {
     assert_true(
-      check_attribute_source(
+      check_source(
         members +
         "[Exposed=*] interface A : Parent { inherit attribute DOMString value; };",
       ),
     )
     assert_true(
-      check_attribute_source(
+      check_source(
         "[Exposed=*] interface A : Parent {}; partial interface A { inherit attribute DOMString value; };" +
         members,
       ),
@@ -76,7 +74,7 @@ test "Inherited getters include ancestor partials and included mixin members" {
       "[Exposed=*] interface Other { readonly attribute long value; }; [Exposed=*] interface Parent {}; [Exposed=*] interface A : Parent { inherit attribute long value; };",
       "[Exposed=*] interface Parent {}; [Exposed=*] interface A : Parent { readonly attribute long own; inherit attribute long value; };",
     ] {
-    assert_false(check_attribute_source(source))
+    assert_false(check_source(source))
   }
 }
 
@@ -97,7 +95,7 @@ test "Inherited getter types resolve typedefs and compare annotations and nullab
       ("(long or DOMString)", "(boolean or DOMString)", false),
     ] {
     assert_eq(
-      check_attribute_source(
+      check_source(
         "typedef long Value; typedef [Clamp] long Clamped; [Exposed=*] interface Parent { readonly attribute " +
         parent_type +
         " _value; }; [Exposed=*] interface A : Parent { inherit attribute " +
@@ -137,8 +135,8 @@ test "Attribute dictionary checks resolve typedefs and flattened union members" 
         ),
       ] {
       let declaration = prefix + type_ + suffix
-      assert_false(check_attribute_source(definitions + declaration))
-      assert_false(check_attribute_source(declaration + definitions))
+      assert_false(check_source(definitions + declaration))
+      assert_false(check_source(declaration + definitions))
     }
   }
 }
@@ -150,7 +148,7 @@ test "Attribute dictionary checks terminate on cycles and inspect other branches
       "typedef (Value or D) Value;", "typedef (D or Value) Value;", "typedef (Other or DOMString) Value; typedef (Value or D) Other;",
     ] {
     assert_false(
-      check_attribute_source(
+      check_source(
         "dictionary D {}; " +
         definition +
         "[Exposed=*] interface A { attribute Value value; };",
@@ -158,7 +156,7 @@ test "Attribute dictionary checks terminate on cycles and inspect other branches
     )
   }
   assert_true(
-    check_attribute_source(
+    check_source(
       "typedef (Value or DOMString) Value; [Exposed=*] interface A { attribute Value value; };",
     ),
   )
@@ -173,14 +171,14 @@ test "Attribute dictionary checks preserve nested types and other type uses" {
       "dictionary D {}; [Exposed=*] interface A { D get(); undefined use(D value); constructor(D value); };",
       "dictionary D {}; dictionary Other { D value; };", "dictionary D {}; callback C = D (D value);",
     ] {
-    assert_true(check_attribute_source(source))
+    assert_true(check_source(source))
   }
   for
     source in [
       "dictionary D {}; typedef D Value; [Exposed=*] interface A { attribute long first; attribute Value last; };",
       "dictionary D {}; typedef D Value; [Exposed=*] interface A {}; [Exposed=*] interface B { attribute Value value; };",
     ] {
-    assert_false(check_attribute_source(source))
+    assert_false(check_source(source))
   }
 }
 
@@ -213,17 +211,6 @@ fn attribute_declaration_source(
     )
   } else {
     declaration
-  }
-}
-
-///|
-fn check_attribute_source(source : String) -> Bool raise {
-  let (definitions, rest) = @parser.parse(@lexer.tokenize(source).exact_view())
-  assert_true(rest is [])
-  try doc(definitions) catch {
-    _ => false
-  } noraise {
-    _ => true
   }
 }
 
@@ -262,8 +249,8 @@ test "Attribute type identifiers must reference permitted definitions" {
           ),
         ] {
         let declaration = prefix + type_ + suffix
-        assert_eq(check_attribute_source(definition + declaration), expected)
-        assert_eq(check_attribute_source(declaration + definition), expected)
+        assert_eq(check_source(definition + declaration), expected)
+        assert_eq(check_source(declaration + definition), expected)
       }
     }
   }
@@ -279,7 +266,7 @@ test "Attribute identifier lookup normalizes definition names and keeps other ty
       "[Exposed=*] interface A { attribute long first; attribute DOMString second; attribute object? third; attribute (long or DOMString) fourth; };",
       "typedef long T; interface mixin T {}; [Exposed=*] interface A { attribute T value; };",
     ] {
-    assert_true(check_attribute_source(source))
+    assert_true(check_source(source))
   }
 }
 
@@ -329,7 +316,7 @@ test "Attributes cannot share identifiers with other members across declaration 
           second +
           " }; A includes M; A includes N;",
         ] {
-        assert_false(check_attribute_source(source))
+        assert_false(check_source(source))
       }
     }
   }
@@ -350,14 +337,12 @@ test "Attribute conflicts include static inherit stringifier and named special m
         "deleter boolean value(DOMString key);",
       ] {
       assert_false(
-        check_attribute_source(
-          "[Exposed=*] interface A { " + attribute + other + " };",
-        ),
+        check_source("[Exposed=*] interface A { " + attribute + other + " };"),
       )
     }
   }
   assert_false(
-    check_attribute_source(
+    check_source(
       "[Exposed=*] interface A { attribute long required; undefined _required(); };",
     ),
   )
@@ -378,6 +363,6 @@ test "Attribute conflicts exclude inherited members and unrelated definitions" {
       "[Exposed=*] interface A {}; [Exposed=*] interface B {}; interface mixin M { attribute long value; }; A includes M; B includes M;",
       "[Exposed=*] interface A { undefined run(long value); undefined run(DOMString value); };",
     ] {
-    assert_true(check_attribute_source(source))
+    assert_true(check_source(source))
   }
 }

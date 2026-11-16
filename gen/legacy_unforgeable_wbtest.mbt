@@ -59,11 +59,11 @@ test "LegacyUnforgeable requires a regular attribute" {
         form +
         " long value; " +
         suffix
-      assert_eq(check_attribute_source(declaration), expected)
+      assert_eq(check_source(declaration), expected)
     }
   }
   assert_true(
-    check_attribute_source(
+    check_source(
       "[Exposed=*] interface P { readonly attribute long value; }; [Exposed=*] interface A : P { [LegacyUnforgeable] inherit attribute long value; };",
     ),
   )
@@ -72,12 +72,12 @@ test "LegacyUnforgeable requires a regular attribute" {
 ///|
 test "LegacyUnforgeable rejects static operations" {
   assert_true(
-    check_attribute_source(
+    check_source(
       "[Exposed=*] interface A { [LegacyUnforgeable] undefined run(); };",
     ),
   )
   assert_false(
-    check_attribute_source(
+    check_source(
       "[Exposed=*] interface A { [LegacyUnforgeable] static undefined run(); };",
     ),
   )
@@ -86,22 +86,22 @@ test "LegacyUnforgeable rejects static operations" {
 ///|
 test "LegacyUnforgeable must appear on all operations with the same identifier" {
   assert_true(
-    check_attribute_source(
+    check_source(
       "[Exposed=*] interface A { [LegacyUnforgeable] undefined run(long value); [LegacyUnforgeable] undefined run(DOMString value); };",
     ),
   )
   assert_false(
-    check_attribute_source(
+    check_source(
       "[Exposed=*] interface A { [LegacyUnforgeable] undefined run(long value); undefined run(DOMString value); };",
     ),
   )
   assert_false(
-    check_attribute_source(
+    check_source(
       "[Exposed=*] interface A { undefined run(); }; partial interface A { [LegacyUnforgeable] undefined run(long value); };",
     ),
   )
   assert_false(
-    check_attribute_source(
+    check_source(
       "[Exposed=*] interface A { [LegacyUnforgeable] undefined run(); }; interface mixin M { undefined run(long value); }; A includes M;",
     ),
   )
@@ -112,7 +112,7 @@ test "LegacyUnforgeable prevents same named members on derived interfaces" {
   let ancestor_attribute = "[Exposed=*] interface A { [LegacyUnforgeable] readonly attribute DOMString x; }; "
   for declaration in ["undefined x();", "readonly attribute long x;"] {
     assert_false(
-      check_attribute_source(
+      check_source(
         ancestor_attribute +
         "[Exposed=*] interface B : A { " +
         declaration +
@@ -121,36 +121,34 @@ test "LegacyUnforgeable prevents same named members on derived interfaces" {
     )
   }
   assert_true(
-    check_attribute_source(
+    check_source(
       ancestor_attribute +
       "[Exposed=*] interface B : A { static undefined x(); };",
     ),
   )
   assert_true(
-    check_attribute_source(
-      ancestor_attribute + "[Exposed=*] interface B : A {};",
-    ),
+    check_source(ancestor_attribute + "[Exposed=*] interface B : A {};"),
   )
   assert_false(
-    check_attribute_source(
+    check_source(
       ancestor_attribute +
       "[Exposed=*] interface B : A {}; [Exposed=*] interface C : B { undefined x(); };",
     ),
   )
   assert_false(
-    check_attribute_source(
+    check_source(
       ancestor_attribute +
       "[Exposed=*] interface B : A {}; interface mixin M { undefined x(); }; B includes M;",
     ),
   )
   assert_false(
-    check_attribute_source(
+    check_source(
       ancestor_attribute +
       "[Exposed=*] interface B : A {}; partial interface B { undefined x(); };",
     ),
   )
   assert_false(
-    check_attribute_source(
+    check_source(
       "[Exposed=*] interface A { [LegacyUnforgeable] undefined x(); }; [Exposed=*] interface B : A { readonly attribute long x; };",
     ),
   )
@@ -163,7 +161,7 @@ test "LegacyUnforgeable only recognizes the no arguments form" {
       "LegacyUnforgeable=value", "LegacyUnforgeable()", "LegacyUnforgeable=(value)",
     ] {
     assert_true(
-      check_attribute_source(
+      check_source(
         "[Exposed=*] interface A { [" +
         attribute +
         "] static undefined run(); };",

@@ -14,27 +14,25 @@ test "PutForwards requires a read only regular interface attribute" {
       ("[PutForwards=value] readonly attribute T? value;", false),
     ] {
     assert_eq(
-      check_attribute_source(
-        target + "[Exposed=*] interface A { " + declaration + " };",
-      ),
+      check_source(target + "[Exposed=*] interface A { " + declaration + " };"),
       expected,
     )
   }
   assert_false(
-    check_attribute_source(
+    check_source(
       "[Exposed=*] interface P { readonly attribute T value; }; " +
       target +
       "[Exposed=*] interface A : P { [PutForwards=value] inherit attribute T value; };",
     ),
   )
   assert_false(
-    check_attribute_source(
+    check_source(
       target +
       "namespace N { [PutForwards=value] readonly attribute T value; };",
     ),
   )
   assert_true(
-    check_attribute_source(
+    check_source(
       target +
       "typedef T Alias; [Exposed=*] interface A { [PutForwards=value] readonly attribute Alias value; };",
     ),
@@ -44,12 +42,12 @@ test "PutForwards requires a read only regular interface attribute" {
 ///|
 test "PutForwards requires the target attribute to exist" {
   assert_false(
-    check_attribute_source(
+    check_source(
       "[Exposed=*] interface T {}; [Exposed=*] interface A { [PutForwards=value] readonly attribute T value; };",
     ),
   )
   assert_true(
-    check_attribute_source(
+    check_source(
       "[Exposed=*] interface T {}; partial interface T { attribute long value; }; [Exposed=*] interface A { [PutForwards=value] readonly attribute T value; };",
     ),
   )
@@ -58,27 +56,27 @@ test "PutForwards requires the target attribute to exist" {
 ///|
 test "PutForwards chains cannot cycle" {
   assert_true(
-    check_attribute_source(
+    check_source(
       "[Exposed=*] interface A { [PutForwards=y] readonly attribute B x; }; [Exposed=*] interface B { readonly attribute long y; };",
     ),
   )
   assert_true(
-    check_attribute_source(
+    check_source(
       "[Exposed=*] interface A { [PutForwards=y] readonly attribute B x; }; [Exposed=*] interface B { [PutForwards=z] readonly attribute C y; }; [Exposed=*] interface C { readonly attribute long z; };",
     ),
   )
   assert_false(
-    check_attribute_source(
+    check_source(
       "[Exposed=*] interface A { [PutForwards=x] readonly attribute A x; };",
     ),
   )
   assert_false(
-    check_attribute_source(
+    check_source(
       "[Exposed=*] interface A { [PutForwards=y] readonly attribute B x; }; [Exposed=*] interface B { [PutForwards=x] readonly attribute A y; };",
     ),
   )
   assert_false(
-    check_attribute_source(
+    check_source(
       "[Exposed=*] interface A { [PutForwards=y] readonly attribute B x; }; [Exposed=*] interface B { [PutForwards=z] readonly attribute C y; }; [Exposed=*] interface C {};",
     ),
   )
@@ -93,7 +91,7 @@ test "PutForwards cannot combine with LegacyLenientSetter or Replaceable" {
       "[PutForwards=value, Replaceable]", "[Replaceable, PutForwards=value]",
     ] {
     assert_false(
-      check_attribute_source(
+      check_source(
         target +
         "[Exposed=*] interface A { " +
         attribute +
@@ -102,7 +100,7 @@ test "PutForwards cannot combine with LegacyLenientSetter or Replaceable" {
     )
   }
   assert_true(
-    check_attribute_source(
+    check_source(
       target +
       "[Exposed=*] interface A { [PutForwards=value] readonly attribute T value; };",
     ),
@@ -117,7 +115,7 @@ test "PutForwards only recognizes the identifier form" {
       "PutForwards", "PutForwards()", "PutForwards=(value)", "PutForwards=*",
     ] {
     assert_true(
-      check_attribute_source(
+      check_source(
         target +
         "[Exposed=*] interface A { [" +
         attribute +

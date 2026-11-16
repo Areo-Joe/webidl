@@ -59,8 +59,8 @@ test "Promise attributes must be read only across all declaration parts" {
       for type_ in ["Promise<long>", "Pending", "_Pending"] {
         let declaration = prefix + form + " " + type_ + " value;" + suffix
         let definitions = "typedef Promise<long> _Pending;"
-        assert_eq(check_attribute_source(definitions + declaration), expected)
-        assert_eq(check_attribute_source(declaration + definitions), expected)
+        assert_eq(check_source(definitions + declaration), expected)
+        assert_eq(check_source(declaration + definitions), expected)
       }
     }
   }
@@ -85,7 +85,7 @@ test "Promise attributes reject the four prohibited extended attributes" {
           "Example, SameObject", "SameObject, Example",
         ] {
         assert_false(
-          check_attribute_source(
+          check_source(
             "typedef Promise<long> Pending;" +
             prefix +
             "[" +
@@ -105,7 +105,7 @@ test "Promise attributes reject the four prohibited extended attributes" {
         "LegacyLenientSetter", "PutForwards=value", "Replaceable", "SameObject",
       ] {
       assert_false(
-        check_attribute_source(
+        check_source(
           "[Exposed=*] interface A { [" +
           attr +
           "] " +
@@ -125,7 +125,7 @@ test "Promise checks only recognize the permitted extended attribute forms" {
       "PutForwards=(value)", "Example",
     ] {
     assert_true(
-      check_attribute_source(
+      check_source(
         "[Exposed=*] interface A { [" +
         attr +
         "] readonly attribute Promise<long> value; };",
@@ -139,6 +139,6 @@ test "Promise checks only recognize the permitted extended attribute forms" {
       "typedef (Value or DOMString) Value; [Exposed=*] interface A { attribute Value value; };",
       "typedef Promise<Value> Value; [Exposed=*] interface A { readonly attribute Value value; };",
     ] {
-    assert_true(check_attribute_source(source))
+    assert_true(check_source(source))
   }
 }

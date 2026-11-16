@@ -533,6 +533,9 @@ fn doc(definitions : @parser.Definitions) -> Unit raise {
   check_interfaces(interfaces, partial_interfaces, typedef_index)
   check_interface_mixins(interface_mixins, interfaces)
   check_callback_interfaces(callback_interfaces, interfaces)
+  for operation in operations {
+    check_operation_has_identifier(operation)
+  }
   for interface in interfaces {
     check_put_forwards_on_interface(interface, typedef_index, definition_index)
     check_legacy_unforgeable_on_interface(interface)

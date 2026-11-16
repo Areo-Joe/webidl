@@ -59,11 +59,11 @@ test "LegacyLenientThis cannot be used on static or namespace attributes" {
         form +
         " long value; " +
         suffix
-      assert_eq(check_attribute_source(declaration), expected)
+      assert_eq(check_source(declaration), expected)
     }
   }
   assert_true(
-    check_attribute_source(
+    check_source(
       "[Exposed=*] interface P { readonly attribute long value; }; [Exposed=*] interface A : P { [LegacyLenientThis] inherit attribute long value; };",
     ),
   )
@@ -76,7 +76,7 @@ test "LegacyLenientThis only recognizes the no arguments form" {
       "LegacyLenientThis=value", "LegacyLenientThis()", "LegacyLenientThis=(value)",
     ] {
     assert_true(
-      check_attribute_source(
+      check_source(
         "[Exposed=*] interface A { [" +
         attribute +
         "] static attribute long value; };",

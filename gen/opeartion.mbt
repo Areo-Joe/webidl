@@ -52,6 +52,20 @@ fn Interface::operations_with_extended_attributes(
 }
 
 ///|
+fn Interface::operations(self : Self) -> Array[Operation] {
+  self.operations_with_extended_attributes().map(operation => operation.0)
+}
+
+///|
+/// If an operation has no identifier, then it must be declared to be a special operation using
+/// one of the special keywords.
+fn check_operation_has_identifier(operation : Operation) -> Unit raise {
+  if operation.name is None {
+    assert_true(operation.tag is (Getter | Setter | Deleter))
+  }
+}
+
+///|
 fn Operation::is_named_getter(
   self : Self,
   typedefs : Map[StringView, TypeDef],

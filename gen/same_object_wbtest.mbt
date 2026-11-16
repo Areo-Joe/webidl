@@ -65,8 +65,8 @@ test "SameObject requires read only attributes across declaration parts" {
           " value; " +
           suffix
         let definitions = "[Exposed=*] interface T {}; typedef T _Alias;"
-        assert_eq(check_attribute_source(definitions + declaration), expected)
-        assert_eq(check_attribute_source(declaration + definitions), expected)
+        assert_eq(check_source(definitions + declaration), expected)
+        assert_eq(check_source(declaration + definitions), expected)
       }
     }
   }
@@ -105,7 +105,7 @@ test "SameObject accepts only non-nullable interface and object types after reso
       ("Cycle", false),
     ] {
     assert_eq(
-      check_attribute_source(
+      check_source(
         definitions +
         "[Exposed=*] interface A { [SameObject] readonly attribute " +
         type_ +
@@ -120,7 +120,7 @@ test "SameObject accepts only non-nullable interface and object types after reso
     ] {
     let expected = definition == "typedef object T;"
     assert_eq(
-      check_attribute_source(
+      check_source(
         definition +
         "[Exposed=*] interface A { [SameObject] readonly attribute T value; };",
       ),
@@ -139,13 +139,13 @@ test "SameObject checks every marked attribute and only recognizes NoArgs" {
       "[Exposed=*] interface A { [Example, SameObject] readonly attribute long value; };",
       "[Exposed=*] interface A { [SameObject, Example] readonly attribute long value; };",
     ] {
-    assert_false(check_attribute_source(source))
+    assert_false(check_source(source))
   }
   for
     source in [
       "[Exposed=*] interface A { readonly attribute long value; };", "[Exposed=*] interface A { [SameObject=value] attribute long value; };",
       "[Exposed=*] interface A { [SameObject()] attribute long value; };", "[Exposed=*] interface A { [SameObject=(value)] attribute long value; };",
     ] {
-    assert_true(check_attribute_source(source))
+    assert_true(check_source(source))
   }
 }

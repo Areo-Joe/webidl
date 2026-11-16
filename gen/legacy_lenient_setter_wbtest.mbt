@@ -59,11 +59,11 @@ test "LegacyLenientSetter requires a read only regular attribute" {
         form +
         " long value; " +
         suffix
-      assert_eq(check_attribute_source(declaration), expected)
+      assert_eq(check_source(declaration), expected)
     }
   }
   assert_false(
-    check_attribute_source(
+    check_source(
       "[Exposed=*] interface P { readonly attribute long value; }; [Exposed=*] interface A : P { [LegacyLenientSetter] inherit attribute long value; };",
     ),
   )
@@ -78,9 +78,7 @@ test "LegacyLenientSetter cannot combine with PutForwards or Replaceable" {
       "[LegacyLenientSetter, Replaceable]", "[Replaceable, LegacyLenientSetter]",
     ] {
     assert_false(
-      check_attribute_source(
-        prefix + attributes + " readonly attribute T value; };",
-      ),
+      check_source(prefix + attributes + " readonly attribute T value; };"),
     )
   }
   for
@@ -88,9 +86,7 @@ test "LegacyLenientSetter cannot combine with PutForwards or Replaceable" {
       "[LegacyLenientSetter]", "[PutForwards=value]", "[Replaceable]",
     ] {
     assert_true(
-      check_attribute_source(
-        prefix + attributes + " readonly attribute T value; };",
-      ),
+      check_source(prefix + attributes + " readonly attribute T value; };"),
     )
   }
 }
@@ -102,7 +98,7 @@ test "LegacyLenientSetter only recognizes the no arguments form" {
       "LegacyLenientSetter=value", "LegacyLenientSetter()", "LegacyLenientSetter=(value)",
     ] {
     assert_true(
-      check_attribute_source(
+      check_source(
         "[Exposed=*] interface A { [" + attribute + "] attribute long value; };",
       ),
     )
